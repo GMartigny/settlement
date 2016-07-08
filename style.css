@@ -1,0 +1,163 @@
+/* 
+    Created on : 22 déc. 2015, 13:32:37
+    Author     : Guillaume
+*/
+
+*{
+    position: relative;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-size: 16px;
+}
+
+#resourceList, #peopleList {
+    padding: 5px;
+}
+
+#resourceList {
+    background-color: #e2bb6d;
+}
+
+#resourceList:empty:before {
+    content: "A vast empty desert";
+}
+
+#resourceList .resource {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    margin: 0 5px;
+    z-index: 1;
+}
+
+#resourceList .resource:before, #resourceList .resource:after{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    z-index: -1;
+}
+
+#resourceList .resource.less:before, #resourceList .resource.more:after {
+    animation: flash linear .7s forwards;
+}
+#resourceList .resource.less:before{
+    animation-direction: reverse;
+}
+#resourceList .resource.less:before{
+    background-color: #C55;
+}
+#resourceList .resource.more:after{
+    background-color: #5C5;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(.5);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+#peopleList .people {
+    border: 1px solid #666;
+    min-width: 300px;
+    padding: 5px 20px;
+    margin: 5px 0;
+    line-height: 30px;
+}
+
+#peopleList .people.busy {
+    background: #ECC;
+}
+
+#peopleList .people .action {
+    display: inline-block;
+    float: right;
+    margin-left: 5px;
+    border: 1px solid #000;
+    padding: 0 5px;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:not(.disabled):not(.cooldown):hover {
+    text-decoration: underline;
+}
+
+.clickable.disabled {
+    text-decoration: line-through;
+    color: #666;
+}
+
+.clickable.cooldown {
+    animation-name: cooldown;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    box-shadow: 0 0 0 0px #333 inset;
+}
+
+@keyframes cooldown {
+    0% {
+        box-shadow: 0 0 0 15px #555 inset;
+    }
+    to {
+        box-shadow: 0 0 0 0 #555 inset;
+    }
+}
+
+.tooltip {
+    position: absolute;
+    background: #333;
+    width: 250px;
+    color: #FFF;
+    padding: 10px;
+    border: 1px dashed #CCC;
+    outline: 2px solid #333;
+}
+
+.tooltip .title {
+    font-weight: bold;
+}
+
+.tooltip .description {
+    color: #F5F5F5;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.tooltip .time {
+    float: right;
+}
+
+.tooltip .consumption {
+    margin-left: 15px;
+    font-size: 14px;
+}
+
+.tooltip .consumption .resource:before {
+    content: "✓ ";
+}
+
+.tooltip .consumption .resource.not-enough {
+    text-decoration: line-through;
+}
+
+.tooltip .consumption .resource.not-enough:before {
+    content: "✗ "
+}
