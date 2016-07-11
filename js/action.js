@@ -53,7 +53,8 @@ Action.prototype = {
 
         if (this.locked) {
             this.html.classList.add("disabled");
-        } else {
+        }
+        else {
             this.html.classList.remove("disabled");
         }
     },
@@ -70,7 +71,7 @@ Action.prototype = {
             this.html.style.animationDuration = duration * Game.time.hourToMs + "ms";
 
             setTimeout(function() {
-                console.log(this.owner.name + " just finish to " + this.data.name);
+                log(this.owner.name + " just finish to " + this.data.name);
                 this.owner.setBusy(false);
                 if (!this.data.relaxing) {
                     this.owner.updateEnergy(- duration * 4);
@@ -85,9 +86,7 @@ Action.prototype = {
                 // Unlock
                 if (this.data.unlock) {
                     var unlock = this.data.unlock(this);
-                    unlock.forEach(function(action) {
-                        this.addAction(action);
-                    }.bind(this.owner));
+                    this.owner.addAction(unlock);
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.UNLOCK, unlock);
                 }
                 // Lock

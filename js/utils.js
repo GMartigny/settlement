@@ -31,7 +31,7 @@ function tooltip(html, data) {
     }
 
     html.classList.add("tooltiped");
-    html.onmouseover = function(e) {
+    html.onmouseover = function() {
         document.body.appendChild(box);
     };
     html.onmousemove = function(e) {

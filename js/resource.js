@@ -23,10 +23,7 @@ Resource.prototype = {
         this.html.textContent = floor(this.count);
     },
     update: function(amount) {
-        this.count += amount;
-        if (this.count < 0) {
-            throw "Resources count can't be negative"
-        }
+        this.set(this.count + amount);
 
         var cb = noop;
         if(amount > 0 && !this.html.classList.contains("more")){
@@ -42,8 +39,6 @@ Resource.prototype = {
             }.bind(this);
         }
         setTimeout(cb, 700);
-        
-        this.refresh();
     },
     get: function() {
         return this.count;

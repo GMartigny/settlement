@@ -15,6 +15,7 @@ function peopleFactory(amount) {
         })
     });
 }
+
 function People(name) {
     log(name + " join the community");
     this.name = name;

@@ -13,7 +13,7 @@ function Game(holder, media) {
     }.bind(this), Game.tickLength);
 }
 Game.flags = {
-    isDev: 1
+    isDev: 0
 };
 Game.time = {
     hour: 1,
@@ -29,8 +29,8 @@ Game.prototype = {
         var game = this;
         deepBrowse(this.data, function(item) {
             item.id = pickID();
-            for(var attr in item){
-                if(item.hasOwnProperty(attr) && isFunction(item[attr])){
+            for (var attr in item) {
+                if (item.hasOwnProperty(attr) && isFunction(item[attr])) {
                     item[attr] = item[attr].bind(game);
                 }
             }
@@ -50,7 +50,7 @@ Game.prototype = {
         this.holder.appendChild(peopleList);
 
         // A person arrives
-        setTimeout(this.earn.bind(this, 1, this.data.resources.people), 300);
+        setTimeout(this.earn.bind(this, 1, this.data.resources.people), 400 * (Game.flags.isDev ? 1 : 10));
 
         // We may find resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function(given) {
@@ -203,7 +203,7 @@ Game.prototype = {
             craftable: {
                 component: {
                     name: "Component",
-                    desc: "",
+                    desc: "A mechanical part for others craftables.",
                     consume: function() {
                         return [
                             [2, this.data.resources.gatherable.common.metal_scrap],
@@ -214,7 +214,7 @@ Game.prototype = {
                 },
                 engine: {
                     name: "Engine",
-                    desc: "",
+                    desc: "Amazing what you manage to do with all those scraps !",
                     consume: function() {
                         return [
                             [10, this.data.resources.gatherable.common.metal_scrap],
@@ -227,7 +227,7 @@ Game.prototype = {
                 },
                 tool: {
                     name: "Tool",
-                    desc: "",
+                    desc: "The base of any tinkerer.",
                     consume: function() {
                         return [
                             [2, this.data.resources.gatherable.common.metal_scrap],
@@ -239,7 +239,7 @@ Game.prototype = {
                 },
                 stone: {
                     name: "Smooth stone",
-                    desc: "",
+                    desc: "A well polish stone.",
                     consume: function() {
                         return [
                             [3, this.data.resources.gatherable.common.rock],
@@ -250,7 +250,7 @@ Game.prototype = {
                 },
                 computer: {
                     name: "Computer",
-                    desc: "",
+                    desc: "Well, Internet is down since 2136 but it can be useful.",
                     consume: function() {
                         return [
                             [5, this.data.resources.craftable.component],
@@ -294,7 +294,7 @@ Game.prototype = {
                 },
                 well: {
                     name: "Well",
-                    desc: "Just a large hole into the groud",
+                    desc: "Just a large hole into the ground.",
                     time: 12,
                     unlock: function() {
                         return [this.data.actions.draw];
@@ -313,7 +313,7 @@ Game.prototype = {
                 },
                 farm: {
                     name: "Farm",
-                    desc: "",
+                    desc: "A plotted land with some seeds has always provided food.",
                     time: Game.time.day,
                     unlock: function() {
                         return [this.data.actions.harvest];
@@ -378,11 +378,13 @@ Game.prototype = {
                 },
                 barrak: {
                     name: "Barrack",
-                    desc: "",
+                    desc: "Some place to sleep for a few people.",
                     time: 2 * Game.time.day + 5 * Game.time.hour,
                     consume: function() {
                         return [
-                            [5, this.data.resources.craftable.tool]
+                            [5, this.data.resources.craftable.tool],
+                            [10, this.data.resources.gatherable.common.metal_scrap],
+                            [4, this.data.resources.gatherable.common.rock]
                         ];
                     },
                     give: function() {
@@ -396,7 +398,7 @@ Game.prototype = {
         actions: {
             settle: {
                 name: "Settle",
-                desc: "Ok let's settle right there !",
+                desc: "Ok, let's settle right here !",
                 time: 1,
                 unlock: function() {
                     return [
@@ -519,21 +521,21 @@ Game.prototype = {
                         [2, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food]
                     ];
-                    if(isArray(action.owner.plan.consume)){
+                    if (isArray(action.owner.plan.consume)) {
                         consume.push.apply(consume, action.owner.plan.consume);
                     }
                     return consume;
                 },
                 lock: function(action) {
                     var lock = [this.data.actions.build];
-                    if(isFunction(action.owner.plan.lock)){
+                    if (isFunction(action.owner.plan.lock)) {
                         lock.push.apply(lock, action.owner.plan.lock(action));
                     }
                     return lock;
                 },
                 unlock: function(action) {
                     var unlock = [];
-                    if(isFunction(action.owner.plan.unlock)){
+                    if (isFunction(action.owner.plan.unlock)) {
                         unlock.push.apply(unlock, action.owner.plan.unlock(action));
                     }
                     return unlock;
@@ -541,14 +543,14 @@ Game.prototype = {
                 give: function(action) {
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.BUILD, action.owner.plan);
                     var give = [];
-                    if(isFunction(action.owner.plan.give)){
+                    if (isFunction(action.owner.plan.give)) {
                         give.push.apply(give, action.owner.plan.give(action));
                     }
                     return give;
                 },
                 collect: function(action) {
                     var collect = [];
-                    if(isFunction(action.owner.plan.collect)){
+                    if (isFunction(action.owner.plan.collect)) {
                         collect.push.apply(collect, action.owner.plan.collect(action));
                     }
                     return collect;
@@ -592,7 +594,7 @@ Game.prototype = {
                     return [this.data.actions.heal];
                 }
             },
-            heal :{
+            heal: {
                 name: "Heal",
                 desc: "\"I really hope thoses pills are still good.\"",
                 time: 2,
