@@ -127,10 +127,10 @@ People.prototype = {
     },
     die: function() {
         MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
-        this.html.classList.add("dead");
+        this.html.classList.remove("arrived");
         setTimeout(function() {
             this.html.remove();
-        }.bind(this), 1000);
+        }.bind(this), 400);
     }
 };
 People.LST_ID = "peopleList";

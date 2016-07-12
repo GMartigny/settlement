@@ -18,7 +18,20 @@ Resource.prototype = {
         this.tooltip = tooltip(this.html, data);
     },
     toHTML: function() {
-        return wrap("resource get-more", floor(this.count));
+        var html = wrap("resource get-more");
+
+        this.counter = wrap("counter", 1);
+        html.appendChild(this.counter);
+
+        var icon = wrap("icon");
+        var pos = "16px 16px";
+        if(isArray(this.data.icon)){
+            pos = (-this.data.icon[0] * 16) + "px " + (-this.data.icon[1] * 16) + "px";
+        }
+        icon.style.backgroundPosition = pos;
+        html.appendChild(icon);
+
+        return html;
     },
     consolidateData: function() {
         var data = this.data;
@@ -27,7 +40,7 @@ Resource.prototype = {
         }
     },
     refresh: function(resources) {
-        this.html.textContent = floor(this.count);
+        this.counter.textContent = floor(this.count);
         if (resources && isArray(this.data.consume)) {
             this.tooltip.refresh(resources, this.data.consume);
         }

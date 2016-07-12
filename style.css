@@ -3,7 +3,7 @@
     Author     : Guillaume
 */
 
-*{
+* {
     position: relative;
     box-sizing: border-box;
 }
@@ -26,14 +26,22 @@ body {
 }
 
 #resourceList .resource {
-    position: relative;
     display: inline-block;
-    width: 50px;
+    padding-right: 20px;
     margin: 0 5px;
     z-index: 1;
 }
 
-#resourceList .resource:before, #resourceList .resource:after{
+#resourceList .resource .icon {
+    position: absolute;
+    right: 0;
+    top: 1px;
+    width: 16px;
+    height: 16px;
+    background: url(img/icons.png) no-repeat;
+}
+
+#resourceList .resource:before, #resourceList .resource:after {
     content: "";
     position: absolute;
     left: 0;
@@ -45,15 +53,18 @@ body {
 }
 
 #resourceList .resource.less:before, #resourceList .resource.more:after {
-    animation: swoosh .7s forwards;
+    animation: swoosh linear .7s forwards;
 }
-#resourceList .resource.less:before{
+
+#resourceList .resource.less:before {
     animation-direction: reverse;
 }
-#resourceList .resource.less:before{
+
+#resourceList .resource.less:before {
     background-color: #C55;
 }
-#resourceList .resource.more:after{
+
+#resourceList .resource.more:after {
     background-color: #5C5;
 }
 
@@ -80,10 +91,11 @@ body {
     line-height: 30px;
     left: -100%;
     opacity: 0;
-    transition: opacity ease-out .3s,
-                left ease-out .3s;
+    transition: opacity ease-out .4s,
+                left ease-out .4s;
 }
-#peopleList .people.arrived{
+
+#peopleList .people.arrived {
     left: 0;
     opacity: 1;
 }
@@ -92,32 +104,38 @@ body {
     background: #ECC;
 }
 
-#peopleList .people .bar{
+#peopleList .people .bar {
     width: 100%;
     height: 7px;
     margin-bottom: 2px;
     transition: width ease-out .5s;
 }
-#peopleList .people .bar.warning{
+
+#peopleList .people .bar.warning {
     animation: flash .4s infinite alternate;
 }
-#peopleList .people .bar.life{
+
+#peopleList .people .bar.life {
     background-color: #f52158;
 }
-#peopleList .people .bar.energy{
+
+#peopleList .people .bar.energy {
     background-color: #19f5ba;
 }
+
 @keyframes flash {
-     0% {
-         opacity: 1;
-     }
-     to {
-         opacity: .3;
-     }
- }
-#peopleList .people .actionList{
+    0% {
+        opacity: 1;
+    }
+    to {
+        opacity: .3;
+    }
+}
+
+#peopleList .people .actionList {
 
 }
+
 #peopleList .people .action {
     display: inline-block;
     margin-right: 5px;
@@ -162,6 +180,7 @@ body {
     padding: 10px;
     border: 1px dashed #CCC;
     outline: 2px solid #333;
+    z-index: 100;
 }
 
 .tooltip .title {

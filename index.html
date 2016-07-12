@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Unfold</title>
+        <title>Settlement</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -11,13 +11,14 @@
         <main id="main"></main>
         <script>
             var media = loadMedia([
-                {src: "js/utils.js", weight: 1, type: "script"},
-                {src: "js/game.js", weight: 1, type: "script"},
-                {src: "js/message_bus.js", weight: 1, type: "script"},
-                {src: "js/resource.js", weight: 1, type: "script"},
-                {src: "js/action.js", weight: 1, type: "script"},
-                {src: "js/people.js", weight: 1, type: "script"},
-                {src: "js/event.js", weight: 1, type: "script"}
+                {src: "img/icons.png", type: "image"},
+                {src: "js/utils.js", type: "script"},
+                {src: "js/game.js", type: "script"},
+                {src: "js/message_bus.js", type: "script"},
+                {src: "js/resource.js", type: "script"},
+                {src: "js/action.js", type: "script"},
+                {src: "js/people.js", type: "script"},
+                {src: "js/event.js", type: "script"}
             ], function(prc, file){
                 console.log(file + " : " + prc);
                 if(prc >= 100){

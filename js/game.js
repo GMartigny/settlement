@@ -10,9 +10,7 @@ function Game(holder, media) {
     this.lastTick = performance.now();
     this.init();
 
-    this.loop = setInterval(function() {
-        this.refresh();
-    }.bind(this), Game.tickLength);
+    this.refresh();
 }
 Game.flags = {
     isDev: 1
@@ -90,29 +88,33 @@ Game.prototype = {
             elapse = floor((now - this.lastTick) / Game.tickLength);
         this.lastTick += elapse * Game.tickLength;
 
-        if (this.settled) {
-            // We use some resources
-            var needs = this.data.resources.people.need();
-            needs.forEach(function(need) {
-                var loose = need[1].id === this.data.resources.gatherable.common.water ? "updateLife" : "updateEnergy";
-                this.consume.call(this, need[0] * this.people.length, need[1], function(number) {
-                    this.people.forEach(function(person) {
-                        person[loose](-number * 10);
+        raf(this.refresh.bind(this));
+
+        if(elapse > 0){
+            if (this.settled) {
+                // We use some resources
+                var needs = this.data.resources.people.need();
+                needs.forEach(function(need) {
+                    var loose = need[1].id === this.data.resources.gatherable.common.water ? "updateLife" : "updateEnergy";
+                    this.consume.call(this, need[0] * this.people.length, need[1], function(number) {
+                        this.people.forEach(function(person) {
+                            person[loose](-number * 10);
+                        });
                     });
-                });
+                }.bind(this));
+            }
+
+            // Let's now recount our resources
+            for (var id in this.resources) {
+                if (this.resources.hasOwnProperty(id)) {
+                    this.resources[id].refresh(this.resources);
+                }
+            }
+
+            this.people.forEach(function(p) {
+                p.refresh(this.resources, elapse, this.settled);
             }.bind(this));
         }
-
-        // Let's now recount our resources
-        for (var id in this.resources) {
-            if (this.resources.hasOwnProperty(id)) {
-                this.resources[id].refresh(this.resources);
-            }
-        }
-
-        this.people.forEach(function(p) {
-            p.refresh(this.resources, elapse, this.settled);
-        }.bind(this));
     },
     // We need to use this
     consume: function(amount, resource, lack) {
@@ -191,22 +193,25 @@ Game.prototype = {
                     water: {
                         name: "Water",
                         desc: "Water is important to survive in this harsh environment.",
-                        img: [],
+                        icon: [0, 0],
                         dropRate: 120
                     },
                     food: {
                         name: "Food",
                         desc: "Everyone need food to keep his strength.",
+                        icon: [1, 0],
                         dropRate: 110
                     },
                     rock: {
                         name: "Rock",
                         desc: "\"There's rocks everywhere ! Why would you bring this back ?\"",
+                        icon: [2, 0],
                         dropRate: 120
                     },
                     metal_scrap: {
                         name: "Metal scrap",
                         desc: "A rusty piece of metal.",
+                        icon: [3, 0],
                         dropRate: 80
                     }
                 },
@@ -214,11 +219,13 @@ Game.prototype = {
                     oil: {
                         name: "Oil",
                         desc: "About a liter of gas-oil",
+                        icon: [0, 1],
                         dropRate: 30
                     },
                     plastic: {
                         name: "Plastic",
                         desc: "A sturdy piece of plastic",
+                        icon: [1, 1],
                         dropRate: 50
                     }
                 },
@@ -226,19 +233,22 @@ Game.prototype = {
                     medication: {
                         name: "Medication",
                         desc: "An unmark medication, hope it'll help.",
+                        icon: [2, 1],
                         dropRate: 10
                     }
                 }
             },
             ruins: {
                 name: "Ruins",
-                desc: "The location of an ancient building."
+                desc: "The location of an ancient building.",
+                icon: [3, 1]
             },
             /* CRAFTABLE */
             craftable: {
                 component: {
                     name: "Component",
                     desc: "A mechanical part for others craftables.",
+                    icon: [1, 2],
                     consume: function() {
                         return [
                             [2, this.data.resources.gatherable.common.metal_scrap],
@@ -250,6 +260,7 @@ Game.prototype = {
                 engine: {
                     name: "Engine",
                     desc: "Amazing what you manage to do with all those scraps !",
+                    icon: [2, 2],
                     consume: function() {
                         return [
                             [10, this.data.resources.gatherable.common.metal_scrap],
@@ -263,6 +274,7 @@ Game.prototype = {
                 tool: {
                     name: "Tool",
                     desc: "The base of any tinkerer.",
+                    icon: [3, 2],
                     consume: function() {
                         return [
                             [2, this.data.resources.gatherable.common.metal_scrap],
@@ -275,6 +287,7 @@ Game.prototype = {
                 stone: {
                     name: "Smooth stone",
                     desc: "A well polish stone.",
+                    icon: [0, 3],
                     consume: function() {
                         return [
                             [5, this.data.resources.gatherable.common.rock]
@@ -285,6 +298,7 @@ Game.prototype = {
                 computer: {
                     name: "Computer",
                     desc: "Well, Internet is down since 2136 but it can be useful.",
+                    icon: [1, 3],
                     consume: function() {
                         return [
                             [5, this.data.resources.craftable.component],
@@ -299,6 +313,7 @@ Game.prototype = {
             people: {
                 name: "People",
                 desc: "The workforce and the bane of you camp.",
+                icon: [0, 2],
                 need: function() {
                     return [
                         [1.5 / Game.time.day, this.data.resources.gatherable.common.food],
