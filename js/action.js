@@ -77,7 +77,7 @@ Action.prototype = {
             this.html.classList.add("cooldown");
             this.html.style.animationDuration = duration * Game.time.hourToMs + "ms";
 
-            setTimeout(function() {
+            this.timeout = setTimeout(function() {
                 log(this.owner.name + " just finish to " + this.data.name);
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
@@ -98,14 +98,20 @@ Action.prototype = {
                     this.owner.lockAction(lock);
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOCK, lock);
                 }
-
-                this.owner.busy = false;
             }.bind(this), duration * Game.time.hourToMs);
         }
     },
     lock: function() {
+        this.cancel();
         this.html.remove();
         this.tooltip.remove();
         MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOCK, this);
+    },
+    cancel: function() {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+            this.owner.setBusy(false);
+            this.html.classList.remove("cooldown");
+        }
     }
 };
