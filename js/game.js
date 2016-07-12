@@ -13,7 +13,7 @@ function Game(holder, media) {
     this.refresh();
 }
 Game.flags = {
-    isDev: 1
+    isDev: 0
 };
 Game.time = {
     hour: 1,
