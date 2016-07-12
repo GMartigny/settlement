@@ -45,7 +45,7 @@ body {
 }
 
 #resourceList .resource.less:before, #resourceList .resource.more:after {
-    animation: flash linear .7s forwards;
+    animation: swoosh .7s forwards;
 }
 #resourceList .resource.less:before{
     animation-direction: reverse;
@@ -57,7 +57,7 @@ body {
     background-color: #5C5;
 }
 
-@keyframes flash {
+@keyframes swoosh {
     0% {
         opacity: 0;
         transform: scale(0);
@@ -78,16 +78,49 @@ body {
     padding: 5px 20px;
     margin: 5px 0;
     line-height: 30px;
+    left: -100%;
+    opacity: 0;
+    transition: opacity ease-out .3s,
+                left ease-out .3s;
+}
+#peopleList .people.arrived{
+    left: 0;
+    opacity: 1;
 }
 
 #peopleList .people.busy {
     background: #ECC;
 }
 
+#peopleList .people .bar{
+    width: 100%;
+    height: 7px;
+    margin-bottom: 2px;
+    transition: width ease-out .5s;
+}
+#peopleList .people .bar.warning{
+    animation: flash .4s infinite alternate;
+}
+#peopleList .people .bar.life{
+    background-color: #f52158;
+}
+#peopleList .people .bar.energy{
+    background-color: #19f5ba;
+}
+@keyframes flash {
+     0% {
+         opacity: 1;
+     }
+     to {
+         opacity: .3;
+     }
+ }
+#peopleList .people .actionList{
+
+}
 #peopleList .people .action {
     display: inline-block;
-    float: right;
-    margin-left: 5px;
+    margin-right: 5px;
     border: 1px solid #000;
     padding: 0 5px;
 }

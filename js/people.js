@@ -31,40 +31,68 @@ function People(name) {
 }
 People.prototype = {
     toHTML: function() {
-        return wrap("people", this.name)
+        var html = wrap("people");
+        html.appendChild(wrap("name", this.name));
+        this.lifeBar = wrap("bar life");
+        tooltip(this.lifeBar, {name: "Health", desc: "The first thing you want is a good health."});
+        html.appendChild(this.lifeBar);
+        this.energyBar = wrap("bar energy");
+        tooltip(this.energyBar, {name: "Energy", desc: "Drained faster when busy or hungry."});
+        html.appendChild(this.energyBar);
+        this.actionList = wrap("actionList");
+        html.appendChild(this.actionList);
+
+        return html;
     },
-    refresh: function(resources, elapse) {
+    refresh: function(resources, elapse, settled) {
         this.actions.forEach(function(a) {
             a.refresh(resources);
         });
-        this.updateEnergy(elapse * 2);
+        var ratio = 2;
+        if (this.busy) {
+            ratio = 4;
+            if(this.busy.relaxing){
+                ratio *= this.busy.relaxing;
+            }
+        }
+        if (settled) {
+            this.updateEnergy(-elapse * ratio);
+        }
     },
-    setBusy: function(busy) {
-        this.busy = busy;
-        this.html.classList.toggle("busy", busy);
+    setBusy: function(action) {
+        this.busy = !!action ? action : false;
+        this.html.classList.toggle("busy", !!action);
     },
     updateEnergy: function(amount) {
-        this.energy += amount;
-        if (this.energy > 100) {
-            this.energy = 100;
+        if (!this.busy || !this.busy.relaxing) {
+            this.energy += amount;
+
+            if (this.energy > 100) {
+                this.energy = 100;
+            }
+            else if (this.energy < 0) {
+                this.updateLife(this.energy);
+                this.energy = 0;
+            }
+
+            this.energyBar.style.width = this.energy + "%";
         }
-        else if (this.energy < 0) {
-            this.energy = 0;
-        }
+        return this.energy;
     },
     isTired: function() {
-        return this.energy == 0;
+        return this.energy <= 0;
     },
     updateLife: function(amount) {
         this.life += amount;
         if (this.life > 100) {
             this.life = 100;
-            return this.life;
         }
         else if (this.life < 0) {
             this.die();
-            return 0;
         }
+        this.lifeBar.style.width = this.life + "%";
+        this.lifeBar.classList[this.life < 25 ? "add" : "remove"]("warning");
+        return this.life;
     },
     planBuilding: function(building) {
         log("\"We'll do " + an(building.name) + "\"");
@@ -78,11 +106,11 @@ People.prototype = {
         }
         else {
             if (this.actions.has(data.id)) {
-                this.get(data.id).init(data);
+                this.actions.get(data.id).init(data);
             }
-            else{
+            else {
                 var action = new Action(this, data);
-                this.html.appendChild(action.html);
+                this.actionList.appendChild(action.html);
                 this.actions.push(data.id, action);
             }
         }
@@ -98,7 +126,11 @@ People.prototype = {
         }
     },
     die: function() {
-        this.html.remove();
+        MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+        this.html.classList.add("dead");
+        setTimeout(function() {
+            this.html.remove();
+        }.bind(this), 1000);
     }
 };
 People.LST_ID = "peopleList";

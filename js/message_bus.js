@@ -29,6 +29,9 @@ MessageBus.MSG_TYPES = {
     REFRESH: 20,
     GIVE: 30,
     USE: 32,
+    RUNS_OUT: 33,
+    LOOSE: 34,
+    LOOSE_SOMEONE: 36,
     UNLOCK: 40,
     LOCK: 50,
     BUILD: 60

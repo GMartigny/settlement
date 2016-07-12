@@ -16,11 +16,12 @@
                 {src: "js/message_bus.js", weight: 1, type: "script"},
                 {src: "js/resource.js", weight: 1, type: "script"},
                 {src: "js/action.js", weight: 1, type: "script"},
-                {src: "js/people.js", weight: 1, type: "script"}
+                {src: "js/people.js", weight: 1, type: "script"},
+                {src: "js/event.js", weight: 1, type: "script"}
             ], function(prc, file){
                 console.log(file + " : " + prc);
                 if(prc >= 100){
-                    new Game(document.getElementById("main"), media);
+                    window.G = new Game(document.getElementById("main"), media);
                 }
             });
         </script>
