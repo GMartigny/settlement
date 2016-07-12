@@ -128,6 +128,9 @@ People.prototype = {
     die: function() {
         MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
         this.html.classList.remove("arrived");
+        this.actions.forEach(function(action) {
+            action.cancel();
+        });
         setTimeout(function() {
             this.html.remove();
         }.bind(this), 400);
