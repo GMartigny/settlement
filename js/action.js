@@ -1,3 +1,4 @@
+"use strict";
 function Action(owner, data) {
     this.locked = true;
     this.running = false;

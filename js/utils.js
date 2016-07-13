@@ -1,3 +1,4 @@
+"use strict";
 var str = "",
     noop = function() {},
     nodef = undefined;
@@ -235,7 +236,7 @@ Collection.prototype = {
         return this.items[id] = value;
     },
     forEach: function(action) {
-        for (id in this.items) {
+        for (var id in this.items) {
             if (this.items.hasOwnProperty(id)) {
                 action(this.items[id], id);
             }
@@ -276,7 +277,11 @@ function isArray(array) {
 function sanitize(str) {
     return str.toLowerCase().replace(/(\W)+/g, "_");
 }
-
+/**
+ * Add "a" or "an" according to the following word
+ * @param word Any word
+ * @return {string}
+ */
 function an(word) {
     var vowels = "aeiou".split("");
     return (vowels.indexOf(word[0]) < 0 ? "a" : "an") + " " + word;

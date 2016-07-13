@@ -1,3 +1,4 @@
+"use strict";
 function peopleFactory(amount) {
     return new Promise(function(resolve, reject) {
         People.randomName(amount).then(function(data) {
@@ -57,6 +58,9 @@ People.prototype = {
         }
         if (settled) {
             this.updateEnergy(-elapse * ratio);
+            if(!this.isTired()){
+                this.updateLife(elapse * 0.4);
+            }
         }
     },
     setBusy: function(action) {
