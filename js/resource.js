@@ -1,3 +1,4 @@
+"use strict";
 function Resource(data, count) {
     this.init(data);
 

@@ -1,3 +1,4 @@
+"use strict";
 function Game(holder, media) {
     this.holder = holder;
 
@@ -36,46 +37,51 @@ Game.prototype = {
             }
         });
 
-        var ressourceList = document.createElement("div");
-        ressourceList.id = Resource.LST_ID;
-        for (var id in this.resources) {
-            if (this.resources.hasOwnProperty(id)) {
-                ressourceList.appendChild(this.resources[id].html);
-            }
-        }
-        this.holder.appendChild(ressourceList);
+        this.ressourcesList = wrap();
+        this.ressourcesList.id = Resource.LST_ID;
+        this.holder.appendChild(this.ressourcesList);
 
-        var peopleList = document.createElement("div");
-        peopleList.id = People.LST_ID;
-        this.holder.appendChild(peopleList);
+        this.peopleList = wrap();
+        this.peopleList.id = People.LST_ID;
+        this.holder.appendChild(this.peopleList);
+
+        this.buildingsList = wrap();
+        this.buildingsList.id = Building.LST_ID;
+        this.holder.appendChild(this.buildingsList);
 
         // A person arrives
-        setTimeout(this.earn.bind(this, 1, this.data.resources.people), 400 * (Game.flags.isDev ? 1 : 10));
+        setTimeout(this.welcome.bind(this), 400 * (Game.flags.isDev ? 1 : 10));
 
         // We may find resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function(given) {
-            given.forEach(function(r) {
-                this.earn.apply(this, r);
-            }.bind(this));
+            if (isArray(given)) {
+                given.forEach(function(r) {
+                    this.earn.apply(this, r);
+                }.bind(this));
+            }
         }.bind(this));
 
         // We may use resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function(use) {
-            use.forEach(function(r) {
-                this.consume.apply(this, r);
-            }.bind(this));
+            if (isArray(use)) {
+                use.forEach(function(r) {
+                    this.consume.apply(this, r);
+                }.bind(this));
+            }
         }.bind(this));
 
         // We may build
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.BUILD, function(building) {
-            this.build(building);
+            if (building) {
+                this.build(building);
+            }
         }.bind(this));
 
         // And we may die :'(
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function(person) {
             log("We loose " + person.name);
+            this.resources[this.data.resources.room.id].update(-1);
             this.people.out(person);
-            this.resources[this.data.resources.people.id].update(-1);
             if (!this.people.length) {
                 log("You held up for " + formatTime((performance.now() - this.settled) / Game.time.hourToMs));
             }
@@ -90,18 +96,23 @@ Game.prototype = {
 
         raf(this.refresh.bind(this));
 
-        if(elapse > 0){
+        if (elapse > 0) {
             if (this.settled) {
                 // We use some resources
-                var needs = this.data.resources.people.need();
+                var needs = this.data.people.need();
                 needs.forEach(function(need) {
-                    var loose = need[1].id === this.data.resources.gatherable.common.water ? "updateLife" : "updateEnergy";
-                    this.consume.call(this, need[0] * this.people.length, need[1], function(number) {
+                    var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
+                    this.consume(need[0] * this.people.length, need[1], function(number) {
                         this.people.forEach(function(person) {
-                            person[loose](-number * 10);
+                            person[state] = true;
                         });
                     });
                 }.bind(this));
+
+                // We have enougth room and someone arrive
+                if (this.resources[this.data.resources.room.id].has(this.people.length + 1) && random() < this.data.people.dropRate) {
+                    this.welcome();
+                }
             }
 
             // Let's now recount our resources
@@ -119,12 +130,13 @@ Game.prototype = {
     // We need to use this
     consume: function(amount, resource, lack) {
         if (amount) {
-            log("Use " + amount + " " + resource.name);
             var instance = this.resources[resource.id];
             if (instance.has(amount)) {
+                log("Use " + amount + " " + resource.name);
                 instance.update(-amount);
             }
             else if (isFunction(lack)) {
+                log("Ran out of " + amount + " " + resource.name);
                 var diff = amount - instance.get();
                 instance.set(0);
                 lack.call(this, diff, resource);
@@ -138,16 +150,12 @@ Game.prototype = {
         if (this.resources[id]) {
             this.resources[id].update(amount);
         } else if (amount > 0) {
-            var r = new Resource(resource, amount);
-            this.resources[id] = r;
-            document.getElementById(Resource.LST_ID).appendChild(r.html);
-        }
-
-        if (resource.id === this.data.resources.people.id) {
-            this.welcome(amount);
+            var res = new Resource(resource, amount);
+            this.resources[id] = res;
+            this.ressourcesList.appendChild(res.html);
         }
     },
-    // Welcome to our campement
+    // Welcome to our camp
     welcome: function(amount) {
         peopleFactory(amount).then(function(persons) {
             persons.forEach(function(person) {
@@ -158,15 +166,23 @@ Game.prototype = {
                     person.addAction(this.data.actions.settle);
                 }
                 this.people.push(person);
-                document.getElementById(People.LST_ID).appendChild(person.html);
+                this.peopleList.appendChild(person.html).offsetHeight; // force redraw
                 person.html.classList.add("arrived");
             }.bind(this));
         }.bind(this));
     },
     // We built something
     build: function(building) {
-        // TODO
-        log("We add " + an(building) + " to the camp");
+        log("We add " + an(building.name) + " to the camp");
+        var id = building.id;
+        if (this.buildings[id]) {
+            this.buildings[id].add(1);
+        }
+        else {
+            var bld = new Building(building);
+            this.buildings[id] = bld;
+            this.buildingsList.appendChild(bld.html);
+        }
     },
     possibleCraftables: function() {
         var craftables = [],
@@ -194,19 +210,19 @@ Game.prototype = {
                         name: "Water",
                         desc: "Water is important to survive in this harsh environment.",
                         icon: [0, 0],
-                        dropRate: 120
+                        dropRate: 130
                     },
                     food: {
                         name: "Food",
                         desc: "Everyone need food to keep his strength.",
                         icon: [1, 0],
-                        dropRate: 110
+                        dropRate: 120
                     },
                     rock: {
                         name: "Rock",
                         desc: "\"There's rocks everywhere ! Why would you bring this back ?\"",
                         icon: [2, 0],
-                        dropRate: 120
+                        dropRate: 110
                     },
                     metal_scrap: {
                         name: "Metal scrap",
@@ -310,17 +326,22 @@ Game.prototype = {
                     dropRate: 15
                 }
             },
-            people: {
-                name: "People",
-                desc: "The workforce and the bane of you camp.",
-                icon: [0, 2],
-                need: function() {
-                    return [
-                        [1.5 / Game.time.day, this.data.resources.gatherable.common.food],
-                        [1 / Game.time.day, this.data.resources.gatherable.common.water]
-                    ]
-                }
+            room: {
+                name: "Room",
+                desc: "A place for someone to join us.",
+                icon: [0, 2]
             }
+        },
+        people: {
+            name: "People",
+            desc: "The workforce and the bane of you camp.",
+            need: function() {
+                return [
+                    [1.5 / Game.time.day, this.data.resources.gatherable.common.food],
+                    [1 / Game.time.day, this.data.resources.gatherable.common.water]
+                ]
+            },
+            dropRate: 0.2
         },
         /* BUILDINGS */
         buildings: {
@@ -338,7 +359,7 @@ Game.prototype = {
                     },
                     give: function() {
                         return [
-                            [1, this.data.resources.people]
+                            [1, this.data.resources.room]
                         ];
                     },
                     dropRate: 100
@@ -441,7 +462,7 @@ Game.prototype = {
                         ];
                     },
                     give: function() {
-                        return [random(2, 4), this.data.resources.people];
+                        return [random(2, 4), this.data.resources.room];
                     },
                     dropRate: 10
                 }
@@ -464,9 +485,9 @@ Game.prototype = {
                 give: function() {
                     this.settled = performance.now();
                     return [
+                        [3, this.data.resources.room],
                         [10, this.data.resources.gatherable.common.water],
-                        [5, this.data.resources.gatherable.common.food],
-                        [2, this.data.resources.people]
+                        [5, this.data.resources.gatherable.common.food]
                     ];
                 }
             },
@@ -474,12 +495,13 @@ Game.prototype = {
                 name: "Gather ressources",
                 desc: "Go out to bring back resources, that's the best you can do.",
                 time: 4,
+                isOut: 1,
                 unlock: function() {
                     return [this.data.actions.roam, this.data.actions.sleep];
                 },
                 give: function() {
                     var res = [];
-                    for (var i = 0, l = random(1, 4) << 0; i < l; ++i) {
+                    for (var i = 0, l = floor(random(1, 4)); i < l; ++i) {
                         res.push(randomize(this.data.resources.gatherable, "1-" + (5 / l)));
                     }
                     return res;
@@ -488,7 +510,8 @@ Game.prototype = {
             roam: {
                 name: "Roam",
                 desc: "Explore the surroundings hoping to find something interesting.",
-                time: 8,
+                time: 7,
+                isOut: 1,
                 consume: function() {
                     return [
                         [2, this.data.resources.gatherable.common.water]
@@ -507,7 +530,8 @@ Game.prototype = {
             explore: {
                 name: "Explore a ruin",
                 desc: "Remember that ruin you saw the other day ? Let's see what's inside.",
-                time: Game.time.day * 1.5,
+                time: Game.time.day * 1.2,
+                isOut: 1,
                 consume: function() {
                     return [
                         [4, this.data.resources.gatherable.common.water],
@@ -584,8 +608,8 @@ Game.prototype = {
                         [2, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food]
                     ];
-                    if (isArray(action.owner.plan.consume)) {
-                        consume.push.apply(consume, action.owner.plan.consume);
+                    if (isFunction(action.owner.plan.consume)) {
+                        consume.push.apply(consume, action.owner.plan.consume(action));
                     }
                     return consume;
                 },

@@ -1,3 +1,4 @@
+"use strict";
 function peopleFactory(amount) {
     return new Promise(function(resolve, reject) {
         People.randomName(amount).then(function(data) {
@@ -22,8 +23,10 @@ function People(name) {
     this.actions = new Collection();
 
     this.busy = false;
-    this.life = 100;
     this.energy = 100;
+    this.starving = false;
+    this.life = 100;
+    this.thirsty = false;
 
     this.plan = false;
 
@@ -51,13 +54,21 @@ People.prototype = {
         var ratio = 2;
         if (this.busy) {
             ratio = 4;
-            if(this.busy.relaxing){
+            if (this.busy.relaxing) {
                 ratio *= this.busy.relaxing;
             }
         }
         if (settled) {
-            this.updateEnergy(-elapse * ratio);
+            this.updateEnergy(-elapse * ratio); // getting tired
+            if (this.thirsty) { // dying
+                this.updateLife(-elapse * 2);
+            }
+            else if (this.energy > 80 && !this.starving) { // healing
+                this.updateLife(elapse * 0.5);
+            }
         }
+        this.starving = false;
+        this.thirsty = false;
     },
     setBusy: function(action) {
         this.busy = !!action ? action : false;
@@ -126,14 +137,16 @@ People.prototype = {
         }
     },
     die: function() {
-        MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
-        this.html.classList.remove("arrived");
-        this.actions.forEach(function(action) {
-            action.cancel();
-        });
-        setTimeout(function() {
-            this.html.remove();
-        }.bind(this), 400);
+        if(this.html.classList.contains("arrived")){
+            MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+            this.html.classList.remove("arrived");
+            this.actions.forEach(function(action) {
+                action.cancel();
+            });
+            setTimeout(function() {
+                this.html.remove();
+            }.bind(this), 400);
+        }
     }
 };
 People.LST_ID = "peopleList";
