@@ -31,14 +31,14 @@ Action.prototype = {
     },
     consolidateData: function() {
         var data = this.data;
-        if (isFunction(data.time)) {
-            data.time = data.time(this);
-        }
         if (isFunction(data.name)) {
             data.name = data.name(this);
         }
         if (isFunction(data.desc)) {
             data.desc = data.desc(this);
+        }
+        if (isFunction(data.time)) {
+            data.time = data.time(this);
         }
         if (isFunction(data.consume)) {
             data.consume = data.consume(this);

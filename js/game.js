@@ -37,18 +37,17 @@ Game.prototype = {
             }
         });
 
-        var ressourceList = document.createElement("div");
-        ressourceList.id = Resource.LST_ID;
-        for (var id in this.resources) {
-            if (this.resources.hasOwnProperty(id)) {
-                ressourceList.appendChild(this.resources[id].html);
-            }
-        }
-        this.holder.appendChild(ressourceList);
+        this.ressourcesList = wrap();
+        this.ressourcesList.id = Resource.LST_ID;
+        this.holder.appendChild(this.ressourcesList);
 
-        var peopleList = document.createElement("div");
-        peopleList.id = People.LST_ID;
-        this.holder.appendChild(peopleList);
+        this.peopleList = wrap();
+        this.peopleList.id = People.LST_ID;
+        this.holder.appendChild(this.peopleList);
+
+        this.buildingsList = wrap();
+        this.buildingsList.id = Building.LST_ID;
+        this.holder.appendChild(this.buildingsList);
 
         // A person arrives
         setTimeout(this.welcome.bind(this), 400 * (Game.flags.isDev ? 1 : 10));
@@ -102,11 +101,10 @@ Game.prototype = {
                 // We use some resources
                 var needs = this.data.people.need();
                 needs.forEach(function(need) {
-                    var loose = need[1].id === this.data.resources.gatherable.common.water.id ? "updateLife" : "updateEnergy";
-                    this.consume.call(this, need[0] * this.people.length, need[1], function(number) {
-                        var amount = (-number / this.people.length) * 50 * elapse;
+                    var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
+                    this.consume(need[0] * this.people.length, need[1], function(number) {
                         this.people.forEach(function(person) {
-                            person[loose](amount);
+                            person[state] = true;
                         });
                     });
                 }.bind(this));
@@ -152,9 +150,9 @@ Game.prototype = {
         if (this.resources[id]) {
             this.resources[id].update(amount);
         } else if (amount > 0) {
-            var r = new Resource(resource, amount);
-            this.resources[id] = r;
-            document.getElementById(Resource.LST_ID).appendChild(r.html);
+            var res = new Resource(resource, amount);
+            this.resources[id] = res;
+            this.ressourcesList.appendChild(res.html);
         }
     },
     // Welcome to our camp
@@ -168,15 +166,23 @@ Game.prototype = {
                     person.addAction(this.data.actions.settle);
                 }
                 this.people.push(person);
-                document.getElementById(People.LST_ID).appendChild(person.html).offsetHeight; // force redraw
+                this.peopleList.appendChild(person.html).offsetHeight; // force redraw
                 person.html.classList.add("arrived");
             }.bind(this));
         }.bind(this));
     },
     // We built something
     build: function(building) {
-        // TODO
-        log("We add " + an(building) + " to the camp");
+        log("We add " + an(building.name) + " to the camp");
+        var id = building.id;
+        if (this.buildings[id]) {
+            this.buildings[id].add(1);
+        }
+        else {
+            var bld = new Building(building);
+            this.buildings[id] = bld;
+            this.buildingsList.appendChild(bld.html);
+        }
     },
     possibleCraftables: function() {
         var craftables = [],
@@ -602,8 +608,8 @@ Game.prototype = {
                         [2, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food]
                     ];
-                    if (isArray(action.owner.plan.consume)) {
-                        consume.push.apply(consume, action.owner.plan.consume);
+                    if (isFunction(action.owner.plan.consume)) {
+                        consume.push.apply(consume, action.owner.plan.consume(action));
                     }
                     return consume;
                 },
@@ -697,7 +703,7 @@ Game.prototype = {
                 desc: "",
                 time: Game.time.day,
                 effect: function() {
-                    
+
                 },
                 dropRate: 100
             }
