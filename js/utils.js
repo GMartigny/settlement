@@ -202,58 +202,6 @@ function pickID() {
 }
 pickID.IDS = [];
 /**
- * Handle an associative array
- * @constructor
- */
-function Collection() {
-    this.items = {};
-    this.length = 0;
-}
-Collection.prototype = {
-    push: function(id, item) {
-        this.items[id] = item;
-        return ++this.length;
-    },
-    pop: function(id) {
-        var item = this.items[id];
-        delete this.items[id];
-        this.length--;
-        return item;
-    },
-    has: function(id) {
-        return !!this.items[id];
-    },
-    get: function(id) {
-        if(!this.has(id)){
-            throw "Unknown ID in Collection";
-        }
-        return this.items[id];
-    },
-    set: function(id, value) {
-        if(!this.has(id)){
-            throw "Unknown ID in Collection";
-        }
-        return this.items[id] = value;
-    },
-    forEach: function(action) {
-        for (var id in this.items) {
-            if (this.items.hasOwnProperty(id)) {
-                action(this.items[id], id);
-            }
-        }
-        return this;
-    },
-    filter: function(action) {
-        var kept = new Collection();
-        this.forEach(function(item, id) {
-            if (action(item, id)) {
-                kept.push(id, item);
-            }
-        });
-        return kept;
-    }
-};
-/**
  * Test if is a function
  * @param func Anything to test
  * @returns {boolean}
