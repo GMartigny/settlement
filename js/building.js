@@ -3,14 +3,19 @@ function Building(data) {
     this.data = data;
     this.consolidateData();
     
-    this.number = 1;
+    this.number = 0;
     
     this.html = this.toHTML();
     tooltip(this.html, data);
+
+    this.add(1);
 }
 Building.prototype = {
     toHTML: function() {
-        return wrap("building");
+        this.counter = wrap("counter");
+        var html = wrap("building", this.data.name);
+        html.appendChild(this.counter);
+        return html;
     },
     consolidateData: function() {
         var data = this.data;
@@ -29,6 +34,7 @@ Building.prototype = {
     },
     add: function(number) {
         this.number += number;
+        this.counter.textContent = this.number;
     }
 };
 Building.LST_ID = "buildingsList";

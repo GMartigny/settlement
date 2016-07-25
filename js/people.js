@@ -1,19 +1,24 @@
 "use strict";
 function peopleFactory(amount) {
     return new Promise(function(resolve, reject) {
-        People.randomName(amount).then(function(data) {
-            try {
-                var results = JSON.parse(data.target.response).results;
-                var people = [];
-                results.forEach(function(res) {
-                    people.push(new People(capitalize(res.name.first + " " + capitalize(res.name.last))));
-                });
-                resolve(people);
-            }
-            catch (e) {
-                reject(e);
-            }
-        })
+        if (Game.isDev) {
+            resolve((new Array(amount)).fill(new People("John Doe")));
+        }
+        else {
+            People.randomName(amount).then(function(data) {
+                try {
+                    var results = JSON.parse(data.target.response).results;
+                    var people = [];
+                    results.forEach(function(res) {
+                        people.push(new People(capitalize(res.name.first + " " + capitalize(res.name.last))));
+                    });
+                    resolve(people);
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        }
     });
 }
 
@@ -55,12 +60,12 @@ People.prototype = {
         if (this.busy) {
             ratio = 4;
             if (this.busy.relaxing) {
-                ratio *= this.busy.relaxing;
+                ratio *= (1 - this.busy.relaxing);
             }
         }
         if (settled) {
             this.updateEnergy(-elapse * ratio); // getting tired
-            if (this.thirsty) { // dying
+            if (this.thirsty) { // drying
                 this.updateLife(-elapse * 2);
             }
             else if (this.energy > 80 && !this.starving) { // healing
@@ -75,19 +80,18 @@ People.prototype = {
         this.html.classList.toggle("busy", !!action);
     },
     updateEnergy: function(amount) {
-        if (!this.busy || !this.busy.relaxing) {
-            this.energy += amount;
+        this.energy += amount;
 
-            if (this.energy > 100) {
-                this.energy = 100;
-            }
-            else if (this.energy < 0) {
-                this.updateLife(this.energy);
-                this.energy = 0;
-            }
-
-            this.energyBar.style.width = this.energy + "%";
+        if (this.energy > 100) {
+            this.energy = 100;
         }
+        else if (this.energy < 0) {
+            this.updateLife(this.energy);
+            this.energy = 0;
+        }
+
+        this.energyBar.style.width = this.energy + "%";
+
         return this.energy;
     },
     isTired: function() {
@@ -137,13 +141,13 @@ People.prototype = {
         }
     },
     die: function() {
-        if(this.html.classList.contains("arrived")){
+        if (this.html.classList.contains("arrived")) {
             MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
             this.actions.forEach(function(action) {
                 action.cancel();
             });
-            setTimeout(function() {
+            TimerManager.timeout(function() {
                 this.html.remove();
             }.bind(this), 400);
         }

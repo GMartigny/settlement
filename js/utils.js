@@ -113,11 +113,13 @@ function pluralize(string, number) {
     return string + (number > 1 ? "s" : "");
 }
 /**
- *
+ * Start every word with a capital letter
  * @param string
  */
 function capitalize(string) {
-    return string[0].toUpperCase() + string.slice(1);
+    return string.split(" ").map(function(word) {
+        return word[0].toUpperCase() + word.slice(1);
+    }).join(" ");
 }
 /**
  * Pick a random item from nested array
@@ -161,7 +163,7 @@ function randomize(list, amount) {
  * @param message Any message
  */
 function log(message) {
-    if (Game.flags.isDev) {
+    if (Game.isDev) {
         console.log(message);
     }
 }
@@ -233,4 +235,19 @@ function sanitize(str) {
 function an(word) {
     var vowels = "aeiou".split("");
     return (vowels.indexOf(word[0]) < 0 ? "a" : "an") + " " + word;
+}
+
+function compactResources(array) {
+    return array.reduce(function(reduced, item) {
+        var known = reduced.find(function(entry) {
+            return entry[1].id === item[1].id;
+        });
+        if(known){
+            known[0] += item[0];
+        }
+        else{
+            reduced.push(item);
+        }
+        return reduced;
+    }, []);
 }

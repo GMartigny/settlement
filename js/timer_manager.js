@@ -1,4 +1,4 @@
-(function () {
+(function() {
 
     function Timer(action, time) {
         this.startTime = performance.now();
@@ -7,12 +7,13 @@
         this.isRunning = true;
         this.timeout = this.setTimeout();
     }
+
     Timer.prototype = {
-        setTimeout: function () {
+        setTimeout: function() {
             return setTimeout(this.end.bind(this), this.time);
         },
-        stop: function () {
-            if(this.isRunning) {
+        stop: function() {
+            if (this.isRunning) {
                 this.isRunning = false;
                 this.time -= (performance.now() - this.startTime);
                 clearTimeout(this.timeout);
@@ -22,8 +23,8 @@
                 return false;
             }
         },
-        restart: function (now) {
-            if(!this.isRunning){
+        restart: function(now) {
+            if (!this.isRunning) {
                 this.isRunning = true;
                 this.startTime = now;
                 this.timeout = this.setTimeout();
@@ -32,37 +33,54 @@
                 return false;
             }
         },
-        end: function () {
+        end: function() {
             this.action();
             return true;
         }
     };
 
-    var timers = new Collection();
+    var timers = [];
     window.TimerManager = {
-        begin: function (action, time) {
-            var func = function () {
+        init: function() {
+            if (!timers) {
+                timers = new Collection();
+            }
+        },
+        timeout: function(action, time) {
+            this.init();
+            var func = function() {
                 timers.pop(timerId);
                 action();
             };
             var timerId = timers.push(new Timer(func, time));
             return timerId;
         },
-        stop: function (timerId) {
+        stop: function(timerId) {
+            this.init();
             return timers.get(timerId).stop();
         },
-        restart: function (timerId) {
-            return timers.get(timerId).restart(performance.now());
-        },
-        stopAll: function () {
-            timers.forEach(function (timer) {
+        stopAll: function() {
+            timers.forEach(function(timer) {
                 timer.stop();
             });
         },
-        restartAll: function () {
+        restart: function(timerId) {
+            this.init();
+            return timers.get(timerId).restart(performance.now());
+        },
+        restartAll: function() {
             var now = performance.now();
-            timers.forEach(function (timer) {
+            timers.forEach(function(timer) {
                 timer.restart(now);
+            });
+        },
+        clear: function(timerId) {
+            this.init();
+            return timers.pop(timerId).stop();
+        },
+        clearAll: function() {
+            timers.forEach(function(timer) {
+                timer.clear();
             });
         }
     };

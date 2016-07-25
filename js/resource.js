@@ -63,7 +63,7 @@ Resource.prototype = {
             }.bind(this);
         }
         if (cb) {
-            setTimeout(cb, 700);
+            TimerManager.timeout(cb, 700);
         }
     },
     get: function() {

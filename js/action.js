@@ -45,7 +45,7 @@ Action.prototype = {
         }
     },
     refresh: function(resources) {
-        this.locked = !this.data.relaxing && this.owner.isTired();
+        this.locked = this.data.relaxing !== 1 && this.owner.isTired();
 
         if (!this.locked && isArray(this.data.consume)) {
             this.tooltip.refresh(resources, this.data.consume);
@@ -77,11 +77,16 @@ Action.prototype = {
             this.html.classList.add("cooldown");
             this.html.style.animationDuration = duration * Game.time.hourToMs + "ms";
 
-            this.timeout = setTimeout(function() {
+            this.timeout = TimerManager.timeout(function() {
                 log(this.owner.name + " just finish to " + this.data.name);
+                this.timeout = 0;
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
 
+                // Build
+                if(isFunction(this.data.build)) {
+                    MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.BUILD, this.data.build(this));
+                }
                 // Give
                 if (isFunction(this.data.give)) {
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.GIVE, this.data.give(this));
@@ -109,7 +114,7 @@ Action.prototype = {
     },
     cancel: function() {
         if (this.timeout) {
-            clearTimeout(this.timeout);
+            TimerManager.clear(this.timeout);
             this.owner.setBusy(false);
             this.html.classList.remove("cooldown");
         }

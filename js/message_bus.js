@@ -4,15 +4,20 @@ function MessageBus() {
 }
 MessageBus.prototype = {
     observe: function(type, action) {
-        if (!this.observers[type]) {
-            this.observers[type] = [];
+        if(!isArray(type)){
+            type = [type];
         }
-        this.observers[type].push(action);
+        for(var i = 0, l = type.length; i < l ; ++i){
+            if (!this.observers[type]) {
+                this.observers[type] = [];
+            }
+            this.observers[type].push(action);
+        }
     },
     notifyAll: function(type, message) {
         if (this.observers[type]) {
             for (var i = 0, l = this.observers[type].length; i < l; ++i) {
-                this.observers[type][i](message);
+                this.observers[type][i](message, type);
             }
         }
     }
@@ -26,6 +31,9 @@ MessageBus.getInstance = function() {
     return MessageBus.instance;
 };
 MessageBus.MSG_TYPES = {
+    INFO: 0,
+    WARN: 1,
+    FLAVOR: 2,
     CLICK: 10,
     REFRESH: 20,
     GIVE: 30,
