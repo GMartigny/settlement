@@ -2,7 +2,7 @@
  * Handle an associative array
  * @constructor
  */
-function Collection() {
+function Collection () {
     this.items = {};
     this.length = 0;
 }
@@ -27,7 +27,7 @@ Collection.prototype = {
     },
     get: function (id) {
         if (!this.has(id)) {
-            throw "Unknown ID in Collection";
+            throw "Unknown ID [" + id + "] in Collection [" + this + "]";
         }
         return this.items[id];
     },
@@ -41,7 +41,7 @@ Collection.prototype = {
         if (this.length > 0) {
             for (var id in this.items) {
                 if (this.items.hasOwnProperty(id)) {
-                    action(this.items[id], id);
+                    action(this.items[id], id, this.items);
                 }
             }
         }
@@ -55,5 +55,6 @@ Collection.prototype = {
             }
         });
         return kept;
-    }
+    },
+
 };

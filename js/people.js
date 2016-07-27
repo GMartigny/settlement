@@ -1,15 +1,15 @@
 "use strict";
-function peopleFactory(amount) {
-    return new Promise(function(resolve, reject) {
+function peopleFactory (amount) {
+    return new Promise(function (resolve, reject) {
         if (Game.isDev) {
             resolve((new Array(amount)).fill(new People("John Doe")));
         }
         else {
-            People.randomName(amount).then(function(data) {
+            People.randomName(amount).then(function (data) {
                 try {
                     var results = JSON.parse(data.target.response).results;
                     var people = [];
-                    results.forEach(function(res) {
+                    results.forEach(function (res) {
                         people.push(new People(capitalize(res.name.first + " " + capitalize(res.name.last))));
                     });
                     resolve(people);
@@ -22,7 +22,7 @@ function peopleFactory(amount) {
     });
 }
 
-function People(name) {
+function People (name) {
     log(name + " join the community");
     this.name = name;
     this.actions = new Collection();
@@ -38,7 +38,7 @@ function People(name) {
     this.html = this.toHTML();
 }
 People.prototype = {
-    toHTML: function() {
+    toHTML: function () {
         var html = wrap("people");
         html.appendChild(wrap("name", this.name));
         this.lifeBar = wrap("bar life");
@@ -52,8 +52,8 @@ People.prototype = {
 
         return html;
     },
-    refresh: function(resources, elapse, settled) {
-        this.actions.forEach(function(a) {
+    refresh: function (resources, elapse, settled) {
+        this.actions.forEach(function (a) {
             a.refresh(resources);
         });
         var ratio = 2;
@@ -75,11 +75,11 @@ People.prototype = {
         this.starving = false;
         this.thirsty = false;
     },
-    setBusy: function(action) {
+    setBusy: function (action) {
         this.busy = !!action ? action : false;
         this.html.classList.toggle("busy", !!action);
     },
-    updateEnergy: function(amount) {
+    updateEnergy: function (amount) {
         this.energy += amount;
 
         if (this.energy > 100) {
@@ -94,10 +94,10 @@ People.prototype = {
 
         return this.energy;
     },
-    isTired: function() {
+    isTired: function () {
         return this.energy <= 0;
     },
-    updateLife: function(amount) {
+    updateLife: function (amount) {
         this.life += amount;
         if (this.life > 100) {
             this.life = 100;
@@ -109,11 +109,11 @@ People.prototype = {
         this.lifeBar.classList[this.life < 25 ? "add" : "remove"]("warning");
         return this.life;
     },
-    planBuilding: function(building) {
+    planBuilding: function (building) {
         log("\"We'll do " + an(building.name) + "\"");
         this.plan = building;
     },
-    addAction: function(data) {
+    addAction: function (data) {
         if (data.length) {
             for (var i = 0, l = data.length; i < l; ++i) {
                 this.addAction(data[i]);
@@ -130,7 +130,7 @@ People.prototype = {
             }
         }
     },
-    lockAction: function(data) {
+    lockAction: function (data) {
         if (data.length) {
             for (var i = 0, l = data.length; i < l; ++i) {
                 this.lockAction(data[i]);
@@ -140,22 +140,22 @@ People.prototype = {
             this.actions.pop(data.id).lock();
         }
     },
-    die: function() {
+    die: function () {
         if (this.html.classList.contains("arrived")) {
             MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
-            this.actions.forEach(function(action) {
+            this.actions.forEach(function (action) {
                 action.cancel();
             });
-            TimerManager.timeout(function() {
+            TimerManager.timeout(function () {
                 this.html.remove();
             }.bind(this), 400);
         }
     }
 };
 People.LST_ID = "peopleList";
-People.randomName = function(amount) {
-    return new Promise(function(resolve, reject) {
+People.randomName = function (amount) {
+    return new Promise(function (resolve, reject) {
         get("https://randomuser.me/api?inc=gender,name&nat=AU,BR,CA,CH,DE,DK,ES,FI,FR,GB,IE,NL,NZ,TR,US&noinfo&results=" + amount, resolve, reject);
     });
 };

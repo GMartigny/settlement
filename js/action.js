@@ -1,5 +1,5 @@
 "use strict";
-function Action(owner, data) {
+function Action (owner, data) {
     this.locked = true;
     this.running = false;
 
@@ -8,7 +8,7 @@ function Action(owner, data) {
     this.init(data);
 }
 Action.prototype = {
-    init: function(data) {
+    init: function (data) {
         this.data = data;
         this.consolidateData();
 
@@ -18,10 +18,10 @@ Action.prototype = {
         }
         this.tooltip = tooltip(this.html, data);
     },
-    toHTML: function() {
+    toHTML: function () {
         var html = wrap("action clickable disabled");
 
-        html.addEvent("click", function() {
+        html.addEvent("click", function () {
             if (!this.locked && !this.running && !this.owner.busy) {
                 this.click.call(this);
             }
@@ -29,7 +29,7 @@ Action.prototype = {
 
         return html;
     },
-    consolidateData: function() {
+    consolidateData: function () {
         var data = this.data;
         if (isFunction(data.name)) {
             data.name = data.name(this);
@@ -44,12 +44,12 @@ Action.prototype = {
             data.consume = data.consume(this);
         }
     },
-    refresh: function(resources) {
+    refresh: function (resources) {
         this.locked = this.data.relaxing !== 1 && this.owner.isTired();
 
         if (!this.locked && isArray(this.data.consume)) {
             this.tooltip.refresh(resources, this.data.consume);
-            this.data.consume.forEach(function(r) {
+            this.data.consume.forEach(function (r) {
                 var res = resources[r[1].id];
                 if (!res || !res.has(r[0])) {
                     this.locked = true;
@@ -64,7 +64,7 @@ Action.prototype = {
             this.html.classList.remove("disabled");
         }
     },
-    click: function() {
+    click: function () {
         if (!this.owner.busy && (!this.owner.isTired() || this.data.relaxing) && !this.locked) {
             // Use
             if (isArray(this.data.consume)) {
@@ -77,14 +77,14 @@ Action.prototype = {
             this.html.classList.add("cooldown");
             this.html.style.animationDuration = duration * Game.time.hourToMs + "ms";
 
-            this.timeout = TimerManager.timeout(function() {
+            this.timeout = TimerManager.timeout(function () {
                 log(this.owner.name + " just finish to " + this.data.name);
                 this.timeout = 0;
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
 
                 // Build
-                if(isFunction(this.data.build)) {
+                if (isFunction(this.data.build)) {
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.BUILD, this.data.build(this));
                 }
                 // Give
@@ -106,13 +106,13 @@ Action.prototype = {
             }.bind(this), duration * Game.time.hourToMs);
         }
     },
-    lock: function() {
+    lock: function () {
         this.cancel();
         this.html.remove();
         this.tooltip.remove();
         MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOCK, this);
     },
-    cancel: function() {
+    cancel: function () {
         if (this.timeout) {
             TimerManager.clear(this.timeout);
             this.owner.setBusy(false);

@@ -1,23 +1,23 @@
 "use strict";
-function Building(data) {
+function Building (data) {
     this.data = data;
     this.consolidateData();
-    
+
     this.number = 0;
-    
+
     this.html = this.toHTML();
     tooltip(this.html, data);
 
     this.add(1);
 }
 Building.prototype = {
-    toHTML: function() {
+    toHTML: function () {
         this.counter = wrap("counter");
         var html = wrap("building", this.data.name);
         html.appendChild(this.counter);
         return html;
     },
-    consolidateData: function() {
+    consolidateData: function () {
         var data = this.data;
         if (isFunction(data.name)) {
             data.name = data.name(this);
@@ -32,7 +32,7 @@ Building.prototype = {
             data.consume = data.consume(this);
         }
     },
-    add: function(number) {
+    add: function (number) {
         this.number += number;
         this.counter.textContent = this.number;
     }

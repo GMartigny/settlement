@@ -1,7 +1,7 @@
 "use strict";
-function Event(name) {
+function Event (name) {
     this.name = name;
 }
 Event.prototype = {
-    
+
 };

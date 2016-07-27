@@ -1,14 +1,14 @@
 "use strict";
-function Game(holder, media) {
+function Game (holder, media) {
     this.holder = holder;
 
-    this.resources = {};
-    this.buildings = {};
+    this.resources = new Collection();
+    this.buildings = new Collection();
     this.people = [];
+    this.settled = 0;
 
     this.flags = {
         ready: 0,
-        settled: 0,
         paused: 0
     };
 
@@ -17,6 +17,7 @@ function Game(holder, media) {
 
     this.refresh();
 }
+Game.version = "0.1";
 Game.isDev = 1;
 Game.time = {
     hour: 1,
@@ -28,9 +29,11 @@ Game.time = {
 Game.tickLength = Game.time.hourToMs;
 Game.prototype = {
     // Let's start a new adventure
-    init: function() {
+    init: function () {
+        log("Starting v" + Game.version);
+
         var game = this;
-        deepBrowse(this.data, function(item) {
+        deepBrowse(this.data, function (item) {
             item.id = pickID();
             for (var attr in item) {
                 if (item.hasOwnProperty(attr) && isFunction(item[attr])) {
@@ -39,8 +42,8 @@ Game.prototype = {
             }
         });
 
-        window.onkeypress = function(e) {
-            switch(e.keyCode){
+        window.onkeypress = function (e) {
+            switch (e.keyCode) {
                 case 32:
                     this.togglePause();
                     break;
@@ -67,109 +70,107 @@ Game.prototype = {
         TimerManager.timeout(this.welcome.bind(this), 400 * (Game.isDev ? 1 : 10));
 
         // We may find resources
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function(given) {
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function (given) {
             if (isArray(given)) {
-                compactResources(given).forEach(function(r) {
+                compactResources(given).forEach(function (r) {
                     this.earn.apply(this, r);
                 }.bind(this));
             }
         }.bind(this));
 
         // We may use resources
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function(use) {
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
-                compactResources(use).forEach(function(r) {
+                compactResources(use).forEach(function (r) {
                     this.consume.apply(this, r);
                 }.bind(this));
             }
         }.bind(this));
 
         // We may build
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.BUILD, function(building) {
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
                 this.build(building);
             }
         }.bind(this));
 
         // And we may die :'(
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function(person) {
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
             log("We loose " + person.name);
-            this.resources[this.data.resources.room.id].update(-1);
+            this.resources.get(this.data.resources.room.id).update(-1);
             this.people.out(person);
             if (!this.people.length) {
                 log("We held up for " + this.getSurviveDuration());
             }
         }.bind(this));
 
-        MessageBus.getInstance().observe([MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR], function(message, type) {
+        MessageBus.getInstance().observe([MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR], function (message, type) {
             this.log(message, type);
         }.bind(this));
 
         this.flags.ready = 1;
     },
-    getSurviveDuration: function() {
-        return formatTime((performance.now() - this.flags.settled) / Game.time.hourToMs);
+    getSurviveDuration: function () {
+        return formatTime((performance.now() - this.settled) / Game.time.hourToMs);
     },
-    log: function(message, type) {
+    log: function (message, type) {
         type = type || 0;
-        var types = ["info", "warning", "flavor"]
+        var types = ["info", "warning", "flavor"];
         this.logsList.appendChild(wrap(types[type], message));
     },
-    togglePause: function() {
+    togglePause: function () {
         this.flags.paused = !this.flags.paused;
         this.holder.classList.toggle("paused", this.flags.paused);
-        if(this.flags.paused){
+        if (this.flags.paused) {
             TimerManager.stopAll();
         }
-        else{
+        else {
             TimerManager.restartAll();
         }
     },
-    refresh: function() {
+    refresh: function () {
         var now = performance.now(),
             elapse = floor((now - this.lastTick) / Game.tickLength);
         this.lastTick += elapse * Game.tickLength;
 
         if (this.flags.paused) {
-            this.flags.settled += elapse * Game.tickLength;
+            this.settled += elapse * Game.tickLength;
             elapse = 0;
         }
 
         raf(this.refresh.bind(this));
 
         if (elapse > 0) {
-            if (this.flags.settled) {
+            if (this.settled) {
                 // We use some resources
                 var needs = this.data.people.need();
-                needs.forEach(function(need) {
+                needs.forEach(function (need) {
                     var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
-                    this.consume(need[0] * this.people.length, need[1], function(number) {
-                        this.people.forEach(function(person) {
+                    this.consume(need[0] * this.people.length, need[1], function (number) {
+                        this.people.forEach(function (person) {
                             person[state] = true;
                         });
                     });
                 }.bind(this));
 
                 // We have enougth room and someone arrive
-                if (this.resources[this.data.resources.room.id].has(this.people.length + 1) && random() < this.data.people.dropRate) {
+                if (this.resources.get(this.data.resources.room.id).has(this.people.length + 1) && random() < this.data.people.dropRate) {
                     this.welcome();
                 }
             }
 
             // Let's now recount our resources
-            for (var id in this.resources) {
-                if (this.resources.hasOwnProperty(id)) {
-                    this.resources[id].refresh(this.resources);
-                }
-            }
+            this.resources.forEach(function (resource, id, list) {
+                resource.refresh(list);
+            });
 
-            this.people.forEach(function(p) {
-                p.refresh(this.resources, elapse, this.flags.settled);
+            this.people.forEach(function (p) {
+                p.refresh(this.resources.items, elapse, this.settled);
             }.bind(this));
         }
     },
     // We need to use this
-    consume: function(amount, resource, lack) {
+    consume: function (amount, resource, lack) {
         if (amount) {
             var instance = this.resources[resource.id];
             if (instance.has(amount)) {
@@ -185,53 +186,54 @@ Game.prototype = {
         }
     },
     // Cool I find something
-    earn: function(amount, resource) {
+    earn: function (amount, resource) {
         log("Acquire " + amount + " " + resource.name);
         var id = resource.id;
-        if (this.resources[id]) {
-            this.resources[id].update(amount);
+        if (this.resources.has(id)) {
+            this.resources.get(id).update(amount);
         } else if (amount > 0) {
             var res = new Resource(resource, amount);
-            this.resources[id] = res;
+            this.resources.set(id, res);
             this.resourcesList.appendChild(res.html);
         }
     },
     // Welcome to our camp
-    welcome: function(amount) {
-        peopleFactory(amount).then(function(persons) {
-            persons.forEach(function(person) {
-                if (this.flags.settled) {
+    welcome: function (amount) {
+        peopleFactory(amount).then(function (persons) {
+            persons.forEach(function (person) {
+                if (this.settled) {
                     person.addAction(this.data.actions.settle.unlock());
                 }
                 else {
                     person.addAction(this.data.actions.settle);
                 }
                 this.people.push(person);
-                this.peopleList.appendChild(person.html).offsetHeight; // force redraw
+                //noinspection BadExpressionStatementJS force redraw
+                this.peopleList.appendChild(person.html).offsetHeight;
                 person.html.classList.add("arrived");
             }.bind(this));
         }.bind(this));
     },
     // We built something
-    build: function(building) {
+    build: function (building) {
         log("We add " + an(building.name) + " to the camp");
         var id = building.id;
-        if (this.buildings[id]) {
-            this.buildings[id].add(1);
+        if (this.buildings.has(id)) {
+            this.buildings.get(id).add(1);
         }
         else {
             var bld = new Building(building);
-            this.buildings[id] = bld;
+            this.buildings.set(id, bld);
             this.buildingsList.appendChild(bld.html);
         }
     },
-    possibleCraftables: function() {
+    possibleCraftables: function () {
         var craftables = [],
-            resources = this.resources;
-        deepBrowse(this.data.resources.craftable, function(craft) {
+            resources = this.resources.items;
+        deepBrowse(this.data.resources.craftable, function (craft) {
             var ok = true;
             if (isFunction(craft.consume)) {
-                craft.consume(this).forEach(function(res) {
+                craft.consume(this).forEach(function (res) {
                     ok = ok && resources[res[1].id] && resources[res[1].id].has(res[0]);
                 });
             }
@@ -242,11 +244,11 @@ Game.prototype = {
         });
         return craftables;
     },
-    possibleBuildings: function() {
+    possibleBuildings: function () {
         var buildings = [],
-            done = this.buildings;
+            done = this.buildings.items;
 
-        deepBrowse(this.data.buildings, function(build) {
+        deepBrowse(this.data.buildings, function (build) {
             if (!build.unique || build.unique && !done[build.id]) {
                 buildings.push(build);
             }
@@ -261,7 +263,7 @@ Game.prototype = {
                 common: {
                     water: {
                         name: "Water",
-                        desc: "Water is important to survive in this harsh environment.",
+                        desc: "Water is definatly important to survive in this harsh environment.",
                         icon: [0, 0],
                         dropRate: 130
                     },
@@ -318,7 +320,7 @@ Game.prototype = {
                     name: "Component",
                     desc: "A mechanical part for others craftables.",
                     icon: [1, 2],
-                    consume: function() {
+                    consume: function () {
                         return [
                             [2, this.data.resources.gatherable.common.scrap],
                             [2, this.data.resources.gatherable.uncommon.plastic]
@@ -330,13 +332,13 @@ Game.prototype = {
                     name: "Engine",
                     desc: "Amazing what you manage to do with all those scraps !",
                     icon: [2, 2],
-                    consume: function() {
+                    consume: function () {
                         return [
                             [10, this.data.resources.gatherable.common.scrap],
                             [20, this.data.resources.craftable.component],
                             [5, this.data.resources.craftable.tool],
                             [10, this.data.resources.gatherable.uncommon.oil]
-                        ]
+                        ];
                     },
                     dropRate: 70
                 },
@@ -344,7 +346,7 @@ Game.prototype = {
                     name: "Tool",
                     desc: "The base of any tinkerer.",
                     icon: [3, 2],
-                    consume: function() {
+                    consume: function () {
                         return [
                             [2, this.data.resources.gatherable.common.scrap],
                             [2, this.data.resources.craftable.component],
@@ -357,7 +359,7 @@ Game.prototype = {
                     name: "Smooth stone",
                     desc: "A well polish stone.",
                     icon: [0, 3],
-                    consume: function() {
+                    consume: function () {
                         return [
                             [6, this.data.resources.gatherable.common.rock]
                         ];
@@ -368,7 +370,7 @@ Game.prototype = {
                     name: "Computer",
                     desc: "Well, Internet is down since 2136 but it can be useful.",
                     icon: [1, 3],
-                    consume: function() {
+                    consume: function () {
                         return [
                             [5, this.data.resources.craftable.component],
                             [3, this.data.resources.craftable.tool],
@@ -388,11 +390,11 @@ Game.prototype = {
         people: {
             name: "People",
             desc: "The workforce and the bane of you camp.",
-            need: function() {
+            need: function () {
                 return [
                     [1.5 / Game.time.day, this.data.resources.gatherable.common.food],
                     [1 / Game.time.day, this.data.resources.gatherable.common.water]
-                ]
+                ];
             },
             dropRate: 0.1
         },
@@ -403,14 +405,14 @@ Game.prototype = {
                     name: "Tent",
                     desc: "Allow someone to rejoin your colony.",
                     time: 3,
-                    consume: function() {
+                    consume: function () {
                         return [
                             [3, this.data.resources.gatherable.common.rock],
                             [5, this.data.resources.gatherable.common.scrap],
                             [2, this.data.resources.craftable.component]
                         ];
                     },
-                    give: function() {
+                    give: function () {
                         return [
                             [1, this.data.resources.room]
                         ];
@@ -421,17 +423,17 @@ Game.prototype = {
                     name: "Well",
                     desc: "Just a large hole into the ground.",
                     time: 12,
-                    unlock: function() {
+                    unlock: function () {
                         return [this.data.actions.draw];
                     },
-                    consume: function() {
+                    consume: function () {
                         return [
                             [8, this.data.resources.gatherable.common.rock],
                             [4, this.data.resources.gatherable.common.scrap],
                             [1, this.data.resources.gatherable.uncommon.plastic]
                         ];
                     },
-                    give: function() {
+                    give: function () {
                         return [
                             [8, this.data.resources.gatherable.common.water]
                         ];
@@ -442,10 +444,10 @@ Game.prototype = {
                     name: "Farm",
                     desc: "A plotted land with some seeds has always provided food.",
                     time: Game.time.day,
-                    unlock: function() {
+                    unlock: function () {
                         return [this.data.actions.harvest];
                     },
-                    consume: function() {
+                    consume: function () {
                         return [
                             [6, this.data.resources.gatherable.common.rock],
                             [6, this.data.resources.gatherable.uncommon.plastic],
@@ -460,10 +462,10 @@ Game.prototype = {
                     name: "Water pump",
                     desc: "A buried contraption that collect water from the earth moisture.",
                     time: 3 * Game.time.day,
-                    unlock: function() {
+                    unlock: function () {
                         return [this.data.actions.draw];
                     },
-                    consume: function() {
+                    consume: function () {
                         return [
                             [100, this.data.resources.craftable.stone],
                             [10, this.data.resources.gatherable.uncommon.plastic],
@@ -473,12 +475,12 @@ Game.prototype = {
                             [15, this.data.resources.gatherable.common.water]
                         ];
                     },
-                    give: function() {
+                    give: function () {
                         return [
                             [40, this.data.resources.gatherable.common.water]
                         ];
                     },
-                    collect: function() {
+                    collect: function () {
                         return [
                             [2 / Game.time.day, this.data.resources.gatherable.common.water]
                         ];
@@ -490,7 +492,7 @@ Game.prototype = {
                     desc: "Organizing your workforce make them more efficient at crafting.",
                     time: 3 * Game.time.day,
                     unique: true,
-                    consume: function() {
+                    consume: function () {
                         return [
                             [20, this.data.resources.craftable.stone],
                             [20, this.data.resources.gatherable.common.scrap],
@@ -498,7 +500,7 @@ Game.prototype = {
                             [8, this.data.resources.craftable.tool]
                         ];
                     },
-                    give: function() {
+                    give: function () {
                         return [];
                     },
                     dropRate: 10
@@ -507,14 +509,14 @@ Game.prototype = {
                     name: "Barrack",
                     desc: "Some place to sleep for a few people.",
                     time: 2 * Game.time.day + 5 * Game.time.hour,
-                    consume: function() {
+                    consume: function () {
                         return [
                             [5, this.data.resources.craftable.tool],
                             [10, this.data.resources.gatherable.common.scrap],
                             [7, this.data.resources.gatherable.common.rock]
                         ];
                     },
-                    give: function() {
+                    give: function () {
                         return [random(2, 4), this.data.resources.room];
                     },
                     dropRate: 10
@@ -534,19 +536,19 @@ Game.prototype = {
                 name: "Settle",
                 desc: "Ok, let's settle right here !",
                 time: 1,
-                unlock: function() {
+                unlock: function () {
                     return [
                         this.data.actions.gather
                     ];
                 },
-                lock: function() {
+                lock: function () {
                     return [this.data.actions.settle];
                 },
-                build: function() {
+                build: function () {
                     return this.data.buildings.special.forum;
                 },
-                give: function() {
-                    this.flags.settled = performance.now();
+                give: function () {
+                    this.settled = performance.now();
                     return [
                         [3, this.data.resources.room],
                         [10, this.data.resources.gatherable.common.water],
@@ -560,13 +562,13 @@ Game.prototype = {
                 desc: "Go out to bring back resources, that's the best you can do.",
                 time: 3,
                 isOut: 1,
-                unlock: function() {
+                unlock: function () {
                     return [this.data.actions.roam, this.data.actions.sleep];
                 },
-                give: function() {
+                give: function () {
                     var res = [];
                     for (var i = 0, l = round(random(1, 3)); i < l; ++i) {
-                        res.push(randomize(this.data.resources.gatherable, "1-" + (5 / l)));
+                        res.push(randomize(this.data.resources.gatherable, `1-${5 / l}`));
                     }
                     return res;
                 }
@@ -576,18 +578,18 @@ Game.prototype = {
                 desc: "Explore the surroundings hoping to find something interesting.",
                 time: 7,
                 isOut: 1,
-                consume: function() {
+                consume: function () {
                     return [
                         [2, this.data.resources.gatherable.common.water]
                     ];
                 },
-                unlock: function() {
+                unlock: function () {
                     return [this.data.actions.explore, this.data.actions.craft];
                 },
-                give: function() {
+                give: function () {
                     return [
                         randomize(this.data.resources.gatherable, "1-2"),
-                        [random(0, 2) << 0, this.data.resources.ruins]
+                        [floor(random(0, 2)), this.data.resources.ruins]
                     ];
                 }
             },
@@ -596,14 +598,14 @@ Game.prototype = {
                 desc: "Remember that ruin you saw the other day ? Let's see what's inside.",
                 time: Game.time.day,
                 isOut: 1,
-                consume: function() {
+                consume: function () {
                     return [
                         [4, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food],
                         [1, this.data.resources.ruins]
                     ];
                 },
-                give: function() {
+                give: function () {
                     return [
                         randomize(this.data.resources.gatherable, "1-3"),
                         randomize(this.data.resources.craftable, "3-7")
@@ -614,13 +616,13 @@ Game.prototype = {
                 name: "Craft something",
                 desc: "Use some resources to tinker something useful.",
                 time: 6,
-                unlock: function() {
+                unlock: function () {
                     return [this.data.actions.plan];
                 },
-                consume: function() {
+                consume: function () {
                     return [];
                 },
-                give: function() {
+                give: function () {
                     var pick = randomize(this.possibleCraftables());
                     if (pick) {
                         if (isFunction(pick.consume)) {
@@ -640,14 +642,14 @@ Game.prototype = {
                 desc: "Prepare blueprint and space for a new building.",
                 time: 8,
                 relaxing: 0.5,
-                unlock: function() {
+                unlock: function () {
                     return [this.data.actions.build];
                 },
-                give: function(action) {
+                give: function (action) {
                     action.owner.planBuilding(randomize(this.possibleBuildings()));
                     return [];
                 },
-                consume: function() {
+                consume: function () {
                     return [
                         [1, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food],
@@ -656,16 +658,16 @@ Game.prototype = {
                 }
             },
             build: {
-                name: function(action) {
+                name: function (action) {
                     return "Build " + an(action.owner.plan.name);
                 },
-                desc: function(action) {
+                desc: function (action) {
                     return action.owner.plan.desc;
                 },
-                time: function(action) {
+                time: function (action) {
                     return action.owner.plan.time;
                 },
-                consume: function(action) {
+                consume: function (action) {
                     var consume = [
                         [2, this.data.resources.gatherable.common.water],
                         [1, this.data.resources.gatherable.common.food]
@@ -675,31 +677,31 @@ Game.prototype = {
                     }
                     return consume;
                 },
-                lock: function(action) {
+                lock: function (action) {
                     var lock = [this.data.actions.build];
                     if (isFunction(action.owner.plan.lock)) {
                         lock.push.apply(lock, action.owner.plan.lock(action));
                     }
                     return lock;
                 },
-                unlock: function(action) {
+                unlock: function (action) {
                     var unlock = [];
                     if (isFunction(action.owner.plan.unlock)) {
                         unlock.push.apply(unlock, action.owner.plan.unlock(action));
                     }
                     return unlock;
                 },
-                build: function(action) {
+                build: function (action) {
                     return action.owner.plan;
                 },
-                give: function(action) {
+                give: function (action) {
                     var give = [];
                     if (isFunction(action.owner.plan.give)) {
                         give.push.apply(give, action.owner.plan.give(action));
                     }
                     return give;
                 },
-                collect: function(action) {
+                collect: function (action) {
                     var collect = [];
                     if (isFunction(action.owner.plan.collect)) {
                         collect.push.apply(collect, action.owner.plan.collect(action));
@@ -711,7 +713,7 @@ Game.prototype = {
                 name: "Draw water",
                 desc: "Get some water from our well.",
                 time: 5,
-                give: function() {
+                give: function () {
                     return [
                         [random(1, 3), this.data.resources.gatherable.common.water]
                     ];
@@ -721,12 +723,12 @@ Game.prototype = {
                 name: "Harvest crops",
                 desc: "It's not the biggest, but it'll fill our stomachs.",
                 time: 4,
-                consume: function() {
+                consume: function () {
                     return [
                         [2, this.data.resources.gatherable.common.water]
                     ];
                 },
-                give: function() {
+                give: function () {
                     return [
                         [random(1, 3), this.data.resources.gatherable.common.food]
                     ];
@@ -737,11 +739,11 @@ Game.prototype = {
                 desc: "Get some rest.",
                 time: 10,
                 relaxing: 1,
-                give: function(action) {
+                give: function (action) {
                     action.owner.updateEnergy(100);
                     return [];
                 },
-                unlock: function() {
+                unlock: function () {
                     return [this.data.actions.heal];
                 }
             },
@@ -750,12 +752,12 @@ Game.prototype = {
                 desc: "\"I really hope those pills are still good.\"",
                 time: 2,
                 relaxing: 0.8,
-                consume: function() {
+                consume: function () {
                     return [
                         [2, this.data.resources.gatherable.rare.medication]
                     ];
                 },
-                give: function(action) {
+                give: function (action) {
                     action.owner.updateLife(random() > 0.05 ? 100 : -10);
                     return [];
                 }
@@ -766,7 +768,7 @@ Game.prototype = {
                 name: "Sand storm",
                 desc: "",
                 time: Game.time.day,
-                effect: function() {
+                effect: function () {
 
                 },
                 dropRate: 100

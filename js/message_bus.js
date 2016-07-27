@@ -4,10 +4,10 @@ function MessageBus() {
 }
 MessageBus.prototype = {
     observe: function(type, action) {
-        if(!isArray(type)){
+        if (!isArray(type)) {
             type = [type];
         }
-        for(var i = 0, l = type.length; i < l ; ++i){
+        for (var i = 0, l = type.length; i < l; ++i) {
             if (!this.observers[type]) {
                 this.observers[type] = [];
             }
