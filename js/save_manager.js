@@ -1,4 +1,4 @@
-(function() {
+(function () {
 
     var keys = {
         knownVisitor: "k",
@@ -7,16 +7,30 @@
     };
     var salt = localStorage.getItem(keys.salt) || Math.random().toString(36).slice(-6);
 
-    function hash(obj) {
-        return btoa(JSON.stringify(obj) + salt);
+    /**
+     * Hash a string
+     * @param obj Any Object
+     * @return {string}
+     */
+    function hash (obj) {
+        return salt + btoa(JSON.stringify(obj));
     }
 
-    function unhash(str) {
-        return JSON.parse(atob(str));
+    /**
+     * Unhash a string
+     * @param str A string coming from the hash function
+     */
+    function unhash (str) {
+        return JSON.parse(atob(str.slice(6)));
     }
 
     window.saveManager = {
-        save: function(obj) {
+        /**
+         * Persist data in localStorage
+         * @param obj
+         * @return {boolean}
+         */
+        save: function (obj) {
             try {
                 return localStorage.setItem(keys.gameData, hash(obj));
             }
@@ -24,7 +38,11 @@
                 return false;
             }
         },
-        load: function() {
+        /**
+         * Get data from localStorage
+         * @return {*}
+         */
+        load: function () {
             try {
                 return unhash(localStorage.getItem(keys.gameData));
             }
@@ -32,7 +50,10 @@
                 return false;
             }
         },
-        erase: function() {
+        /**
+         * Clear all from localStorage
+         */
+        erase: function () {
             localStorage.clear();
         }
     };

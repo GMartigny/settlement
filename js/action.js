@@ -1,4 +1,10 @@
 "use strict";
+/**
+ * Class for an action
+ * @param owner
+ * @param data
+ * @constructor
+ */
 function Action (owner, data) {
     this.locked = true;
     this.running = false;

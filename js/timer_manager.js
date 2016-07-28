@@ -10,7 +10,7 @@
 
     Timer.prototype = {
         setTimeout: function () {
-            return setTimeout(this.end.bind(this), this.time);
+        return setTimeout(this.end.bind(this), this.time);
         },
         getElapsed: function () {
             return performance.now() - this.startTime;

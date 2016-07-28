@@ -28,7 +28,9 @@ Game.time = {
 };
 Game.tickLength = Game.time.hourToMs;
 Game.prototype = {
-    // Let's start a new adventure
+    /**
+     * Start a new adventure
+     */
     init: function () {
         log("Starting v" + Game.version);
 
@@ -110,6 +112,10 @@ Game.prototype = {
 
         this.flags.ready = 1;
     },
+    /**
+     * Return a well formatted play duration
+     * @return {string}
+     */
     getSurviveDuration: function () {
         return formatTime((performance.now() - this.settled) / Game.time.hourToMs);
     },
@@ -118,6 +124,9 @@ Game.prototype = {
         var types = ["info", "warning", "flavor"];
         this.logsList.appendChild(wrap(types[type], message));
     },
+    /**
+     * Toggle pause state
+     */
     togglePause: function () {
         this.flags.paused = !this.flags.paused;
         this.holder.classList.toggle("paused", this.flags.paused);
@@ -128,6 +137,9 @@ Game.prototype = {
             TimerManager.restartAll();
         }
     },
+    /**
+     * Loop function called every game tick
+     */
     refresh: function () {
         var now = performance.now(),
             elapse = floor((now - this.lastTick) / Game.tickLength);
@@ -154,7 +166,7 @@ Game.prototype = {
                 }.bind(this));
 
                 // We have enougth room and someone arrive
-                if (this.resources.get(this.data.resources.room.id).has(this.people.length + 1) && random() < this.data.people.dropRate) {
+                if (this.hasEnough(this.data.resources.room.id, this.people.length + 1) && random() < this.data.people.dropRate) {
                     this.welcome();
                 }
             }
@@ -169,7 +181,22 @@ Game.prototype = {
             }.bind(this));
         }
     },
-    // We need to use this
+    /**
+     * Check if game has enough of a resource
+     * @param id Resource ID
+     * @param amount Amount needed
+     * @return {boolean}
+     */
+    hasEnough: function (id, amount) {
+        return this.resources.get(id).has(amount);
+    },
+    /**
+     * Need to use a resource
+     * @param amount Amount to use
+     * @param resource Resource
+     * @param lack A callback function in case of lack<br/>
+     * Will get (missingAmount, resource) as params
+     */
     consume: function (amount, resource, lack) {
         if (amount) {
             var instance = this.resources[resource.id];
@@ -185,7 +212,11 @@ Game.prototype = {
             }
         }
     },
-    // Cool I find something
+    /**
+     * Earn some resource
+     * @param amount Amount to earn
+     * @param resource Resource
+     */
     earn: function (amount, resource) {
         log("Acquire " + amount + " " + resource.name);
         var id = resource.id;
@@ -197,7 +228,10 @@ Game.prototype = {
             this.resourcesList.appendChild(res.html);
         }
     },
-    // Welcome to our camp
+    /**
+     * Welcome people to the camp
+     * @param amount Number of person to rejoin
+     */
     welcome: function (amount) {
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
@@ -214,7 +248,10 @@ Game.prototype = {
             }.bind(this));
         }.bind(this));
     },
-    // We built something
+    /**
+     * Build something
+     * @param building Building
+     */
     build: function (building) {
         log("We add " + an(building.name) + " to the camp");
         var id = building.id;
@@ -227,6 +264,10 @@ Game.prototype = {
             this.buildingsList.appendChild(bld.html);
         }
     },
+    /**
+     * Return all possible craftables
+     * @return {Array}
+     */
     possibleCraftables: function () {
         var craftables = [],
             resources = this.resources.items;
@@ -244,6 +285,10 @@ Game.prototype = {
         });
         return craftables;
     },
+    /**
+     * Return all accessible buildings
+     * @return {Array}
+     */
     possibleBuildings: function () {
         var buildings = [],
             done = this.buildings.items;
