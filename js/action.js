@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Class for an action
+ * Class for actions
  * @param owner
  * @param data
  * @constructor
@@ -10,31 +10,35 @@ function Action (owner, data) {
     this.running = false;
 
     this.owner = owner;
+    this.data = {};
+
     this.html = this.toHTML();
+
     this.init(data);
 }
 Action.prototype = {
+    /**
+     * Initialise object
+     * @param data
+     * @private
+     * @return {Action} Itself
+     */
     init: function (data) {
-        this.data = data;
+        this.data = clone(data);
         this.consolidateData();
 
         this.html.textContent = this.data.name;
         if (this.tooltip) {
             this.tooltip.remove();
         }
-        this.tooltip = tooltip(this.html, data);
-    },
-    toHTML: function () {
-        var html = wrap("action clickable disabled");
+        this.tooltip = tooltip(this.html, this.data);
 
-        html.addEvent("click", function () {
-            if (!this.locked && !this.running && !this.owner.busy) {
-                this.click.call(this);
-            }
-        }.bind(this));
-
-        return html;
+        return this;
     },
+    /**
+     * Define data values
+     * @return {Action} Itself
+     */
     consolidateData: function () {
         var data = this.data;
         if (isFunction(data.name)) {
@@ -49,7 +53,28 @@ Action.prototype = {
         if (isFunction(data.consume)) {
             data.consume = data.consume(this);
         }
+        return this;
     },
+    /**
+     * Return HTML for display
+     * @return {HTMLElement}
+     */
+    toHTML: function () {
+        var html = wrap("action clickable disabled");
+
+        html.addEvent("click", function () {
+            if (!this.locked && !this.running && !this.owner.busy) {
+                this.click.call(this);
+            }
+        }.bind(this));
+
+        return html;
+    },
+    /**
+     * Loop function called every game tick
+     * @param resources
+     * @return {Action} Itself
+     */
     refresh: function (resources) {
         this.locked = this.data.relaxing !== 1 && this.owner.isTired();
 
@@ -69,7 +94,11 @@ Action.prototype = {
         else {
             this.html.classList.remove("disabled");
         }
+        return this;
     },
+    /**
+     * Player click on action
+     */
     click: function () {
         if (!this.owner.busy && (!this.owner.isTired() || this.data.relaxing) && !this.locked) {
             // Use
@@ -112,12 +141,18 @@ Action.prototype = {
             }.bind(this), duration * Game.time.hourToMs);
         }
     },
+    /**
+     * Lock this action
+     */
     lock: function () {
         this.cancel();
         this.html.remove();
         this.tooltip.remove();
         MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOCK, this);
     },
+    /**
+     * Cancel this action
+     */
     cancel: function () {
         if (this.timeout) {
             TimerManager.clear(this.timeout);

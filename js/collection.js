@@ -15,7 +15,7 @@ Collection.prototype = {
      */
     push: function (id, item) {
         this.length++;
-        if (item === undefined) {
+        if (isUndefined(item)) {
             item = id;
             id = this.length;
         }
@@ -68,7 +68,7 @@ Collection.prototype = {
      * Execute a function for each item
      * @param action A callback function called on each item<br/>
      * Will get (item, id, collection) as params
-     * @return {Collection} The collection
+     * @return {Collection} Itself
      */
     forEach: function (action) {
         if (this.length > 0) {
@@ -100,6 +100,6 @@ Collection.prototype = {
      * @return {string}
      */
     toString: function () {
-        return "[" + this.items.keys().join(", ") + "]";
+        return "[" + Object.keys(this.items).join(", ") + "]";
     }
 };

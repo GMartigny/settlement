@@ -1,9 +1,22 @@
 "use strict";
-function MessageBus() {
+/**
+ * Class for messageBus
+ * @constructor
+ * @singleton
+ */
+function MessageBus () {
+    if (MessageBus.instance) {
+        throw "An instance already exists.";
+    }
     this.observers = [];
 }
 MessageBus.prototype = {
-    observe: function(type, action) {
+    /**
+     * Observe an event
+     * @param type One or more event type to observe
+     * @param action A function called when event is fired
+     */
+    observe: function (type, action) {
         if (!isArray(type)) {
             type = [type];
         }
@@ -14,7 +27,12 @@ MessageBus.prototype = {
             this.observers[type].push(action);
         }
     },
-    notifyAll: function(type, message) {
+    /**
+     * Fire an event
+     * @param type Type of event
+     * @param message Additionnal data attached
+     */
+    notifyAll: function (type, message) {
         if (this.observers[type]) {
             for (var i = 0, l = this.observers[type].length; i < l; ++i) {
                 this.observers[type][i](message, type);
@@ -24,7 +42,11 @@ MessageBus.prototype = {
 };
 
 MessageBus.instance = false;
-MessageBus.getInstance = function() {
+/**
+ * Return the MessageBus singleton
+ * @return {MessageBus}
+ */
+MessageBus.getInstance = function () {
     if (!MessageBus.instance) {
         MessageBus.instance = new MessageBus();
     }

@@ -1,5 +1,13 @@
 {
-    "requireCurlyBraces": true,
+    "requireCurlyBraces": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "try",
+        "catch"
+    ],
     "requireOperatorBeforeLineBreak": true,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "maximumLineLength": {
@@ -41,5 +49,6 @@
     "validateParameterSeparator": ", ",
     "jsDoc": {
         "enforceExistence": true
-    }
+    },
+    "maxErrors": 100
 }

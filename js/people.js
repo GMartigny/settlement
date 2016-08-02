@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * Factory for people
+ * @param amount Number of people to create
+ * @return {Promise}
+ */
 function peopleFactory (amount) {
     return new Promise(function (resolve, reject) {
         if (Game.isDev) {
@@ -22,6 +27,11 @@ function peopleFactory (amount) {
     });
 }
 
+/**
+ * Class for people
+ * @param name
+ * @constructor
+ */
 function People (name) {
     log(name + " join the community");
     this.name = name;
@@ -38,6 +48,10 @@ function People (name) {
     this.html = this.toHTML();
 }
 People.prototype = {
+    /**
+     * Return HTML for display
+     * @return {HTMLElement}
+     */
     toHTML: function () {
         var html = wrap("people");
         html.appendChild(wrap("name", this.name));
@@ -52,6 +66,13 @@ People.prototype = {
 
         return html;
     },
+    /**
+     * Loop function called every game tick
+     * @param resources Resources list
+     * @param elapse Elapse time since last call
+     * @param settled Is game settled
+     * @return {People} Itself
+     */
     refresh: function (resources, elapse, settled) {
         this.actions.forEach(function (a) {
             a.refresh(resources);
@@ -74,11 +95,23 @@ People.prototype = {
         }
         this.starving = false;
         this.thirsty = false;
+        return this;
     },
+    /**
+     * Set busy with an action
+     * @param action Current action
+     * @returns {People} Itself
+     */
     setBusy: function (action) {
         this.busy = !!action ? action : false;
         this.html.classList.toggle("busy", !!action);
+        return this;
     },
+    /**
+     * Change energy
+     * @param amount Amount to apply
+     * @returns {number} Current energy
+     */
     updateEnergy: function (amount) {
         this.energy += amount;
 
@@ -94,9 +127,18 @@ People.prototype = {
 
         return this.energy;
     },
+    /**
+     * Test if tired
+     * @returns {boolean}
+     */
     isTired: function () {
         return this.energy <= 0;
     },
+    /**
+     * Change life
+     * @param amount Amount to apply
+     * @returns {number} Current life
+     */
     updateLife: function (amount) {
         this.life += amount;
         if (this.life > 100) {
@@ -109,37 +151,59 @@ People.prototype = {
         this.lifeBar.classList[this.life < 25 ? "add" : "remove"]("warning");
         return this.life;
     },
+    /**
+     * Plan a building
+     * @param building Building to plan
+     * @returns {People} Itself
+     */
     planBuilding: function (building) {
         log("\"We'll do " + an(building.name) + "\"");
         this.plan = building;
+        return this;
     },
-    addAction: function (data) {
-        if (data.length) {
-            for (var i = 0, l = data.length; i < l; ++i) {
-                this.addAction(data[i]);
+    /**
+     * Add some actions
+     * @param actions One or more actions to add
+     * @returns {People} Itself
+     */
+    addAction: function (actions) {
+        if (actions.length) {
+            for (var i = 0, l = actions.length; i < l; ++i) {
+                this.addAction(actions[i]);
             }
         }
         else {
-            if (this.actions.has(data.id)) {
-                this.actions.get(data.id).init(data);
+            if (this.actions.has(actions.id)) {
+                this.actions.get(actions.id).init(actions);
             }
             else {
-                var action = new Action(this, data);
+                var action = new Action(this, actions);
+                this.actions.push(actions.id, action);
                 this.actionList.appendChild(action.html);
-                this.actions.push(data.id, action);
             }
         }
+        return this;
     },
-    lockAction: function (data) {
-        if (data.length) {
-            for (var i = 0, l = data.length; i < l; ++i) {
-                this.lockAction(data[i]);
+    /**
+     * Lock some actions
+     * @param actions One or more actions to lock
+     * @returns {People}
+     */
+    lockAction: function (actions) {
+        if (actions.length) {
+            for (var i = 0, l = actions.length; i < l; ++i) {
+                this.lockAction(actions[i]);
             }
         }
         else {
-            this.actions.pop(data.id).lock();
+            this.actions.pop(actions.id).lock();
         }
+        return this;
     },
+    /**
+     * Kill a person
+     * @returns {People} Itself
+     */
     die: function () {
         if (this.html.classList.contains("arrived")) {
             MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
@@ -151,11 +215,19 @@ People.prototype = {
                 this.html.remove();
             }.bind(this), 400);
         }
+        return this;
     }
 };
 People.LST_ID = "peopleList";
+/**
+ * Return a promise for a random name
+ * @param amount Number of name to get
+ * @return {Promise}
+ */
 People.randomName = function (amount) {
     return new Promise(function (resolve, reject) {
-        get("https://randomuser.me/api?inc=gender,name&nat=AU,BR,CA,CH,DE,DK,ES,FI,FR,GB,IE,NL,NZ,TR,US&noinfo&results=" + amount, resolve, reject);
+        var baseUrl = "https://randomuser.me/api?inc=gender,name",
+            countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
+        get(baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + amount, resolve, reject);
     });
 };

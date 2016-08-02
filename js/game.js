@@ -1,4 +1,10 @@
 "use strict";
+/**
+ * Main game class
+ * @param holder HTML element holding the game
+ * @param media All graphical resources
+ * @constructor
+ */
 function Game (holder, media) {
     this.holder = holder;
 
@@ -106,7 +112,8 @@ Game.prototype = {
             }
         }.bind(this));
 
-        MessageBus.getInstance().observe([MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR], function (message, type) {
+        var logTypes = [MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR];
+        MessageBus.getInstance().observe(logTypes, function (message, type) {
             this.log(message, type);
         }.bind(this));
 
@@ -119,6 +126,11 @@ Game.prototype = {
     getSurviveDuration: function () {
         return formatTime((performance.now() - this.settled) / Game.time.hourToMs);
     },
+    /**
+     * Add some log
+     * @param message
+     * @param type
+     */
     log: function (message, type) {
         type = type || 0;
         var types = ["info", "warning", "flavor"];
@@ -165,7 +177,7 @@ Game.prototype = {
                     });
                 }.bind(this));
 
-                // We have enougth room and someone arrive
+                // We have enough room and someone arrive
                 if (this.hasEnough(this.data.resources.room.id, this.people.length + 1) && random() < this.data.people.dropRate) {
                     this.welcome();
                 }
@@ -199,8 +211,8 @@ Game.prototype = {
      */
     consume: function (amount, resource, lack) {
         if (amount) {
-            var instance = this.resources[resource.id];
-            if (instance.has(amount)) {
+            var instance = this.resources.get(resource.id);
+            if (instance && instance.has(amount)) {
                 log("Use " + amount + " " + resource.name);
                 instance.update(-amount);
             }
@@ -222,9 +234,10 @@ Game.prototype = {
         var id = resource.id;
         if (this.resources.has(id)) {
             this.resources.get(id).update(amount);
-        } else if (amount > 0) {
+        }
+        else if (amount > 0) {
             var res = new Resource(resource, amount);
-            this.resources.set(id, res);
+            this.resources.push(id, res);
             this.resourcesList.appendChild(res.html);
         }
     },
@@ -260,7 +273,7 @@ Game.prototype = {
         }
         else {
             var bld = new Building(building);
-            this.buildings.set(id, bld);
+            this.buildings.push(id, bld);
             this.buildingsList.appendChild(bld.html);
         }
     },
@@ -273,8 +286,8 @@ Game.prototype = {
             resources = this.resources.items;
         deepBrowse(this.data.resources.craftable, function (craft) {
             var ok = true;
-            if (isFunction(craft.consume)) {
-                craft.consume(this).forEach(function (res) {
+            if (craft.consume && isFunction(craft.consume)) {
+                craft.consume(craft).forEach(function (res) {
                     ok = ok && resources[res[1].id] && resources[res[1].id].has(res[0]);
                 });
             }
@@ -634,7 +647,7 @@ Game.prototype = {
                 give: function () {
                     return [
                         randomize(this.data.resources.gatherable, "1-2"),
-                        [floor(random(0, 2)), this.data.resources.ruins]
+                        [floor(random(0, 1)), this.data.resources.ruins]
                     ];
                 }
             },

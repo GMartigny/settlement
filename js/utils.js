@@ -1,8 +1,8 @@
 "use strict";
 
 var str = "",
-    noop = function () {},
-    nodef = undefined;
+    noop = new Function(),
+    undef = undefined;
 
 /**
  * Add a tooltip to an HTMLElement
@@ -33,22 +33,27 @@ function tooltip (html, data) {
     }
 
     html.classList.add("tooltiped");
-    html.onmouseover = function () {
+    html.addEvent("mouseover", function () {
         document.body.appendChild(box);
-    };
-    html.onmousemove = function (e) {
+    });
+    html.addEvent("mousemove", function (e) {
         var left = e.clientX + 10;
         if (left + 255 > document.body.offsetWidth) {
             left = document.body.offsetWidth - 255;
         }
         box.style.left = left + "px";
         box.style.top = `${e.clientY + 10}px`;
-    };
-    html.onmouseout = function () {
+    });
+    html.addEvent("mouseout", function () {
         box.remove();
-    };
+    });
 
     return {
+        /**
+         * Update tooltip
+         * @param resources
+         * @param consume
+         */
         refresh: function (resources, consume) {
             if (resourcesContainer) {
                 var id;
@@ -63,6 +68,9 @@ function tooltip (html, data) {
                 });
             }
         },
+        /**
+         * Remove tooltip from DOM
+         */
         remove: function () {
             box.remove();
         }
@@ -73,7 +81,7 @@ function tooltip (html, data) {
  * Wrap some text content with html tag
  * @param text
  * @param classe
- * @returns {string}
+ * @returns {HTMLElement}
  */
 function wrap (classe, text) {
     var html = document.createElement("div");
@@ -196,6 +204,15 @@ function deepBrowse (tree, action) {
 }
 
 /**
+ * Return a new reference of an object
+ * @param obj Any object
+ * @return {*}
+ */
+function clone (obj) {
+    return Object.assign({}, obj);
+}
+
+/**
  * Give a random unique ID wihtout collision
  * @returns {string}
  */
@@ -229,6 +246,15 @@ function isFunction (func) {
  */
 function isArray (array) {
     return array instanceof Array;
+}
+
+/**
+ * Test if is undefined
+ * @param value Anything to test
+ * @return {boolean}
+ */
+function isUndefined (value) {
+    return value === undef;
 }
 
 /**
