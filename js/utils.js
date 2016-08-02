@@ -101,13 +101,14 @@ function wrap (classe, text) {
  * @returns {string}
  */
 function formatTime (time) {
-    var units = ["year", "month", "day", "hour"];
-    var res = [];
+    var units = ["year", "month", "day", "hour"],
+        res = [],
+        timeMatch = dataManager.getTime();
 
     units.forEach(function (unit) {
-        if (time >= Game.time[unit]) {
-            var y = floor(time / Game.time[unit]);
-            time = time % Game.time[unit];
+        if (time >= timeMatch[unit]) {
+            var y = floor(time / timeMatch[unit]);
+            time = time % timeMatch[unit];
             res.push(y + " " + pluralize(unit, y));
         }
     });

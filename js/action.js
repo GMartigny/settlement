@@ -110,7 +110,7 @@ Action.prototype = {
             var duration = (isFunction(this.data.time) ? this.data.time(this) : this.data.time);
 
             this.html.classList.add("cooldown");
-            this.html.style.animationDuration = duration * Game.time.hourToMs + "ms";
+            this.html.style.animationDuration = duration * Game.hourToMs + "ms";
 
             this.timeout = TimerManager.timeout(function () {
                 log(this.owner.name + " just finish to " + this.data.name);
@@ -138,7 +138,7 @@ Action.prototype = {
                     this.owner.lockAction(lock);
                     MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOCK, lock);
                 }
-            }.bind(this), duration * Game.time.hourToMs);
+            }.bind(this), duration * Game.hourToMs);
         }
     },
     /**

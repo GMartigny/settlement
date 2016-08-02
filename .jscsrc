@@ -9,7 +9,10 @@
         "catch"
     ],
     "requireOperatorBeforeLineBreak": true,
+    "requireLineBreakAfterVariableAssignment": true,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
+    "requireBlocksOnNewline": true,
+    "requireKeywordsOnNewLine": ["else"],
     "maximumLineLength": {
         "value": 120,
         "allExcept": [
@@ -42,6 +45,7 @@
     ],
     "disallowSpacesInCallExpression": true,
     "disallowSpaceAfterObjectKeys": true,
+    "disallowNestedTernaries": true,
     "requireSpaceBeforeObjectValues": true,
     "requireCapitalizedConstructors": true,
     "requireDotNotation": true,
@@ -50,5 +54,5 @@
     "jsDoc": {
         "enforceExistence": true
     },
-    "maxErrors": 100
+    "maxErrors": -1
 }
