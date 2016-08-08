@@ -56,10 +56,16 @@ People.prototype = {
         var html = wrap("people");
         html.appendChild(wrap("name", this.name));
         this.lifeBar = wrap("bar life");
-        tooltip(this.lifeBar, {name: "Health", desc: "The first thing you want is a good health."});
+        tooltip(this.lifeBar, {
+            name: "Health",
+            desc: "The first thing you want is a good health."
+        });
         html.appendChild(this.lifeBar);
         this.energyBar = wrap("bar energy");
-        tooltip(this.energyBar, {name: "Energy", desc: "Drained faster when busy or hungry."});
+        tooltip(this.energyBar, {
+            name: "Energy",
+            desc: "Drained faster when busy or hungry."
+        });
         html.appendChild(this.energyBar);
         this.actionList = wrap("actionList");
         html.appendChild(this.actionList);
@@ -70,31 +76,31 @@ People.prototype = {
      * Loop function called every game tick
      * @param resources Resources list
      * @param elapse Elapse time since last call
-     * @param settled Is game settled
+     * @param flags Game flags
      * @return {People} Itself
      */
-    refresh: function (resources, elapse, settled) {
-        this.actions.forEach(function (a) {
-            a.refresh(resources);
+    refresh: function (resources, elapse, flags) {
+        this.actions.forEach(function (action) {
+            action.refresh(resources, flags);
         });
-        var ratio = 2;
-        if (this.busy) {
-            ratio = 4;
-            if (this.busy.relaxing) {
-                ratio *= (1 - this.busy.relaxing);
+        if (flags.settled) {
+            var ratio = 1;
+            if (this.busy) {
+                ratio = 4;
+                if (this.busy.relaxing) {
+                    ratio *= (1 - this.busy.relaxing);
+                }
             }
-        }
-        if (settled) {
-            this.updateEnergy(-elapse * ratio); // getting tired
+            this.updateEnergy(-elapse * ratio + this.starving); // getting tired
             if (this.thirsty) { // drying
-                this.updateLife(-elapse * 2);
+                this.updateLife(-elapse * 2 + this.thirsty);
             }
-            else if (this.energy > 80 && !this.starving) { // healing
+            else if (this.energy > 80 && !(this.starving || this.thirsty)) { // healing
                 this.updateLife(elapse * 0.5);
             }
         }
-        this.starving = false;
-        this.thirsty = false;
+        this.starving = 0;
+        this.thirsty = 0;
         return this;
     },
     /**
@@ -174,7 +180,7 @@ People.prototype = {
         }
         else {
             if (this.actions.has(actions.id)) {
-                this.actions.get(actions.id).init(actions);
+                this.actions.get(actions.id)._init(actions);
             }
             else {
                 var action = new Action(this, actions);
@@ -206,7 +212,7 @@ People.prototype = {
      */
     die: function () {
         if (this.html.classList.contains("arrived")) {
-            MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
             this.actions.forEach(function (action) {
                 action.cancel();

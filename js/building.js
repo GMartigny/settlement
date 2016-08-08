@@ -19,8 +19,7 @@ Building.prototype = {
      * @return {Building} Itself
      */
     _init: function (data) {
-        this.data = clone(data);
-        this.consolidateData();
+        this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
 
         this.html = this.toHTML();
         if (this.tooltip) {
@@ -39,26 +38,6 @@ Building.prototype = {
         var html = wrap("building", this.data.name);
         html.appendChild(this.counter);
         return html;
-    },
-    /**
-     * Define data values
-     * @return {Building} Itself
-     */
-    consolidateData: function () {
-        var data = this.data;
-        if (isFunction(data.name)) {
-            data.name = data.name(this);
-        }
-        if (isFunction(data.desc)) {
-            data.desc = data.desc(this);
-        }
-        if (isFunction(data.time)) {
-            data.time = data.time(this);
-        }
-        if (isFunction(data.consume)) {
-            data.consume = data.consume(this);
-        }
-        return this;
     },
     /**
      * Add more of this building

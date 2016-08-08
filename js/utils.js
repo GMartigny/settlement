@@ -11,6 +11,7 @@ var str = "",
  * @returns {Object} Some functions
  */
 function tooltip (html, data) {
+
     var box = wrap("tooltip");
 
     box.appendChild(wrap("title", data.name));
@@ -139,8 +140,8 @@ function capitalize (string) {
 /**
  * Pick a random item from nested array
  * @param list A potentially nested array
- * @param amount Interval for random "-" separated (0 can be omited)
- * @returns {Array}
+ * @param amount Interval for random "-" separated (0 can be omitted)
+ * @returns {Array|*}
  */
 function randomize (list, amount) {
     if (!list) {
@@ -156,7 +157,7 @@ function randomize (list, amount) {
             all[dropRateSum] = item;
         }
     });
-    var pick = floor(random(dropRateSum));
+    var pick = round(random(dropRateSum));
     dropRateScale.sort();
 
     for (var i = 0, l = dropRateScale.length; i < l; ++i) {
@@ -211,6 +212,28 @@ function deepBrowse (tree, action) {
  */
 function clone (obj) {
     return Object.assign({}, obj);
+}
+
+/**
+ * Transform data function to their values
+ * @param context
+ * @param object
+ * @param fields
+ * @return {*}
+ */
+function consolidateData (context, object, fields) {
+    if (isArray(fields)) {
+        var data = clone(object);
+        fields.forEach(function (field) {
+            if (data[field] && isFunction(data[field])) {
+                data[field] = data[field](context);
+            }
+        });
+        return data;
+    }
+    else {
+        throw "Field is undefined or not an array";
+    }
 }
 
 /**

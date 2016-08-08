@@ -32,7 +32,7 @@ MessageBus.prototype = {
      * @param type Type of event
      * @param message Additionnal data attached
      */
-    notifyAll: function (type, message) {
+    notify: function (type, message) {
         if (this.observers[type]) {
             for (var i = 0, l = this.observers[type].length; i < l; ++i) {
                 this.observers[type][i](message, type);

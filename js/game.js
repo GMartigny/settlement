@@ -10,16 +10,17 @@ function Game (holder, media) {
 
     this.resources = new Collection();
     this.buildings = new Collection();
+    this.events = new Collection();
     this.people = [];
-    this.settled = 0;
 
     this.flags = {
-        ready: 0,
-        paused: 0
+        ready: false,
+        paused: false,
+        settled: 0
     };
 
     this.lastTick = performance.now();
-    this.init();
+    this._init();
 
     this.refresh();
 }
@@ -30,11 +31,13 @@ Game.tickLength = Game.hourToMs;
 Game.prototype = {
     /**
      * Start a new adventure
+     * @private
      */
-    init: function () {
+    _init: function () {
         log("Starting v" + Game.version);
 
         this.data = dataManager.getData();
+        this.time = dataManager.getTime();
 
         var game = this;
         deepBrowse(this.data, function (item) {
@@ -70,6 +73,10 @@ Game.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
+        this.eventsList = wrap();
+        this.eventsList.id = Event.LST_ID;
+        this.holder.appendChild(this.eventsList);
+
         // A person arrives
         TimerManager.timeout(this.welcome.bind(this), 400 * (Game.isDev ? 1 : 10));
 
@@ -101,9 +108,11 @@ Game.prototype = {
         // And we may die :'(
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
             log("We loose " + person.name);
-            this.resources.get(this.data.resources.room.id).update(-1);
+            // TODO : Decide of gameplay
+            // this.resources.get(this.data.resources.room.id).update(-1);
             this.people.out(person);
-            if (!this.people.length) {
+            // The last hope fade away
+            if (this.people.length <= 0) {
                 log("We held up for " + this.getSurviveDuration());
             }
         }.bind(this));
@@ -116,11 +125,18 @@ Game.prototype = {
         this.flags.ready = 1;
     },
     /**
+     * Return the time since settlement
+     * @return {number}
+     */
+    getSettledTime: function () {
+        return this.flags.settled ? (performance.now() - this.flags.settled) / Game.hourToMs : 0;
+    },
+    /**
      * Return a well formatted play duration
      * @return {string}
      */
     getSurviveDuration: function () {
-        return formatTime((performance.now() - this.settled) / Game.hourToMs);
+        return formatTime(this.getSettledTime() / Game.hourToMs);
     },
     /**
      * Add some log
@@ -154,21 +170,23 @@ Game.prototype = {
         this.lastTick += elapse * Game.tickLength;
 
         if (this.flags.paused) {
-            this.settled += elapse * Game.tickLength;
+            // shift time to keep same difference
+            this.flags.settled += elapse * Game.tickLength;
             elapse = 0;
         }
 
         raf(this.refresh.bind(this));
 
         if (elapse > 0) {
-            if (this.settled) {
+            if (this.flags.settled) {
                 // We use some resources
+                // TODO : need refacto
                 var needs = this.data.people.need();
                 needs.forEach(function (need) {
                     var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
                     this.consume(need[0] * this.people.length, need[1], function (number) {
                         this.people.forEach(function (person) {
-                            person[state] = true;
+                            person[state] = number;
                         });
                     });
                 }.bind(this));
@@ -179,6 +197,22 @@ Game.prototype = {
                         this.welcome();
                     }
                 }
+
+                // Random event can happen
+                if (random() < this.data.events.dropRate) {
+                    var eventData = this.getRandomEvent();
+                    // not already running
+                    if (eventData && !this.events.has(eventData.id)) {
+                        // in the right conditions
+                        if (!eventData.condition || isFunction(eventData.condition) && eventData.condition(eventData)) {
+                            var event = new Event(eventData);
+                            event.start();
+                            this.events.push(eventData.id, event);
+                            this.eventsList.appendChild(event.html);
+                        }
+                    }
+                }
+
             }
 
             // Let's now recount our resources
@@ -187,7 +221,7 @@ Game.prototype = {
             });
 
             this.people.forEach(function (p) {
-                p.refresh(this.resources.items, elapse, this.settled);
+                p.refresh(this.resources.items, elapse, this.flags);
             }.bind(this));
         }
     },
@@ -246,7 +280,7 @@ Game.prototype = {
     welcome: function (amount) {
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
-                if (this.settled) {
+                if (this.flags.settled) {
                     person.addAction(this.data.actions.settle.unlock());
                 }
                 else {
@@ -302,14 +336,32 @@ Game.prototype = {
      */
     possibleBuildings: function () {
         var buildings = [],
-            done = this.buildings.items;
+            done = this.buildings;
 
         deepBrowse(this.data.buildings, function (build) {
-            if (!build.unique || build.unique && !done[build.id]) {
+            if (!build.unique || build.unique && !done.has(build.id)) {
                 buildings.push(build);
             }
         });
 
         return buildings;
+    },
+    /**
+     * Return an event that can happened
+     * @return {*}
+     */
+    getRandomEvent: function () {
+        var list = [],
+            time = floor(this.getSettledTime() / this.time.week);
+        if (time > 1) {
+            list.push(this.data.events.easy);
+            if (time > 2) {
+                list.push(this.data.events.medium);
+                if (time > 5) {
+                    list.push(this.data.events.hard);
+                }
+            }
+        }
+        return randomize(list);
     }
 };

@@ -3,6 +3,7 @@
     var time = {
         hour: 1,
         day: 24,
+        week: 7 * 24,
         month: 30 * 24,
         year: 12 * 30 * 24
     };
@@ -148,7 +149,7 @@
                     [1 / time.day, this.data.resources.gatherable.common.water]
                 ];
             },
-            dropRate: 0.1
+            dropRate: 0.01
         },
         /* BUILDINGS */
         buildings: {
@@ -300,7 +301,7 @@
                     return this.data.buildings.special.forum;
                 },
                 give: function () {
-                    this.settled = performance.now();
+                    this.flags.settled = performance.now();
                     return [
                         [3, this.data.resources.room],
                         [10, this.data.resources.gatherable.common.water],
@@ -341,7 +342,7 @@
                 give: function () {
                     return [
                         randomize(this.data.resources.gatherable, "1-2"),
-                        [floor(random(0, 1)), this.data.resources.ruins]
+                        [round(random(0, 1)), this.data.resources.ruins]
                     ];
                 }
             },
@@ -378,7 +379,7 @@
                     var pick = randomize(this.possibleCraftables());
                     if (pick) {
                         if (isFunction(pick.consume)) {
-                            MessageBus.getInstance().notifyAll(MessageBus.MSG_TYPES.USE, pick.consume(this));
+                            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
                         }
                         return [
                             [1, pick]
@@ -516,14 +517,50 @@
             }
         },
         events: {
-            sandstorm: {
-                name: "Sand storm",
-                desc: "The wind is blowing hard, impossible to go out for now.",
-                time: time.day,
-                effect: function (isOn) {
-                    this.flags.cantGoOut = isOn;
-                },
-                dropRate: 100
+            dropRate: 0.1,
+            easy: {
+                sandstorm: {
+                    name: "Sand storm",
+                    desc: "The wind is blowing hard, impossible to go out for now.",
+                    time: function () {
+                        var delta = time.day / 3;
+                        return time.day + random(-delta, delta);
+                    },
+                    effect: function (isOn) {
+                        this.flags.cantGoOut = isOn;
+                    },
+                    dropRate: 100
+                }
+            },
+            medium: {
+                death: {
+                    name: "The grim Reaper",
+                    desc: "Sometimes death strike unexpectedly.",
+                    time: 2,
+                    condition: function () {
+                        return this.people.length > 1;
+                    },
+                    effect: function (isOn) {
+                        if (isOn) {
+                            this.people.random().die();
+                        }
+                    },
+                    dropRate: 10
+                }
+            },
+            hard: {
+                drought: {
+                    name: "Drought",
+                    desc: "The climate is so hot, we consume more water.",
+                    time: function () {
+                        var delta = time.day;
+                        return 3 * time.day + random(-delta, delta);
+                    },
+                    effect: function (isOn) {
+                        this.flags.drought = isOn;
+                    },
+                    dropRate: 6
+                }
             }
         }
     };
@@ -537,6 +574,10 @@
         getData: function () {
             return data;
         },
+        /**
+         * Return time match
+         * @return {*}
+         */
         getTime: function () {
             return time;
         }

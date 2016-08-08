@@ -6,6 +6,10 @@
  * @constructor
  */
 function Resource (data, count) {
+    this.data = {};
+
+    this.html = this.toHTML(data.icon);
+
     this._init(data);
 
     this.count = 0;
@@ -21,10 +25,8 @@ Resource.prototype = {
      * @returns {Resource} Itself
      */
     _init: function (data) {
-        this.data = clone(data);
-        this.consolidateData();
+        this.data = consolidateData(this, data, ["name", "desc", "consume"]);
 
-        this.html = this.toHTML();
         if (this.tooltip) {
             this.tooltip.remove();
         }
@@ -36,7 +38,7 @@ Resource.prototype = {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
+    toHTML: function (iconPos) {
         var html = wrap("resource get-more");
 
         this.counter = wrap("counter", 1);
@@ -44,24 +46,13 @@ Resource.prototype = {
 
         var icon = wrap("icon");
         var pos = "16px 16px";
-        if (isArray(this.data.icon)) {
-            pos = (-this.data.icon[0] * 16) + "px " + (-this.data.icon[1] * 16) + "px";
+        if (isArray(iconPos)) {
+            pos = (-iconPos[0] * 16) + "px " + (-iconPos[1] * 16) + "px";
         }
         icon.style.backgroundPosition = pos;
         html.appendChild(icon);
 
         return html;
-    },
-    /**
-     * Define data values
-     * @returns {Resource} Itself
-     */
-    consolidateData: function () {
-        var data = this.data;
-        if (isFunction(data.consume)) {
-            data.consume = data.consume(this);
-        }
-        return this;
     },
     /**
      * Loop function called every game tick
