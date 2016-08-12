@@ -53,17 +53,21 @@ MessageBus.getInstance = function () {
     return MessageBus.instance;
 };
 MessageBus.MSG_TYPES = {
-    INFO: 0,
-    WARN: 1,
-    FLAVOR: 2,
-    CLICK: 10,
-    REFRESH: 20,
-    GIVE: 30,
-    USE: 32,
-    RUNS_OUT: 33,
-    LOOSE: 34,
-    LOOSE_SOMEONE: 36,
-    UNLOCK: 40,
-    LOCK: 50,
-    BUILD: 60
+    INFO: 0, // Log infomrations
+    WARN: 1, // Log a warning
+    FLAVOR: 2, // Log a flavor text
+    CLICK: 10, // Click an action
+    REFRESH: 20, // The game has refreshed
+    GIVE: 30, // Give some resources
+    COLLECT: 31, // Start to collect a resource
+    USE: 32, // Use some resources
+    RUNS_OUT: 33, // Runs out of some resources
+    LOOSE: 34, // Loose some resources
+    LOOSE_SOMEONE: 36, // Loose a person
+    UNLOCK: 40, // Unlock an action
+    LOCK: 50, // Lock an action
+    BUILD: 60, // Build a building
+    EVENT_START: 70, // An event start
+    EVENT_CANCEL: 71, // Cancel an event
+    EVENT_END: 72 // An event end
 };

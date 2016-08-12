@@ -14,10 +14,10 @@ Collection.prototype = {
      * @return {number} Collection length
      */
     push: function (id, item) {
-        this.length++;
+        ++this.length;
         if (isUndefined(item)) {
             item = id;
-            id = this.length;
+            id = item.id || this.length;
         }
         this.items[id] = item;
         return this.length;
@@ -30,7 +30,7 @@ Collection.prototype = {
     pop: function (id) {
         var item = this.items[id];
         delete this.items[id];
-        this.length--;
+        --this.length;
         return item;
     },
     /**
@@ -84,7 +84,7 @@ Collection.prototype = {
      * Filter out item with a function
      * @param action A callback function called on each item<br/>
      * Should return true to keep items
-     * @return {Collection}
+     * @return {Collection} A new Collection instance
      */
     filter: function (action) {
         var kept = new Collection();
@@ -94,6 +94,22 @@ Collection.prototype = {
             }
         });
         return kept;
+    },
+    /**
+     * Return values in the collection
+     * @return {Array}
+     */
+    values: function () {
+        return this.items.values();
+    },
+    /**
+     * Empty the collection
+     * @return {Collection} Itself
+     */
+    clear: function () {
+        this.items = {};
+        this.length = 0;
+        return this;
     },
     /**
      * Convert collection to string

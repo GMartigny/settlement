@@ -51,7 +51,8 @@ Action.prototype = {
     },
     /**
      * Loop function called every game tick
-     * @param resources
+     * @param resources Game resources
+     * @param flags Game flags
      * @return {Action} Itself
      */
     refresh: function (resources, flags) {
@@ -81,6 +82,7 @@ Action.prototype = {
     },
     /**
      * Player click on action
+     * @return {boolean} Is launched
      */
     click: function () {
         if (!this.owner.busy && (!this.owner.isTired() || this.data.relaxing > 0) && !this.locked) {
@@ -90,10 +92,10 @@ Action.prototype = {
             }
 
             this.owner.setBusy(this.data);
-            var duration = (isFunction(this.data.time) ? this.data.time(this) : this.data.time);
+            var duration = (this.data.time || 0) * Game.hourToMs;
 
+            this.html.style.animationDuration = duration + "ms";
             this.html.classList.add("cooldown");
-            this.html.style.animationDuration = duration * Game.hourToMs + "ms";
 
             this.timeout = TimerManager.timeout(function () {
                 log(this.owner.name + " just finish to " + this.data.name);
@@ -101,40 +103,47 @@ Action.prototype = {
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
 
-                // Build
-                if (isFunction(this.data.build)) {
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, this.data.build(this));
-                }
                 // Give
                 if (isFunction(this.data.give)) {
                     MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, this.data.give(this));
                 }
+                // Start collect
+                if (isFunction(this.data.collect)) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.COLLECT, this.data.collect(this));
+                }
                 // Unlock
                 if (isFunction(this.data.unlock)) {
-                    var unlock = this.data.unlock(this);
-                    this.owner.addAction(unlock);
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
+                    this.owner.addAction(this.data.unlock(this));
                 }
                 // Lock
                 if (isFunction(this.data.lock)) {
-                    var lock = this.data.lock(this);
-                    this.owner.lockAction(lock);
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, lock);
+                    this.owner.lockAction(this.data.lock(this));
                 }
-            }.bind(this), duration * Game.hourToMs);
+                // Build
+                if (isFunction(this.data.build)) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, this.data.build(this));
+                }
+            }.bind(this), duration);
+            return true;
+        }
+        else {
+            return false;
         }
     },
     /**
      * Lock this action
+     * @return {Action} Itself
      */
     lock: function () {
         this.cancel();
         this.html.remove();
         this.tooltip.remove();
         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, this);
+        return this;
     },
     /**
      * Cancel this action
+     * @return {Action} Itself
      */
     cancel: function () {
         if (this.timeout) {
@@ -142,5 +151,6 @@ Action.prototype = {
             this.owner.setBusy(false);
             this.html.classList.remove("cooldown");
         }
+        return this;
     }
 };

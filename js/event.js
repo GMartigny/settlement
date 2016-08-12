@@ -38,18 +38,32 @@ Event.prototype = {
     },
     /**
      * Start the event
+     * @return {boolean} Is event running
      */
-    start: function () {
+    start: function (callback) {
         log("The " + this.data.name + " has started.");
-        this.data.effect(true);
 
-        if (this.data.time) {
-            TimerManager.timeout(function () {
-                this.data.effect(false);
+        popup(this.data, function () {
+            // Effect
+            this.data.effect(true);
 
-                this.html.remove();
-            }.bind(this), this.data.time * Game.hourToMs);
-        }
+            if (this.data.time) {
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
+                var duration = this.data.time * Game.hourToMs;
+
+                this.html.style.animationDuration = duration + "ms";
+                this.html.classList.add("ongoing");
+
+                TimerManager.timeout(function () {
+                    this.data.effect(false);
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
+
+                    this.html.remove();
+                }.bind(this), duration);
+                callback(this);
+            }
+        }.bind(this), "event");
+        return !!this.data.time;
     }
 };
 Event.LST_ID = "eventList";

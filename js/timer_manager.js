@@ -99,6 +99,9 @@
         timeout: function (action, time) {
             this._init();
             var timerId;
+            /**
+             * Wrapper for calling action and popping from collection
+             */
             var func = function () {
                 timers.pop(timerId);
                 action();

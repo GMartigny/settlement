@@ -11,12 +11,16 @@ function Game (holder, media) {
     this.resources = new Collection();
     this.buildings = new Collection();
     this.events = new Collection();
+    this.collects = [];
     this.people = [];
+    this.initialActions = new Collection();
 
     this.flags = {
         ready: false,
         paused: false,
-        settled: 0
+        settled: false,
+        popup: false,
+        productivity: 1
     };
 
     this.lastTick = performance.now();
@@ -48,6 +52,8 @@ Game.prototype = {
                 }
             }
         });
+
+        this.initialActions.push(this.data.actions.settle);
 
         window.onkeypress = function (e) {
             switch (e.keyCode) {
@@ -89,6 +95,13 @@ Game.prototype = {
             }
         }.bind(this));
 
+        // We may have a resource collector
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
+            if (isArray(collected)) {
+                compactResources(this.collects.concat(collected));
+            }
+        }.bind(this));
+
         // We may use resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
@@ -113,8 +126,18 @@ Game.prototype = {
             this.people.out(person);
             // The last hope fade away
             if (this.people.length <= 0) {
-                log("We held up for " + this.getSurviveDuration());
+                log("We held up for " + this.getSurvivalDuration());
+                this.flags.paused = true;
             }
+        }.bind(this));
+
+        // Keep track of running events
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
+            this.events.push(event.data.id, event);
+            this.flags.popup = false;
+        }.bind(this));
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
+            this.events.pop(event.data.id);
         }.bind(this));
 
         var logTypes = [MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR];
@@ -123,6 +146,38 @@ Game.prototype = {
         }.bind(this));
 
         this.flags.ready = 1;
+    },
+    /**
+     * Add actions to initial actions list
+     * @param actions
+     */
+    addToInitialActions: function (actions) {
+        if (!isArray(actions)) {
+            actions = [actions];
+        }
+
+        actions.forEach(function (action) {
+            this.initialActions.push(action);
+        }.bind(this));
+        this.people.forEach(function (people) {
+            people.addAction(actions);
+        });
+    },
+    /**
+     * Remove actions from initial actions list
+     * @param actions
+     */
+    removeFromInitialActions: function (actions) {
+        if (!isArray(actions)) {
+            actions = [actions];
+        }
+
+        actions.forEach(function (action) {
+            this.initialActions.pop(action.id);
+        }.bind(this));
+        this.people.forEach(function (people) {
+            people.lockAction(actions);
+        });
     },
     /**
      * Return the time since settlement
@@ -135,8 +190,8 @@ Game.prototype = {
      * Return a well formatted play duration
      * @return {string}
      */
-    getSurviveDuration: function () {
-        return formatTime(this.getSettledTime() / Game.hourToMs);
+    getSurvivalDuration: function () {
+        return formatTime(this.getSettledTime());
     },
     /**
      * Add some log
@@ -154,6 +209,7 @@ Game.prototype = {
     togglePause: function () {
         this.flags.paused = !this.flags.paused;
         this.holder.classList.toggle("paused", this.flags.paused);
+        document.body.classList.toggle("backdrop", this.flags.paused);
         if (this.flags.paused) {
             TimerManager.stopAll();
         }
@@ -170,8 +226,10 @@ Game.prototype = {
         this.lastTick += elapse * Game.tickLength;
 
         if (this.flags.paused) {
-            // shift time to keep same difference
-            this.flags.settled += elapse * Game.tickLength;
+            if (this.flags.settled) {
+                // shift time to keep same difference
+                this.flags.settled += elapse * Game.tickLength;
+            }
             elapse = 0;
         }
 
@@ -185,34 +243,28 @@ Game.prototype = {
                 needs.forEach(function (need) {
                     var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
                     this.consume(need[0] * this.people.length, need[1], function (number) {
-                        this.people.forEach(function (person) {
-                            person[state] = number;
+                        this.people.forEach(function (person, index, list) {
+                            person[state] = number / list.length;
                         });
                     });
                 }.bind(this));
 
-                // We have enough room and someone arrive
-                if (this.hasEnough(this.data.resources.room.id, this.people.length + 1)) {
-                    if (random() < this.data.people.dropRate) {
-                        this.welcome();
-                    }
+                if (this.canSomeoneArrive()) {
+                    this.welcome();
                 }
 
                 // Random event can happen
-                if (random() < this.data.events.dropRate) {
+                if (!this.flags.popup && random() < this.data.events.dropRate) {
                     var eventData = this.getRandomEvent();
-                    // not already running
-                    if (eventData && !this.events.has(eventData.id)) {
-                        // in the right conditions
-                        if (!eventData.condition || isFunction(eventData.condition) && eventData.condition(eventData)) {
-                            var event = new Event(eventData);
-                            event.start();
-                            this.events.push(eventData.id, event);
+                    // in the right conditions
+                    if (eventData) {
+                        var event = new Event(eventData);
+                        event.start(function (event) {
                             this.eventsList.appendChild(event.html);
-                        }
+                        }.bind(this));
+                        this.flags.popup = true;
                     }
                 }
-
             }
 
             // Let's now recount our resources
@@ -220,8 +272,8 @@ Game.prototype = {
                 resource.refresh(list);
             });
 
-            this.people.forEach(function (p) {
-                p.refresh(this.resources.items, elapse, this.flags);
+            this.people.forEach(function (people) {
+                people.refresh(this.resources.items, elapse, this.flags);
             }.bind(this));
         }
     },
@@ -280,14 +332,10 @@ Game.prototype = {
     welcome: function (amount) {
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
-                if (this.flags.settled) {
-                    person.addAction(this.data.actions.settle.unlock());
-                }
-                else {
-                    person.addAction(this.data.actions.settle);
-                }
+                person.addAction(this.initialActions.values());
+
                 this.people.push(person);
-                //noinspection BadExpressionStatementJS force redraw
+                //noinspection BadExpressionStatementJS - force redraw
                 this.peopleList.appendChild(person.html).offsetHeight;
                 person.html.classList.add("arrived");
             }.bind(this));
@@ -307,6 +355,13 @@ Game.prototype = {
             var bld = new Building(building);
             this.buildings.push(id, bld);
             this.buildingsList.appendChild(bld.html);
+
+            if (isFunction(building.lock)) {
+                this.removeFromInitialActions(building.lock(bld));
+            }
+            if (isFunction(building.unlock)) {
+                this.addToInitialActions(building.unlock(bld));
+            }
         }
     },
     /**
@@ -347,21 +402,34 @@ Game.prototype = {
         return buildings;
     },
     /**
+     * Decide if someone can join the colony
+     * @return {boolean}
+     */
+    canSomeoneArrive: function () {
+        return this.hasEnough(this.data.resources.room.id, this.people.length + 1) &&
+            random() < this.data.people.dropRate &&
+            this.getSettledTime() / this.time.day > 2;
+    },
+    /**
      * Return an event that can happened
      * @return {*}
      */
     getRandomEvent: function () {
         var list = [],
-            time = floor(this.getSettledTime() / this.time.week);
-        if (time > 1) {
-            list.push(this.data.events.easy);
+            time = this.getSettledTime() / this.time.week;
+        if (time > 0) {
+            list.push.apply(list, this.data.events.easy.values());
             if (time > 2) {
-                list.push(this.data.events.medium);
+                list.push.apply(list, this.data.events.medium.values());
                 if (time > 5) {
-                    list.push(this.data.events.hard);
+                    list.push.apply(list, this.data.events.hard.values());
                 }
             }
         }
-        return randomize(list);
+        // filter already running or unmatch conditions
+        return randomize(list.filter(function (event) {
+            return !this.events.has(event.id) &&
+                (!event.condition || (isFunction(event.condition) && event.condition(event)));
+        }.bind(this)));
     }
 };

@@ -11,7 +11,6 @@ var str = "",
  * @returns {Object} Some functions
  */
 function tooltip (html, data) {
-
     var box = wrap("tooltip");
 
     box.appendChild(wrap("title", data.name));
@@ -76,6 +75,55 @@ function tooltip (html, data) {
             box.remove();
         }
     };
+}
+
+/**
+ * Display a popup with choice buttons
+ * @param data Text for the popup
+ * @param onYes Action to do on validate
+ * @param classes Additional classes for the popup
+ * @returns {Object} Some functions
+ */
+function popup (data, onYes, classes) {
+    if (!isFunction(onYes)) {
+        throw "Popup need a confirm function";
+    }
+
+    classes = "popup" + (classes ? " " + classes : "");
+    var box = wrap(classes);
+
+    box.appendChild(wrap("title", data.name));
+    box.appendChild(wrap("description", data.desc));
+
+    var api = {
+        /**
+         * Remove popup from DOM
+         */
+        remove: function () {
+            box.remove();
+            document.body.classList.remove("backdrop");
+        }
+    };
+
+    var yesButton = wrap("yes clickable", data.yes || "Ok");
+    yesButton.addEvent("click", function () {
+        onYes();
+        api.remove();
+    });
+    box.appendChild(yesButton);
+
+    if (data.no) {
+        var noButton = wrap("no clickable", data.no);
+        noButton.addEvent("click", api.remove);
+        box.appendChild(noButton);
+    }
+
+    document.body.appendChild(box);
+    document.body.classList.add("backdrop");
+
+    box.style.top = floor((document.body.offsetHeight - box.offsetHeight) / 2) + "px";
+
+    return api;
 }
 
 /**
@@ -320,3 +368,19 @@ function compactResources (array) {
         return reduced;
     }, []);
 }
+
+/**
+ * Return all value of an object as array
+ * @return {Array}
+ */
+Object.prototype.values = function () {
+    var values = [];
+
+    for (var key in this) {
+        if (this.hasOwnProperty(key)) {
+            values.push(this[key]);
+        }
+    }
+
+    return values;
+};

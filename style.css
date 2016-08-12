@@ -8,7 +8,7 @@
     box-sizing: border-box;
 }
 
-html, body{
+html, body {
     height: 100%;
 }
 
@@ -17,39 +17,62 @@ body {
     font-size: 16px;
 }
 
-#main{
+#main {
     overflow: hidden;
     height: 100%;
 }
 
-#main.paused *{
+#main.paused * {
     animation-play-state: paused;
 }
- #main.paused:before{
-     content: "";
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background: rgba(0, 0, 0, .3);
-     z-index: 100;
- }
- #main.paused:after{
-     content: "Paused";
-     position: absolute;
-     top: 40%;
-     left: 0;
-     right: 0;
-     margin: 0 auto;
-     width: 200px;
-     height: 80px;
-     line-height: 80px;
-     background: #FFF;
-     text-align: center;
-     box-shadow: 0 2px 10px #333;
-     z-index: 100;
- }
+
+body.backdrop #main:before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .3);
+    z-index: 100;
+
+}
+
+#main.paused:after {
+    content: "Paused";
+    top: 40%;
+    width: 200px;
+    text-align: center;
+    z-index: 100;
+}
+
+#main.paused:after, .popup {
+    position: fixed;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    padding: 20px 40px;
+    background: #FFF;
+    box-shadow: 0 2px 10px #333;
+}
+
+.popup {
+    max-width: 60%;
+    top: 0;
+    z-index: 1000;
+}
+
+.popup .title {
+
+}
+
+.popup .yes {
+    float: right;
+}
+
+.popup .no {
+    float: left;
+}
 
 #resourceList, #peopleList, #buildingsList, #logs {
     padding: 5px;
@@ -135,7 +158,7 @@ body {
     left: -100%;
     opacity: 0;
     transition: opacity ease-out .4s,
-                left ease-out .4s;
+    left ease-out .4s;
 }
 
 #peopleList .people.arrived {
@@ -147,7 +170,7 @@ body {
     background: #ECC;
 }
 
-#peopleList .people .bar {
+.bar {
     width: 100%;
     height: 7px;
     margin-bottom: 2px;
@@ -182,12 +205,13 @@ body {
 #peopleList .people .action {
     display: inline-block;
     margin-right: 5px;
-    border: 1px solid #000;
-    padding: 0 5px;
 }
 
 .clickable {
     cursor: pointer;
+    border: 1px solid #000;
+    padding: 0 5px;
+    line-height: 30px;
 }
 
 .clickable:not(.disabled):not(.cooldown):hover {
@@ -200,8 +224,7 @@ body {
 }
 
 .clickable.cooldown {
-    animation: cooldown linear infinite;
-    box-shadow: 0 0 0 0 #333 inset;
+    animation: cooldown linear 1;
 }
 
 @keyframes cooldown {
@@ -210,6 +233,22 @@ body {
     }
     to {
         box-shadow: 0 0 0 0 #555 inset;
+    }
+}
+
+#eventList .event {
+    background-color: #f5eb57;
+}
+#eventList .event.ongoing {
+    animation: ongoing linear 1;
+}
+
+@keyframes ongoing {
+    0% {
+        box-shadow: 0 0 0 15px #f5eb57 inset;
+    }
+    to {
+        box-shadow: 0 0 0 0 #f5eb57 inset;
     }
 }
 
@@ -255,7 +294,7 @@ body {
     content: "✗ "
 }
 
-#logs{
+#logs {
     clear: both;
     max-height: 50%;
 }

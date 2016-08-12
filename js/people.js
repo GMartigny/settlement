@@ -86,14 +86,14 @@ People.prototype = {
         if (flags.settled) {
             var ratio = 1;
             if (this.busy) {
-                ratio = 4;
+                ratio = 5;
                 if (this.busy.relaxing) {
                     ratio *= (1 - this.busy.relaxing);
                 }
             }
-            this.updateEnergy(-elapse * ratio + this.starving); // getting tired
+            this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
             if (this.thirsty) { // drying
-                this.updateLife(-elapse * 2 + this.thirsty);
+                this.updateLife(-elapse * this.thirsty * 30);
             }
             else if (this.energy > 80 && !(this.starving || this.thirsty)) { // healing
                 this.updateLife(elapse * 0.5);
@@ -173,7 +173,7 @@ People.prototype = {
      * @returns {People} Itself
      */
     addAction: function (actions) {
-        if (actions.length) {
+        if (isArray(actions)) {
             for (var i = 0, l = actions.length; i < l; ++i) {
                 this.addAction(actions[i]);
             }
@@ -196,13 +196,14 @@ People.prototype = {
      * @returns {People}
      */
     lockAction: function (actions) {
-        if (actions.length) {
+        if (isArray(actions)) {
             for (var i = 0, l = actions.length; i < l; ++i) {
                 this.lockAction(actions[i]);
             }
         }
         else {
-            this.actions.pop(actions.id).lock();
+            var a = this.actions.pop(actions.id).lock();
+            log(a);
         }
         return this;
     },

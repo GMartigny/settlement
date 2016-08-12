@@ -10,8 +10,9 @@
 
     // jscs:disable jsDoc
     var data = {
+        /***** RESOURCES *****/
         resources: {
-            /* GATHERABLE */
+            /***** GATHERABLES *****/
             gatherable: {
                 common: {
                     water: {
@@ -67,7 +68,7 @@
                 desc: "The location of an ancient building.",
                 icon: [3, 1]
             },
-            /* CRAFTABLE */
+            /***** CRAFTABLES *****/
             craftable: {
                 component: {
                     name: "Component",
@@ -149,9 +150,9 @@
                     [1 / time.day, this.data.resources.gatherable.common.water]
                 ];
             },
-            dropRate: 0.01
+            dropRate: 0.05
         },
-        /* BUILDINGS */
+        /***** BUILDINGS *****/
         buildings: {
             small: {
                 tent: {
@@ -279,23 +280,34 @@
                 forum: {
                     name: "Forum",
                     desc: "The center and start of our settlement.",
+                    unlock: function () {
+                        return [this.data.actions.sleep];
+                    },
                     unique: true
                 }
             }
         },
-        /* ACTIONS */
+        /***** ACTIONS *****/
         actions: {
             settle: {
                 name: "Settle",
                 desc: "Ok, let's settle right here !",
                 time: 1,
                 unlock: function () {
-                    return [
+                    var unlocked = [
                         this.data.actions.gather
                     ];
+                    unlocked.forEach(function (action) {
+                        this.initialActions.push(action);
+                    }.bind(this));
+                    return unlocked;
                 },
                 lock: function () {
-                    return [this.data.actions.settle];
+                    var locked = [this.data.actions.settle];
+                    locked.forEach(function (action) {
+                        this.initialActions.pop(action.id);
+                    }.bind(this));
+                    return locked;
                 },
                 build: function () {
                     return this.data.buildings.special.forum;
@@ -303,9 +315,9 @@
                 give: function () {
                     this.flags.settled = performance.now();
                     return [
-                        [3, this.data.resources.room],
-                        [10, this.data.resources.gatherable.common.water],
-                        [5, this.data.resources.gatherable.common.food],
+                        [2, this.data.resources.room],
+                        [1, this.data.resources.gatherable.common.water],
+                        [1, this.data.resources.gatherable.common.food],
                         [2, this.data.resources.craftable.tool]
                     ];
                 }
@@ -316,7 +328,7 @@
                 time: 3,
                 isOut: 1,
                 unlock: function () {
-                    return [this.data.actions.roam, this.data.actions.sleep];
+                    return [this.data.actions.roam];
                 },
                 give: function () {
                     var res = [];
@@ -341,7 +353,7 @@
                 },
                 give: function () {
                     return [
-                        randomize(this.data.resources.gatherable, "1-2"),
+                        randomize(this.data.resources.gatherable, "1-3"),
                         [round(random(0, 1)), this.data.resources.ruins]
                     ];
                 }
@@ -351,6 +363,7 @@
                 desc: "Remember that ruin you saw the other day ? Let's see what's inside.",
                 time: time.day,
                 isOut: 1,
+                relaxing: 0.15,
                 consume: function () {
                     return [
                         [4, this.data.resources.gatherable.common.water],
@@ -468,13 +481,13 @@
                 time: 5,
                 give: function () {
                     return [
-                        [random(1, 3), this.data.resources.gatherable.common.water]
+                        [round(random(1, 3)), this.data.resources.gatherable.common.water]
                     ];
                 }
             },
             harvest: {
                 name: "Harvest crops",
-                desc: "It's not the biggest, but it'll fill our stomachs.",
+                desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
                 time: 4,
                 consume: function () {
                     return [
@@ -483,7 +496,7 @@
                 },
                 give: function () {
                     return [
-                        [random(1, 3), this.data.resources.gatherable.common.food]
+                        [round(random(1, 3)), this.data.resources.gatherable.common.food]
                     ];
                 }
             },
@@ -516,8 +529,9 @@
                 }
             }
         },
+        /***** EVENTS *****/
         events: {
-            dropRate: 0.1,
+            dropRate: 0.3,
             easy: {
                 sandstorm: {
                     name: "Sand storm",
@@ -530,13 +544,24 @@
                         this.flags.cantGoOut = isOn;
                     },
                     dropRate: 100
+                },
+                crate: {
+                    name: "You find an old crate",
+                    desc: "Would you want to open it ?",
+                    yes: "Yes",
+                    no: "Leave it there",
+                    effect: function (isOn) {
+                        if (isOn) {
+                            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, this.data.actions.gather.give());
+                        }
+                    },
+                    dropRate: 50
                 }
             },
             medium: {
                 death: {
                     name: "The grim Reaper",
                     desc: "Sometimes death strike unexpectedly.",
-                    time: 2,
                     condition: function () {
                         return this.people.length > 1;
                     },
@@ -546,6 +571,23 @@
                         }
                     },
                     dropRate: 10
+                },
+                party: {
+                    name: "Throw a party",
+                    desc: "Someone propose to throw a party to change our mind.",
+                    time: time.day,
+                    yes: "Great idea !",
+                    no: "We can't afford it.",
+                    effect: function (isOn) {
+                        this.flags.productivity *= isOn ? 2 : 0.5;
+                        if (isOn) {
+                            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, [
+                                [1 * this.people.length, this.data.resources.gatherable.common.water],
+                                [3 * this.people.length, this.data.resources.gatherable.common.food]
+                            ]);
+                        }
+                    },
+                    dropRate: 25
                 }
             },
             hard: {
