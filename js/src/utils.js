@@ -42,7 +42,7 @@ function tooltip (html, data) {
             left = document.body.offsetWidth - 255;
         }
         box.style.left = left + "px";
-        box.style.top = `${e.clientY + 10}px`;
+        box.style.top = (e.clientY + 10) + "px";
     });
     html.addEvent("mouseout", function () {
         box.remove();

@@ -34,7 +34,7 @@ Event.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        return wrap("event");
+        return wrap("event, animated");
     },
     /**
      * Start the event

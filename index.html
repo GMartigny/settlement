@@ -4,7 +4,7 @@
         <title>Settlement</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="style.css" type="text/css"/>
+        <link rel="stylesheet" href="css/style.css" type="text/css"/>
         <script src="https://rawgit.com/GMartigny/gmartigny.github.io/master/res/js/gameLib.js" type="text/javascript"></script>
     </head>
     <body>
@@ -12,18 +12,7 @@
         <script>
             var media = loadMedia([
                 {src: "img/icons.png", type: "image"},
-                {src: "js/utils.js", type: "script"},
-                {src: "js/data_manager.js", type: "script"},
-                {src: "js/save_manager.js", type: "script"},
-                {src: "js/collection.js", type: "script"},
-                {src: "js/timer_manager.js", type: "script"},
-                {src: "js/message_bus.js", type: "script"},
-                {src: "js/game.js", type: "script"},
-                {src: "js/resource.js", type: "script"},
-                {src: "js/action.js", type: "script"},
-                {src: "js/people.js", type: "script"},
-                {src: "js/building.js", type: "script"},
-                {src: "js/event.js", type: "script"}
+                {src: "js/script.js", type: "script"}
             ], function(prc, file){
                 console.log(file + " : " + prc);
                 if(prc >= 100){

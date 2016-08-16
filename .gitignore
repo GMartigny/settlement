@@ -1,2 +1,5 @@
 .idea
 node_modules
+/css/style.css
+/js/script.js
+/js/script.js.map

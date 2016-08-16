@@ -333,7 +333,7 @@
                 give: function () {
                     var res = [];
                     for (var i = 0, l = round(random(1, 3)); i < l; ++i) {
-                        res.push(randomize(this.data.resources.gatherable, `1-${5 / l}`));
+                        res.push(randomize(this.data.resources.gatherable, "1-" + (5 / l)));
                     }
                     return res;
                 }

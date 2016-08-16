@@ -202,8 +202,7 @@ People.prototype = {
             }
         }
         else {
-            var a = this.actions.pop(actions.id).lock();
-            log(a);
+            this.actions.pop(actions.id).lock();
         }
         return this;
     },

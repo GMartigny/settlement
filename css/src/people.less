@@ -1,0 +1,54 @@
+#peopleList {
+    padding: 5px;
+
+    width: 50%;
+    height: 50%;
+    float: left;
+
+    .people {
+        border: 1px solid #666;
+        padding: 5px 20px;
+        margin: 5px 0;
+        line-height: 30px;
+        left: -100%;
+        opacity: 0;
+        transition: opacity ease-out .4s,
+        left ease-out .4s;
+
+        &.arrived {
+            left: 0;
+            opacity: 1;
+        }
+
+        &.busy {
+            background: #ECC;
+        }
+
+        .bar {
+            width: 100%;
+            height: 7px;
+            margin-bottom: 2px;
+            transition: width ease-out .5s;
+
+            &.life {
+                background-color: #f52158;
+            }
+
+            &.energy {
+                background-color: #19f5ba;
+            }
+
+            &.warning {
+                animation: flash .4s infinite alternate;
+            }
+        }
+
+        .actionList {
+            .action {
+                display: inline-block;
+                margin-right: 5px;
+            }
+        }
+    }
+
+}

@@ -79,17 +79,8 @@
         }
     };
 
-    var timers = [];
+    var timers = new Collection();
     window.TimerManager = {
-        /**
-         * Prepare timer collection
-         * @private
-         */
-        _init: function () {
-            if (!timers) {
-                timers = new Collection();
-            }
-        },
         /**
          * Set a timeout
          * @param action A callback function called after timeout
@@ -97,7 +88,6 @@
          * @return {Number} The ID of the timeout
          */
         timeout: function (action, time) {
-            this._init();
             var timerId;
             /**
              * Wrapper for calling action and popping from collection
@@ -115,7 +105,6 @@
          * @return {*}
          */
         stop: function (timerId) {
-            this._init();
             return timers.get(timerId).stop();
         },
         /**
@@ -134,7 +123,6 @@
          * @return {*}
          */
         restart: function (timerId) {
-            this._init();
             return timers.get(timerId).restart(performance.now());
         },
         /**
@@ -154,7 +142,6 @@
          * @return {*}
          */
         clear: function (timerId) {
-            this._init();
             return timers.pop(timerId).stop();
         },
         /**

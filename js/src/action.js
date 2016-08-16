@@ -39,7 +39,7 @@ Action.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        var html = wrap("action clickable disabled");
+        var html = wrap("action clickable disabled animated");
 
         html.addEvent("click", function () {
             if (!this.locked && !this.running && !this.owner.busy) {
