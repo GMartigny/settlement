@@ -19,7 +19,7 @@
         "jit-grunt": "^0.10.0"
     },
     "scripts": {
-        "check": "grunt check",
+        "test": "grunt check",
         "build": "grunt build",
         "patch": "grunt bump:patch",
         "release": "grunt bump:minor"
