@@ -1,4 +1,5 @@
 .idea
+.grunt
 node_modules
 /css/style.css
 /js/script.js

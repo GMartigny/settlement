@@ -10,13 +10,6 @@ module.exports = function (grunt) {
     var env = "dev";
 
     grunt.initConfig({
-        bump: {
-            options: {
-                tagMessage: "Release of the version %VERSION%.",
-                prereleaseName: "beta"
-            }
-        },
-
         less: {
             dev: {
                 options: {
@@ -85,6 +78,19 @@ module.exports = function (grunt) {
         },
         csslint: {
             src: "css/src/*.less"
+        },
+
+        bump: {
+            options: {
+                tagMessage: "Release of the version %VERSION%.",
+                prereleaseName: "beta"
+            }
+        },
+        "gh-pages": {
+            src: "**/*",
+            options: {
+                message: "Auto-commit: push to prod."
+            }
         }
     });
 
@@ -97,4 +103,7 @@ module.exports = function (grunt) {
     grunt.registerTask("build", ["js", "css"]);
 
     grunt.registerTask("default", ["css", "build", "watch"]);
+
+    grunt.registerTask("patch", ["bump:patch"]);
+    grunt.registerTask("release", ["bump:minor", "gh-pages"]);
 };
