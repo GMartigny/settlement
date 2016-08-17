@@ -16,6 +16,7 @@
         "grunt-contrib-uglify": "^2.0.0",
         "grunt-contrib-watch": "^1.0.0",
         "grunt-jscs": "^3.0.1",
+        "grunt-lesslint": "^3.2.0",
         "jit-grunt": "^0.10.0"
     },
     "scripts": {

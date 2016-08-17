@@ -74,14 +74,27 @@ module.exports = function (grunt) {
 
         jscs: {
             src: "js/src/*.js"
+        },
+        lesslint: {
+            src: "css/src/*.less",
+            options: {
+                csslint: {
+                    csslintrc: ".csslintrc"
+                }
+            }
+        },
+        csslint: {
+            src: "css/src/*.less"
         }
     });
 
     // JS linting
-    grunt.registerTask("check", ["jscs"]);
+    grunt.registerTask("check", ["jscs"/*, "lesslint"*/]); // need update from lesslint
 
     // Sources building
     grunt.registerTask("css", ["less:" + env]);
     grunt.registerTask("js", ["uglify:" + env]);
+    grunt.registerTask("build", ["js", "css"]);
+
     grunt.registerTask("default", ["css", "build", "watch"]);
 };
