@@ -10,6 +10,13 @@ module.exports = function (grunt) {
     var env = "dev";
 
     grunt.initConfig({
+        bump: {
+            options: {
+                tagMessage: "Release of the version %VERSION%.",
+                prereleaseName: "beta"
+            }
+        },
+
         less: {
             dev: {
                 options: {
@@ -70,9 +77,11 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask("test", ["jscs"]);
+    // JS linting
+    grunt.registerTask("check", ["jscs"]);
 
+    // Sources building
     grunt.registerTask("css", ["less:" + env]);
-    grunt.registerTask("build", ["uglify:" + env]);
+    grunt.registerTask("js", ["uglify:" + env]);
     grunt.registerTask("default", ["css", "build", "watch"]);
 };
