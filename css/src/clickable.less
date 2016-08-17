@@ -1,0 +1,19 @@
+.clickable {
+    cursor: pointer;
+    border: 1px solid #000;
+    padding: 0 10px;
+    line-height: 30px;
+
+    &:not(.disabled):not(.cooldown):hover {
+        text-decoration: underline;
+    }
+
+    &.disabled {
+        text-decoration: line-through;
+        color: #666;
+    }
+
+    &.cooldown {
+        animation: cooldown linear 1;
+    }
+}

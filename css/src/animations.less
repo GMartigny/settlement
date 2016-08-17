@@ -1,0 +1,45 @@
+@import (reference) "variables";
+
+@keyframes shout {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(.5);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+@cooldownColor: #555;
+@keyframes cooldown {
+    0% {
+        box-shadow: 0 0 0 15px @cooldownColor inset;
+    }
+    to {
+        box-shadow: 0 0 0 0 @cooldownColor inset;
+    }
+}
+
+@ongoingColor: #f5eb57;
+@keyframes ongoing {
+    0% {
+        box-shadow: 0 0 0 15px @ongoingColor inset;
+    }
+    to {
+        box-shadow: 0 0 0 0 @ongoingColor inset;
+    }
+}
+
+@keyframes flash {
+    0% {
+        opacity: 1;
+    }
+    to {
+        opacity: .3;
+    }
+}
