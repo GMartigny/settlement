@@ -4,6 +4,3 @@ node_js:
 install:
   - npm install
   - npm install -g grunt-cli
-after_success:
-  - grunt build
-  - grunt release

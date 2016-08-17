@@ -87,7 +87,7 @@ module.exports = function (grunt) {
             }
         },
         "gh-pages": {
-            src: "**/*",
+            src: ["index.html", "js/script.js", "css/style.css", "img/icons.png"],
             options: {
                 message: "Auto-commit: push to prod."
             }
