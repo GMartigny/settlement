@@ -7,8 +7,6 @@ module.exports = function (grunt) {
     // Load all libs
     require("jit-grunt")(grunt);
 
-    var env = "dev";
-
     grunt.initConfig({
         less: {
             dev: {
@@ -76,14 +74,16 @@ module.exports = function (grunt) {
                 }
             }
         },
-        csslint: {
-            src: "css/src/*.less"
-        },
 
         bump: {
             options: {
                 tagMessage: "Release of the version %VERSION%.",
                 prereleaseName: "beta"
+            },
+            patch: {
+                options: {
+                    createTag: false
+                }
             }
         },
         "gh-pages": {
@@ -98,12 +98,14 @@ module.exports = function (grunt) {
     grunt.registerTask("check", ["jscs"/*, "lesslint"*/]); // need update from lesslint
 
     // Sources building
-    grunt.registerTask("css", ["less:" + env]);
-    grunt.registerTask("js", ["uglify:" + env]);
+    grunt.registerTask("css", ["less:dev"]);
+    grunt.registerTask("js", ["uglify:dev"]);
     grunt.registerTask("build", ["js", "css"]);
 
     grunt.registerTask("default", ["css", "build", "watch"]);
 
     grunt.registerTask("patch", ["bump:patch"]);
-    grunt.registerTask("release", ["bump:minor", "gh-pages"]);
+
+    grunt.registerTask("build", ["js", "css"]);
+    grunt.registerTask("release", ["less:prod", "uglify:prod", "bump:minor", "gh-pages", "build"]);
 };
