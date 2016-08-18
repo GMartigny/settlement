@@ -1,3 +1,5 @@
+[![devDependencies Status](https://david-dm.org/GMartigny/settlement/dev-status.svg)](https://david-dm.org/GMartigny/settlement?type=dev)
+
 # Settlement
 
 Settlement is a game that put you in charge of a small camp in post-apocalyptical wasteland.
