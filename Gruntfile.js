@@ -77,13 +77,10 @@ module.exports = function (grunt) {
 
         bump: {
             options: {
+                pushTo: "origin",
+                commitFiles: ["-a"],
                 tagMessage: "Release of the version %VERSION%.",
                 prereleaseName: "beta"
-            },
-            patch: {
-                options: {
-                    createTag: false
-                }
             }
         },
         "gh-pages": {
@@ -102,10 +99,9 @@ module.exports = function (grunt) {
     grunt.registerTask("js", ["uglify:dev"]);
     grunt.registerTask("build", ["js", "css"]);
 
-    grunt.registerTask("default", ["css", "build", "watch"]);
+    grunt.registerTask("default", ["build", "watch"]);
 
     grunt.registerTask("patch", ["bump:patch"]);
 
-    grunt.registerTask("build", ["js", "css"]);
     grunt.registerTask("release", ["less:prod", "uglify:prod", "bump:minor", "gh-pages", "build"]);
 };
