@@ -26,6 +26,27 @@ module.exports = function (grunt) {
             }
         },
 
+        uglify: {
+            dev: {
+                options: {
+                    beautify: true,
+                    sourceMap: true,
+                    banner: "// jscs:disable"
+                },
+                files: {
+                    "js/script.js": ["js/src/*.js"]
+                }
+            },
+            prod: {
+                options: {
+                    preserveComments: false
+                },
+                files: {
+                    "js/script.js": ["js/src/*.js"]
+                }
+            }
+        },
+
         watch: {
             less2css: {
                 files: ["css/src/*.less"],
@@ -39,26 +60,6 @@ module.exports = function (grunt) {
                 tasks: ["build"],
                 options: {
                     interrupt: true
-                }
-            }
-        },
-
-        uglify: {
-            dev: {
-                options: {
-                    mangle: false,
-                    sourceMap: true
-                },
-                files: {
-                    "js/script.js": ["js/src/*.js"]
-                }
-            },
-            prod: {
-                options: {
-                    preserveComments: false
-                },
-                files: {
-                    "js/script.js": ["js/src/*.js"]
                 }
             }
         },
@@ -103,5 +104,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask("patch", ["bump:patch"]);
 
-    grunt.registerTask("release", ["less:prod", "uglify:prod", "bump:minor", "gh-pages", "build"]);
+    grunt.registerTask("pushtoprod", ["less:prod", "uglify:prod", "gh-pages", "build"]);
+    grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 };
