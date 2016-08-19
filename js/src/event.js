@@ -21,7 +21,7 @@ Event.prototype = {
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
 
-        this.html.textContent = this.data.name;
+        this.nameNode.textContent = this.data.name;
         if (this.tooltip) {
             this.tooltip.remove();
         }
@@ -34,7 +34,14 @@ Event.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        return wrap("event, animated");
+        var html = wrap("event");
+
+        this.nameNode = wrap("name");
+        html.appendChild(this.nameNode);
+        this.progressBar = wrap("animated bar");
+        html.appendChild(this.progressBar);
+
+        return html;
     },
     /**
      * Start the event
@@ -51,19 +58,23 @@ Event.prototype = {
                 MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
                 var duration = this.data.time * Game.hourToMs;
 
-                this.html.style.animationDuration = duration + "ms";
+                this.progressBar.style.animationDuration = duration + "ms";
                 this.html.classList.add("ongoing");
 
-                TimerManager.timeout(function () {
-                    this.data.effect(false);
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
-
-                    this.html.remove();
-                }.bind(this), duration);
-                callback(this);
+                TimerManager.timeout(this.end.bind(this), duration);
             }
+            callback(this);
         }.bind(this), "event");
         return !!this.data.time;
+    },
+    /**
+     * End the event
+     */
+    end: function () {
+        this.data.effect(false);
+        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
+
+        this.html.remove();
     }
 };
 Event.LST_ID = "eventList";

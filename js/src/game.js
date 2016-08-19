@@ -1,4 +1,22 @@
 "use strict";
+
+var G;
+console.groupCollapsed("Loading");
+var media = loadMedia([
+    {src: "img/icons.png", type: "image"}
+], function (prc, file) {
+    log(file + " : " + prc + "%");
+    if (prc >= 100) {
+        console.groupEnd();
+        try {
+            G = new Game(document.getElementById("main"), media);
+        }
+        catch (e) {
+            log("Fail to load game : " + e.message);
+        }
+    }
+});
+
 /**
  * Main game class
  * @param holder HTML element holding the game
@@ -28,7 +46,6 @@ function Game (holder, media) {
 
     this.refresh();
 }
-Game.version = "0.1";
 Game.isDev = 1;
 Game.hourToMs = 2000;
 Game.tickLength = Game.hourToMs;
@@ -38,13 +55,10 @@ Game.prototype = {
      * @private
      */
     _init: function () {
-        log("Starting v" + Game.version);
-
-        this.data = dataManager.getData();
-        this.time = dataManager.getTime();
+        log("Starting v" + window.version);
 
         var game = this;
-        deepBrowse(this.data, function (item) {
+        deepBrowse(DataManager.data, function (item) {
             item.id = pickID();
             for (var attr in item) {
                 if (item.hasOwnProperty(attr) && isFunction(item[attr])) {
@@ -53,7 +67,7 @@ Game.prototype = {
             }
         });
 
-        this.initialActions.push(this.data.actions.settle);
+        this.initialActions.push(DataManager.data.actions.settle);
 
         window.onkeypress = function (e) {
             switch (e.keyCode) {
@@ -120,13 +134,13 @@ Game.prototype = {
 
         // And we may die :'(
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-            log("We loose " + person.name);
+            this.log("We loose " + person.name, MessageBus.MSG_TYPES.WARN);
             // TODO : Decide of gameplay
-            // this.resources.get(this.data.resources.room.id).update(-1);
+            // this.resources.get(DataManager.data.resources.room.id).update(-1);
             this.people.out(person);
             // The last hope fade away
             if (this.people.length <= 0) {
-                log("We held up for " + this.getSurvivalDuration());
+                this.log("We held up for " + this.getSurvivalDuration());
                 this.flags.paused = true;
             }
         }.bind(this));
@@ -200,7 +214,11 @@ Game.prototype = {
      */
     log: function (message, type) {
         type = type || 0;
-        var types = ["info", "warning", "flavor"];
+        var types = {
+            0: "info",
+            1: "warning",
+            2: "flavor"
+        };
         this.logsList.appendChild(wrap(types[type], message));
     },
     /**
@@ -239,9 +257,9 @@ Game.prototype = {
             if (this.flags.settled) {
                 // We use some resources
                 // TODO : need refacto
-                var needs = this.data.people.need();
+                var needs = DataManager.data.people.need();
                 needs.forEach(function (need) {
-                    var state = need[1].id === this.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
+                    var state = need[1].id === DataManager.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
                     this.consume(need[0] * this.people.length, need[1], function (number) {
                         this.people.forEach(function (person, index, list) {
                             person[state] = number / list.length;
@@ -254,13 +272,16 @@ Game.prototype = {
                 }
 
                 // Random event can happen
-                if (!this.flags.popup && random() < this.data.events.dropRate) {
+                if (!this.flags.popup && random() < DataManager.data.events.dropRate) {
                     var eventData = this.getRandomEvent();
                     // in the right conditions
                     if (eventData) {
                         var event = new Event(eventData);
                         event.start(function (event) {
-                            this.eventsList.appendChild(event.html);
+                            if (event.data.time) {
+                                this.eventsList.appendChild(event.html);
+                            }
+                            this.flags.popup = false;
                         }.bind(this));
                         this.flags.popup = true;
                     }
@@ -297,11 +318,9 @@ Game.prototype = {
         if (amount) {
             var instance = this.resources.get(resource.id);
             if (instance && instance.has(amount)) {
-                log("Use " + amount + " " + resource.name);
                 instance.update(-amount);
             }
             else if (isFunction(lack)) {
-                log("Ran out of " + amount + " " + resource.name);
                 var diff = amount - instance.get();
                 instance.set(0);
                 lack.call(this, diff, resource);
@@ -314,7 +333,6 @@ Game.prototype = {
      * @param resource Resource
      */
     earn: function (amount, resource) {
-        log("Acquire " + amount + " " + resource.name);
         var id = resource.id;
         if (this.resources.has(id)) {
             this.resources.get(id).update(amount);
@@ -346,7 +364,7 @@ Game.prototype = {
      * @param building Building
      */
     build: function (building) {
-        log("We add " + an(building.name) + " to the camp");
+        this.log("We add " + an(building.name) + " to the camp");
         var id = building.id;
         if (this.buildings.has(id)) {
             this.buildings.get(id).add(1);
@@ -371,7 +389,7 @@ Game.prototype = {
     possibleCraftables: function () {
         var craftables = [],
             resources = this.resources.items;
-        deepBrowse(this.data.resources.craftable, function (craft) {
+        deepBrowse(DataManager.data.resources.craftable, function (craft) {
             var ok = true;
             if (craft.consume && isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
@@ -393,7 +411,7 @@ Game.prototype = {
         var buildings = [],
             done = this.buildings;
 
-        deepBrowse(this.data.buildings, function (build) {
+        deepBrowse(DataManager.data.buildings, function (build) {
             if (!build.unique || build.unique && !done.has(build.id)) {
                 buildings.push(build);
             }
@@ -406,9 +424,9 @@ Game.prototype = {
      * @return {boolean}
      */
     canSomeoneArrive: function () {
-        return this.hasEnough(this.data.resources.room.id, this.people.length + 1) &&
-            random() < this.data.people.dropRate &&
-            this.getSettledTime() / this.time.day > 2;
+        return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1) &&
+            random() < DataManager.data.people.dropRate &&
+            this.getSettledTime() / DataManager.time.day > 2;
     },
     /**
      * Return an event that can happened
@@ -416,13 +434,13 @@ Game.prototype = {
      */
     getRandomEvent: function () {
         var list = [],
-            time = this.getSettledTime() / this.time.week;
-        if (time > 0) {
-            list.push.apply(list, this.data.events.easy.values());
+            time = this.getSettledTime() / DataManager.time.week;
+        if (time > 1) {
+            list.push.apply(list, DataManager.data.events.easy.values());
             if (time > 2) {
-                list.push.apply(list, this.data.events.medium.values());
+                list.push.apply(list, DataManager.data.events.medium.values());
                 if (time > 5) {
-                    list.push.apply(list, this.data.events.hard.values());
+                    list.push.apply(list, DataManager.data.events.hard.values());
                 }
             }
         }

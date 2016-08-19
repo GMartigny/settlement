@@ -29,6 +29,7 @@ module.exports = function (grunt) {
         uglify: {
             dev: {
                 options: {
+                    mangle: false,
                     beautify: true,
                     sourceMap: true,
                     banner: "// jscs:disable"
@@ -39,7 +40,8 @@ module.exports = function (grunt) {
             },
             prod: {
                 options: {
-                    preserveComments: false
+                    preserveComments: false,
+                    enclose: {}
                 },
                 files: {
                     "js/script.js": ["js/src/*.js"]
@@ -50,17 +52,11 @@ module.exports = function (grunt) {
         watch: {
             less2css: {
                 files: ["css/src/*.less"],
-                tasks: ["css"],
-                options: {
-                    interrupt: true
-                }
+                tasks: ["css"]
             },
             jsbuild: {
                 files: ["js/src/*.js"],
-                tasks: ["build"],
-                options: {
-                    interrupt: true
-                }
+                tasks: ["js"]
             }
         },
 
@@ -79,7 +75,8 @@ module.exports = function (grunt) {
         bump: {
             options: {
                 pushTo: "origin",
-                commitFiles: ["-a"],
+                commitFiles: ["package.json", "index.html"],
+                globalReplace: true,
                 tagMessage: "Release of the version %VERSION%.",
                 prereleaseName: "beta"
             }

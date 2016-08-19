@@ -152,7 +152,7 @@ function wrap (classe, text) {
 function formatTime (time) {
     var units = ["year", "month", "day", "hour"],
         res = [],
-        timeMatch = dataManager.getTime();
+        timeMatch = DataManager.time;
 
     units.forEach(function (unit) {
         if (time >= timeMatch[unit]) {
