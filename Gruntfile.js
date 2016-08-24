@@ -5,9 +5,23 @@
 module.exports = function (grunt) {
 
     // Load all libs
-    require("jit-grunt")(grunt);
+    require("jit-grunt")(grunt, {
+        sprite: "grunt-spritesmith"
+    });
+
+    var iconPath = "img/icons.png";
 
     grunt.initConfig({
+        sprite: {
+            all: {
+                src: "img/src/*.png",
+                dest: iconPath,
+                destCss: "css/src/sprites.less",
+                cssFormat: "css",
+                imgPath: "../" + iconPath
+            }
+        },
+
         less: {
             dev: {
                 options: {
@@ -93,14 +107,15 @@ module.exports = function (grunt) {
     grunt.registerTask("check", ["jscs"/*, "lesslint"*/]); // need update from lesslint
 
     // Sources building
+    grunt.registerTask("icon", ["sprite:all"]);
     grunt.registerTask("css", ["less:dev"]);
     grunt.registerTask("js", ["uglify:dev"]);
-    grunt.registerTask("build", ["js", "css"]);
+    grunt.registerTask("build", ["js", "icon", "css"]);
 
     grunt.registerTask("default", ["build", "watch"]);
 
     grunt.registerTask("patch", ["bump:patch"]);
 
-    grunt.registerTask("pushtoprod", ["less:prod", "uglify:prod", "gh-pages", "build"]);
+    grunt.registerTask("pushtoprod", ["uglify:prod", "icon", "less:prod", "gh-pages", "build"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 };
