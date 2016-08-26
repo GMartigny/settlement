@@ -10,15 +10,8 @@
     <body>
         <main id="main"></main>
         <script>
-            var media = loadMedia([
-                {src: "img/icons.png", type: "image"},
-                {src: "js/script.js", type: "script"}
-            ], function(prc, file){
-                console.log(file + " : " + prc);
-                if(prc >= 100){
-                    window.G = new Game(document.getElementById("main"), media);
-                }
-            });
+            window.version = "0.0.4";
         </script>
+        <script src="js/script.js"></script>
     </body>
 </html>
