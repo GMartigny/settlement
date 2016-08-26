@@ -1,0 +1,5 @@
+var LogManager = (function () {
+    return {
+        
+    };
+})();

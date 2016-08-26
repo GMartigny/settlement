@@ -38,18 +38,13 @@ Resource.prototype = {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function (iconPos) {
+    toHTML: function (iconClass) {
         var html = wrap("resource get-more");
 
         this.counter = wrap("counter", 1);
         html.appendChild(this.counter);
 
-        var icon = wrap("icon");
-        var pos = "16px 16px";
-        if (isArray(iconPos)) {
-            pos = (-iconPos[0] * 16) + "px " + (-iconPos[1] * 16) + "px";
-        }
-        icon.style.backgroundPosition = pos;
+        var icon = wrap("icon icon-" + iconClass);
         html.appendChild(icon);
 
         return html;

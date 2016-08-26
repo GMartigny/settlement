@@ -89,13 +89,13 @@ Game.prototype = {
         this.buildingsList.id = Building.LST_ID;
         this.holder.appendChild(this.buildingsList);
 
-        this.logsList = wrap();
-        this.logsList.id = "logs";
-        this.holder.appendChild(this.logsList);
-
         this.eventsList = wrap();
         this.eventsList.id = Event.LST_ID;
         this.holder.appendChild(this.eventsList);
+
+        this.logsList = wrap();
+        this.logsList.id = "logs";
+        this.holder.appendChild(this.logsList);
 
         // A person arrives
         TimerManager.timeout(this.welcome.bind(this), 400 * (Game.isDev ? 1 : 10));
@@ -103,7 +103,7 @@ Game.prototype = {
         // We may find resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function (given) {
             if (isArray(given)) {
-                compactResources(given).forEach(function (r) {
+                given.forEach(function (r) {
                     this.earn.apply(this, r);
                 }.bind(this));
             }
@@ -219,7 +219,7 @@ Game.prototype = {
             1: "warning",
             2: "flavor"
         };
-        this.logsList.appendChild(wrap(types[type], message));
+        this.logsList.insertBefore(wrap("log " + types[type], message), this.logsList.firstChild);
     },
     /**
      * Toggle pause state
@@ -259,7 +259,8 @@ Game.prototype = {
                 // TODO : need refacto
                 var needs = DataManager.data.people.need();
                 needs.forEach(function (need) {
-                    var state = need[1].id === DataManager.data.resources.gatherable.common.water.id ? "thirsty" : "starving";
+                    var waterId = DataManager.data.resources.gatherable.common.water.id;
+                    var state = need[1].id === waterId ? "thirsty" : "starving";
                     this.consume(need[0] * this.people.length, need[1], function (number) {
                         this.people.forEach(function (person, index, list) {
                             person[state] = number / list.length;
@@ -337,7 +338,7 @@ Game.prototype = {
         if (this.resources.has(id)) {
             this.resources.get(id).update(amount);
         }
-        else if (amount > 0) {
+        else {
             var res = new Resource(resource, amount);
             this.resources.push(id, res);
             this.resourcesList.appendChild(res.html);
@@ -356,6 +357,7 @@ Game.prototype = {
                 //noinspection BadExpressionStatementJS - force redraw
                 this.peopleList.appendChild(person.html).offsetHeight;
                 person.html.classList.add("arrived");
+                this.log(person.name + " arrives.");
             }.bind(this));
         }.bind(this));
     },
@@ -364,7 +366,6 @@ Game.prototype = {
      * @param building Building
      */
     build: function (building) {
-        this.log("We add " + an(building.name) + " to the camp");
         var id = building.id;
         if (this.buildings.has(id)) {
             this.buildings.get(id).add(1);

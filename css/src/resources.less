@@ -1,3 +1,5 @@
+@import (reference) "base";
+
 #resourceList {
     padding: 5px;
     background-color: #e2bb6d;
@@ -8,17 +10,16 @@
 
     .resource {
         display: inline-block;
-        padding-right: 20px;
-        margin: 0 5px;
+        margin: 0 8px;
         z-index: 1;
 
+        .counter {
+            display: inline-block;
+            margin-right: 4px;
+        }
+
         &:before, &:after {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
+            .initPseudo();
             opacity: 0;
             border-radius: 5px;
             z-index: -1;

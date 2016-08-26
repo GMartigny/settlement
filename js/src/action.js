@@ -57,7 +57,7 @@ Action.prototype = {
      */
     refresh: function (resources, flags) {
         this.locked = (this.data.relaxing !== 1 && this.owner.isTired()) ||
-                (this.data.isOut && flags.cantGoOut);
+            (this.data.isOut && flags.cantGoOut);
 
         // check consummation
         if (isArray(this.data.consume)) {
@@ -98,14 +98,18 @@ Action.prototype = {
             this.html.classList.add("cooldown");
 
             this.timeout = TimerManager.timeout(function () {
-                log(this.owner.name + " just finish to " + this.data.name);
+                var log = this.owner.name + " just finish to " + this.data.name;
                 this.timeout = 0;
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
 
                 // Give
                 if (isFunction(this.data.give)) {
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, this.data.give(this));
+                    var give = compactResources(this.data.give(this));
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, give);
+                    if (give.length) {
+                        log += " and give " + formatArray(give);
+                    }
                 }
                 // Start collect
                 if (isFunction(this.data.collect)) {
@@ -121,8 +125,13 @@ Action.prototype = {
                 }
                 // Build
                 if (isFunction(this.data.build)) {
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, this.data.build(this));
+                    var build = this.data.build(this);
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
+                    if (build.length) {
+                        log += " and build " + formatArray(build);
+                    }
                 }
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.INFO, log + ".");
             }.bind(this), duration);
             return true;
         }

@@ -138,7 +138,7 @@ function wrap (classe, text) {
         html.classList.add.apply(html.classList, classe.split(" "));
     }
     if (text) {
-        html.textContent = text;
+        html.innerHTML = text;
     }
 
     return html;
@@ -162,7 +162,49 @@ function formatTime (time) {
         }
     });
 
-    return res.join(", ");
+    return formatJoin(res);
+}
+
+/**
+ * Format an array for human reading
+ * @param array
+ * @return {String}
+ */
+function formatArray (array) {
+    var res = [];
+
+    array.forEach(function (item) {
+        var name;
+        if (item[1].icon) {
+            name = wrap("icon icon-" + item[1].icon).outerHTML;
+        }
+        else {
+            name = pluralize(item[1].name, item[0]);
+        }
+        res.push(item[0] + " " + name);
+    });
+
+    return formatJoin(res);
+}
+
+/**
+ * Join an array for human reading
+ * @param array
+ * @param final [optional] The last word of the list
+ * @return {String}
+ */
+function formatJoin (array, final) {
+    final = final || "and";
+    if (array.length > 1) {
+        array[array.length - 2] += " " + final + " " + array.pop();
+        return array.join(", ");
+    }
+    else if (array.length) {
+        return array[0];
+    }
+    else {
+        return "";
+    }
 }
 
 /**
@@ -362,7 +404,7 @@ function compactResources (array) {
         if (known) {
             known[0] += item[0];
         }
-        else {
+        else if (item[0] > 0) {
             reduced.push(item);
         }
         return reduced;

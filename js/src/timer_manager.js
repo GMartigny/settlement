@@ -1,5 +1,4 @@
-(function () {
-
+var TimerManager = (function () {
     /**
      * Class for timers
      * @param action Callback function after timeout
@@ -80,7 +79,7 @@
     };
 
     var timers = new Collection();
-    window.TimerManager = {
+    return {
         /**
          * Set a timeout
          * @param action A callback function called after timeout

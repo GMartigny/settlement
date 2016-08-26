@@ -8,7 +8,7 @@ function MessageBus () {
     if (MessageBus.instance) {
         throw "An instance already exists.";
     }
-    this.observers = [];
+    this.observers = {};
 }
 MessageBus.prototype = {
     /**
@@ -21,10 +21,10 @@ MessageBus.prototype = {
             type = [type];
         }
         for (var i = 0, l = type.length; i < l; ++i) {
-            if (!this.observers[type]) {
-                this.observers[type] = [];
+            if (!this.observers[type[i]]) {
+                this.observers[type[i]] = [];
             }
-            this.observers[type].push(action);
+            this.observers[type[i]].push(action);
         }
     },
     /**
@@ -53,7 +53,7 @@ MessageBus.getInstance = function () {
     return MessageBus.instance;
 };
 MessageBus.MSG_TYPES = {
-    INFO: 0, // Log infomrations
+    INFO: 0, // Log information
     WARN: 1, // Log a warning
     FLAVOR: 2, // Log a flavor text
     CLICK: 10, // Click an action

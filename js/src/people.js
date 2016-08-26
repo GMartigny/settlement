@@ -33,7 +33,6 @@ function peopleFactory (amount) {
  * @constructor
  */
 function People (name) {
-    log(name + " join the community");
     this.name = name;
     this.actions = new Collection();
 
@@ -163,7 +162,6 @@ People.prototype = {
      * @returns {People} Itself
      */
     planBuilding: function (building) {
-        log("\"We'll do " + an(building.name) + "\"");
         this.plan = building;
         return this;
     },

@@ -9,16 +9,12 @@ module.exports = function (grunt) {
         sprite: "grunt-spritesmith"
     });
 
-    var iconPath = "img/icons.png";
-
     grunt.initConfig({
         sprite: {
             all: {
                 src: "img/src/*.png",
-                dest: iconPath,
-                destCss: "css/src/sprites.less",
-                cssFormat: "css",
-                imgPath: "../" + iconPath
+                dest: "img/icons.png",
+                destCss: "css/src/sprites.less"
             }
         },
 

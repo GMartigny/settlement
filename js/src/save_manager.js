@@ -1,3 +1,6 @@
+function SaveManager () {
+}
+
 (function () {
 
     var keys = {

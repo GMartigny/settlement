@@ -1,0 +1,24 @@
+@import (reference) "sprites";
+
+@iconPath: "../img/icons.png";
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    background-image: url(@iconPath);
+}
+
+.icon(@sprite) {
+    .sprite-position(@sprite);
+    .sprite-width(@sprite);
+    .sprite-height(@sprite);
+}
+
+.icons(@sprites, @i: 1) when (@i <= length(@sprites)) {
+    @sprite: extract(@sprites, @i);
+    @sprite-name: e(extract(@sprite, 10));
+    .icon-@{sprite-name} {
+        .icon(@sprite);
+    }
+    .icons(@sprites, @i + 1);
+}
+.icons(@spritesheet-sprites);

@@ -1,5 +1,26 @@
+@import (reference) "base";
+
 #logs {
     padding: 5px;
     clear: both;
-    max-height: 50%;
+    height: 50%;
+    overflow: hidden;
+
+    &:after {
+        .initPseudo();
+        background: linear-gradient(rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
+    }
+
+    .log {
+        padding: 5px;
+
+        &.info {
+        }
+        &.warning {
+            color: #c53635;
+        }
+        &.flavor {
+            color: #999;
+        }
+    }
 }
