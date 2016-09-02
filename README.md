@@ -1,5 +1,6 @@
 [![devDependencies Status](https://david-dm.org/GMartigny/settlement/dev-status.svg)](https://david-dm.org/GMartigny/settlement?type=dev)
 
+
 # Settlement
 
 Settlement is a game that put you in charge of a small camp in post-apocalyptical wasteland.
@@ -9,11 +10,16 @@ The environment is not going to be helpful, challenging you with random events.
 
 Luckily, human strength is to learn and act fast. So keep moving and you may live a little longer.
 
+
 ## Changelog
 
-[Detailed changelog](https://github.com/GMartigny/settlement/wiki/Changelog)
+### [v0.2](https://github.com/GMartigny/settlement/releases/tag/v0.2.0) WIP
 
-### [v0.1](https://github.com/GMartigny/settlement/issues/1)
+Some tweak in data.
+Would be nice to have a save system.
+
+
+### [v0.1](https://github.com/GMartigny/settlement/releases/tag/v0.1.0)
 
 First working version with resources, people, actions, buildings and events.
 
@@ -23,6 +29,7 @@ First working version with resources, people, actions, buildings and events.
 All help is welcomed in this project. I'll try to answer every request, so feel free to [send me messages](mailto:guillaume.martigny@gmail.com).
 
 You can go check [the wiki to learn about ways to contribute](https://github.com/GMartigny/settlement/wiki).
+
 
 ## License
 
