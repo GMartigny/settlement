@@ -1,7 +1,7 @@
 "use strict";
 /**
  * Class for events
- * @param data
+ * @param {Object} data - The event data
  * @constructor
  */
 function Event (data) {
@@ -14,7 +14,7 @@ function Event (data) {
 Event.prototype = {
     /**
      * Initialize object
-     * @param data
+     * @param {Object} data - The event data
      * @private
      * @return {Event} Itself
      */
@@ -45,17 +45,17 @@ Event.prototype = {
     },
     /**
      * Start the event
+     * @param {Function} callback - A function to execute on start
      * @return {boolean} Is event running
      */
     start: function (callback) {
-        log("The " + this.data.name + " has started.");
-
         popup(this.data, function () {
             // Effect
             this.data.effect(true);
 
             if (this.data.time) {
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this)
+                    .notify(MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(an(this.data.name) + " has started."));
                 var duration = this.data.time * Game.hourToMs;
 
                 this.progressBar.style.animationDuration = duration + "ms";
@@ -63,7 +63,7 @@ Event.prototype = {
 
                 TimerManager.timeout(this.end.bind(this), duration);
             }
-            callback(this);
+            callback && callback(this);
         }.bind(this), "event");
         return !!this.data.time;
     },

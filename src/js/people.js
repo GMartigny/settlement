@@ -1,13 +1,14 @@
 "use strict";
 /**
  * Factory for people
- * @param amount Number of people to create
+ * @param {Number} amount - Number of people to create
  * @return {Promise}
  */
 function peopleFactory (amount) {
+    amount = amount || 1;
     return new Promise(function (resolve, reject) {
         if (Game.isDev) {
-            resolve((new Array(amount)).fill(new People("John Doe")));
+            resolve((new Array(amount)).fill(new People("John Doe", "male")));
         }
         else {
             People.randomName(amount).then(function (data) {
@@ -15,7 +16,8 @@ function peopleFactory (amount) {
                     var results = JSON.parse(data.target.response).results;
                     var people = [];
                     results.forEach(function (res) {
-                        people.push(new People(capitalize(res.name.first + " " + capitalize(res.name.last))));
+                        var people = new People(capitalize(res.name.first) + " " + capitalize(res.name.last), res.gender);
+                        people.push(people);
                     });
                     resolve(people);
                 }
@@ -29,11 +31,13 @@ function peopleFactory (amount) {
 
 /**
  * Class for people
- * @param name
+ * @param {String} name - It's name
+ * @param {"male"|"female"} gender - It's gender
  * @constructor
  */
-function People (name) {
+function People (name, gender) {
     this.name = name;
+    this.gender = gender;
     this.actions = new Collection();
 
     this.busy = false;
@@ -73,9 +77,9 @@ People.prototype = {
     },
     /**
      * Loop function called every game tick
-     * @param resources Resources list
-     * @param elapse Elapse time since last call
-     * @param flags Game flags
+     * @param {Collection} resources - Resources list
+     * @param {Number} elapse - Elapse time since last call
+     * @param {Object} flags - Game flags
      * @return {People} Itself
      */
     refresh: function (resources, elapse, flags) {
@@ -103,8 +107,15 @@ People.prototype = {
         return this;
     },
     /**
+     * Return the people pronoun
+     * @return {string}
+     */
+    getPronoun: function () {
+        return this.gender === "male" ? "he" : "she";
+    },
+    /**
      * Set busy with an action
-     * @param action Current action
+     * @param {Action} action - Current action
      * @returns {People} Itself
      */
     setBusy: function (action) {
@@ -114,8 +125,8 @@ People.prototype = {
     },
     /**
      * Change energy
-     * @param amount Amount to apply
-     * @returns {number} Current energy
+     * @param {Number} amount - Amount to apply
+     * @returns {Number} Current energy
      */
     updateEnergy: function (amount) {
         this.energy += amount;
@@ -134,15 +145,15 @@ People.prototype = {
     },
     /**
      * Test if tired
-     * @returns {boolean}
+     * @returns {Boolean}
      */
     isTired: function () {
         return this.energy <= 0;
     },
     /**
      * Change life
-     * @param amount Amount to apply
-     * @returns {number} Current life
+     * @param {Number} amount - Amount to apply
+     * @returns {Number} Current life
      */
     updateLife: function (amount) {
         this.life += amount;
@@ -158,16 +169,17 @@ People.prototype = {
     },
     /**
      * Plan a building
-     * @param building Building to plan
+     * @param {Object} building - Building to plan's data
      * @returns {People} Itself
      */
     planBuilding: function (building) {
+        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "Reay to build " + an(building.name));
         this.plan = building;
         return this;
     },
     /**
      * Add some actions
-     * @param actions One or more actions to add
+     * @param {Action|Array} actions - One or more actions to add
      * @returns {People} Itself
      */
     addAction: function (actions) {
@@ -190,7 +202,7 @@ People.prototype = {
     },
     /**
      * Lock some actions
-     * @param actions One or more actions to lock
+     * @param {Action|Array} actions - One or more actions to lock
      * @returns {People}
      */
     lockAction: function (actions) {
@@ -206,7 +218,7 @@ People.prototype = {
     },
     /**
      * Kill a person
-     * @returns {People} Itself
+     * @returns {People} Itself (one last time)
      */
     die: function () {
         if (this.html.classList.contains("arrived")) {
@@ -225,7 +237,7 @@ People.prototype = {
 People.LST_ID = "peopleList";
 /**
  * Return a promise for a random name
- * @param amount Number of name to get
+ * @param {Number} amount - Number of name to get
  * @return {Promise}
  */
 People.randomName = function (amount) {

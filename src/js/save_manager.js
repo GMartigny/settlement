@@ -1,3 +1,7 @@
+/**
+ * A manager for saves
+ * @constructor
+ */
 function SaveManager () {
 }
 
@@ -8,11 +12,11 @@ function SaveManager () {
         gameData: "d",
         salt: "s"
     };
-    var salt = localStorage.getItem(keys.salt) || Math.random().toString(36).slice(-6);
+    var salt = localStorage.getItem(keys.salt) || random().toString(36).slice(-6);
 
     /**
      * Hash a string
-     * @param obj Any Object
+     * @param {Object} obj - Any Object
      * @return {string}
      */
     function hash (obj) {
@@ -21,7 +25,7 @@ function SaveManager () {
 
     /**
      * Unhash a string
-     * @param str A string coming from the hash function
+     * @param {String} str - A string coming from the hash function
      */
     function unhash (str) {
         return JSON.parse(atob(str.slice(6)));
@@ -30,7 +34,7 @@ function SaveManager () {
     window.saveManager = {
         /**
          * Persist data in localStorage
-         * @param obj
+         * @param {Object} obj
          * @return {boolean}
          */
         save: function (obj) {

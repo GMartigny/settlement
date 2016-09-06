@@ -1,7 +1,7 @@
 "use strict";
 /**
  * Class for buildings
- * @param data
+ * @param {Object} data - The building's data
  * @constructor
  */
 function Building (data) {
@@ -14,7 +14,7 @@ function Building (data) {
 Building.prototype = {
     /**
      * Initialise object
-     * @param data
+     * @param {Object} data - The building's data
      * @private
      * @return {Building} Itself
      */
@@ -35,13 +35,13 @@ Building.prototype = {
      */
     toHTML: function () {
         this.counter = wrap("counter");
-        var html = wrap("building", this.data.name);
+        var html = wrap("building", capitalize(this.data.name));
         html.appendChild(this.counter);
         return html;
     },
     /**
      * Add more of this building
-     * @param number An amount to add
+     * @param {Number} number - An amount to add
      * @return {Building} Itself
      */
     add: function (number) {

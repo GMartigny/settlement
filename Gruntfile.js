@@ -9,12 +9,17 @@ module.exports = function (grunt) {
         sprite: "grunt-spritesmith"
     });
 
+    var versionStr = "window.VERSION = 'v<%= version %>';";
+
     grunt.initConfig({
+        version: grunt.file.readJSON('package.json').version,
+
+
         sprite: {
             all: {
-                src: "img/src/*.png",
-                dest: "img/icons.png",
-                destCss: "css/src/sprites.less"
+                src: "src/img/*.png",
+                dest: "dist/img/icons.png",
+                destCss: "src/css/sprites.less"
             }
         },
 
@@ -23,7 +28,7 @@ module.exports = function (grunt) {
                 options: {
                 },
                 files: {
-                    "css/style.css": "css/src/*.less"
+                    "dist/css/style.css": "src/css/*.less"
                 }
             },
             prod: {
@@ -31,7 +36,7 @@ module.exports = function (grunt) {
                     compress: true
                 },
                 files: {
-                    "css/style.css": "css/src/*.less"
+                    "dist/css/style.css": "src/css/*.less"
                 }
             }
         },
@@ -42,39 +47,43 @@ module.exports = function (grunt) {
                     mangle: false,
                     beautify: true,
                     sourceMap: true,
-                    banner: "// jscs:disable"
+                    banner: versionStr,
+                    compress: {
+                        drop_debugger: false
+                    }
                 },
                 files: {
-                    "js/script.js": ["js/src/*.js"]
+                    "dist/js/script.js": ["src/js/*.js"]
                 }
             },
             prod: {
                 options: {
                     preserveComments: false,
+                    banner: versionStr,
                     enclose: {}
                 },
                 files: {
-                    "js/script.js": ["js/src/*.js"]
+                    "dist/js/script.js": ["src/js/*.js"]
                 }
             }
         },
 
         watch: {
             less2css: {
-                files: ["css/src/*.less"],
+                files: ["src/css/*.less"],
                 tasks: ["css"]
             },
             jsbuild: {
-                files: ["js/src/*.js"],
+                files: ["src/js/*.js"],
                 tasks: ["js"]
             }
         },
 
         jscs: {
-            src: "js/src/*.js"
+            src: "src/js/*.js"
         },
         lesslint: {
-            src: "css/src/*.less",
+            src: "src/css/*.less",
             options: {
                 csslint: {
                     csslintrc: ".csslintrc"
@@ -85,14 +94,13 @@ module.exports = function (grunt) {
         bump: {
             options: {
                 pushTo: "origin",
-                commitFiles: ["package.json", "index.html"],
                 globalReplace: true,
                 tagMessage: "Release of the version %VERSION%.",
                 prereleaseName: "beta"
             }
         },
         "gh-pages": {
-            src: ["index.html", "js/script.js", "css/style.css", "img/icons.png"],
+            src: ["index.html", "dist/**/*"],
             options: {
                 message: "Auto-commit: push to prod."
             }

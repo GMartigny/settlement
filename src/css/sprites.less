@@ -1,0 +1,242 @@
+/*
+LESS variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: @icon-home-width;
+}
+
+The large array-like variables contain all information about a single icon
+@icon-home: x y offset_x offset_y width height total_width total_height image_path name;
+
+At the bottom of this section, we provide information about the spritesheet itself
+@spritesheet: width height image @spritesheet-sprites;
+*/
+@component-name: 'component';
+@component-x: 16px;
+@component-y: 0px;
+@component-offset-x: -16px;
+@component-offset-y: 0px;
+@component-width: 16px;
+@component-height: 16px;
+@component-total-width: 64px;
+@component-total-height: 64px;
+@component-image: '../../dist/img/icons.png';
+@component: 16px 0px -16px 0px 16px 16px 64px 64px '../../dist/img/icons.png' 'component';
+@computer-name: 'computer';
+@computer-x: 16px;
+@computer-y: 32px;
+@computer-offset-x: -16px;
+@computer-offset-y: -32px;
+@computer-width: 16px;
+@computer-height: 16px;
+@computer-total-width: 64px;
+@computer-total-height: 64px;
+@computer-image: '../../dist/img/icons.png';
+@computer: 16px 32px -16px -32px 16px 16px 64px 64px '../../dist/img/icons.png' 'computer';
+@engine-name: 'engine';
+@engine-x: 0px;
+@engine-y: 16px;
+@engine-offset-x: 0px;
+@engine-offset-y: -16px;
+@engine-width: 16px;
+@engine-height: 16px;
+@engine-total-width: 64px;
+@engine-total-height: 64px;
+@engine-image: '../../dist/img/icons.png';
+@engine: 0px 16px 0px -16px 16px 16px 64px 64px '../../dist/img/icons.png' 'engine';
+@food-name: 'food';
+@food-x: 16px;
+@food-y: 16px;
+@food-offset-x: -16px;
+@food-offset-y: -16px;
+@food-width: 16px;
+@food-height: 16px;
+@food-total-width: 64px;
+@food-total-height: 64px;
+@food-image: '../../dist/img/icons.png';
+@food: 16px 16px -16px -16px 16px 16px 64px 64px '../../dist/img/icons.png' 'food';
+@medication-name: 'medication';
+@medication-x: 32px;
+@medication-y: 0px;
+@medication-offset-x: -32px;
+@medication-offset-y: 0px;
+@medication-width: 16px;
+@medication-height: 16px;
+@medication-total-width: 64px;
+@medication-total-height: 64px;
+@medication-image: '../../dist/img/icons.png';
+@medication: 32px 0px -32px 0px 16px 16px 64px 64px '../../dist/img/icons.png' 'medication';
+@oil-name: 'oil';
+@oil-x: 32px;
+@oil-y: 16px;
+@oil-offset-x: -32px;
+@oil-offset-y: -16px;
+@oil-width: 16px;
+@oil-height: 16px;
+@oil-total-width: 64px;
+@oil-total-height: 64px;
+@oil-image: '../../dist/img/icons.png';
+@oil: 32px 16px -32px -16px 16px 16px 64px 64px '../../dist/img/icons.png' 'oil';
+@plastic-name: 'plastic';
+@plastic-x: 0px;
+@plastic-y: 32px;
+@plastic-offset-x: 0px;
+@plastic-offset-y: -32px;
+@plastic-width: 16px;
+@plastic-height: 16px;
+@plastic-total-width: 64px;
+@plastic-total-height: 64px;
+@plastic-image: '../../dist/img/icons.png';
+@plastic: 0px 32px 0px -32px 16px 16px 64px 64px '../../dist/img/icons.png' 'plastic';
+@rock-name: 'rock';
+@rock-x: 0px;
+@rock-y: 0px;
+@rock-offset-x: 0px;
+@rock-offset-y: 0px;
+@rock-width: 16px;
+@rock-height: 16px;
+@rock-total-width: 64px;
+@rock-total-height: 64px;
+@rock-image: '../../dist/img/icons.png';
+@rock: 0px 0px 0px 0px 16px 16px 64px 64px '../../dist/img/icons.png' 'rock';
+@room-name: 'room';
+@room-x: 32px;
+@room-y: 32px;
+@room-offset-x: -32px;
+@room-offset-y: -32px;
+@room-width: 16px;
+@room-height: 16px;
+@room-total-width: 64px;
+@room-total-height: 64px;
+@room-image: '../../dist/img/icons.png';
+@room: 32px 32px -32px -32px 16px 16px 64px 64px '../../dist/img/icons.png' 'room';
+@ruin-name: 'ruin';
+@ruin-x: 48px;
+@ruin-y: 0px;
+@ruin-offset-x: -48px;
+@ruin-offset-y: 0px;
+@ruin-width: 16px;
+@ruin-height: 16px;
+@ruin-total-width: 64px;
+@ruin-total-height: 64px;
+@ruin-image: '../../dist/img/icons.png';
+@ruin: 48px 0px -48px 0px 16px 16px 64px 64px '../../dist/img/icons.png' 'ruin';
+@scrap-name: 'scrap';
+@scrap-x: 48px;
+@scrap-y: 16px;
+@scrap-offset-x: -48px;
+@scrap-offset-y: -16px;
+@scrap-width: 16px;
+@scrap-height: 16px;
+@scrap-total-width: 64px;
+@scrap-total-height: 64px;
+@scrap-image: '../../dist/img/icons.png';
+@scrap: 48px 16px -48px -16px 16px 16px 64px 64px '../../dist/img/icons.png' 'scrap';
+@stone-name: 'stone';
+@stone-x: 48px;
+@stone-y: 32px;
+@stone-offset-x: -48px;
+@stone-offset-y: -32px;
+@stone-width: 16px;
+@stone-height: 16px;
+@stone-total-width: 64px;
+@stone-total-height: 64px;
+@stone-image: '../../dist/img/icons.png';
+@stone: 48px 32px -48px -32px 16px 16px 64px 64px '../../dist/img/icons.png' 'stone';
+@tool-name: 'tool';
+@tool-x: 0px;
+@tool-y: 48px;
+@tool-offset-x: 0px;
+@tool-offset-y: -48px;
+@tool-width: 16px;
+@tool-height: 16px;
+@tool-total-width: 64px;
+@tool-total-height: 64px;
+@tool-image: '../../dist/img/icons.png';
+@tool: 0px 48px 0px -48px 16px 16px 64px 64px '../../dist/img/icons.png' 'tool';
+@water-name: 'water';
+@water-x: 16px;
+@water-y: 48px;
+@water-offset-x: -16px;
+@water-offset-y: -48px;
+@water-width: 16px;
+@water-height: 16px;
+@water-total-width: 64px;
+@water-total-height: 64px;
+@water-image: '../../dist/img/icons.png';
+@water: 16px 48px -16px -48px 16px 16px 64px 64px '../../dist/img/icons.png' 'water';
+@spritesheet-width: 64px;
+@spritesheet-height: 64px;
+@spritesheet-image: '../../dist/img/icons.png';
+@spritesheet-sprites: @component @computer @engine @food @medication @oil @plastic @rock @room @ruin @scrap @stone @tool @water;
+@spritesheet: 64px 64px '../../dist/img/icons.png' @spritesheet-sprites;
+
+/*
+The provided classes are intended to be used with the array-like variables
+
+.icon-home {
+  .sprite-width(@icon-home);
+}
+.icon-email {
+  .sprite(@icon-email);
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+.sprite-width(@sprite) {
+  width: extract(@sprite, 5);
+}
+
+.sprite-height(@sprite) {
+  height: extract(@sprite, 6);
+}
+
+.sprite-position(@sprite) {
+  @sprite-offset-x: extract(@sprite, 3);
+  @sprite-offset-y: extract(@sprite, 4);
+  background-position: @sprite-offset-x @sprite-offset-y;
+}
+
+.sprite-image(@sprite) {
+  @sprite-image: extract(@sprite, 9);
+  @sprite-image-bare: ~`"@{sprite-image}".slice(1, -1)`;
+  background-image: url(@sprite-image-bare);
+}
+
+.sprite(@sprite) {
+  .sprite-image(@sprite);
+  .sprite-position(@sprite);
+  .sprite-width(@sprite);
+  .sprite-height(@sprite);
+}
+
+/*
+The `.sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of LESS
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+.sprites(@spritesheet-sprites);
+*/
+.sprites(@sprites, @i: 1) when (@i <= length(@sprites)) {
+  @sprite: extract(@sprites, @i);
+  @sprite-name: e(extract(@sprite, 10));
+  .@{sprite-name} {
+    .sprite(@sprite);
+  }
+  .sprites(@sprites, @i + 1);
+}

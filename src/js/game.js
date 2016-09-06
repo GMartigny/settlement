@@ -1,9 +1,9 @@
 "use strict";
 
-var G;
 console.groupCollapsed("Loading");
+var G;
 var media = loadMedia([
-    {src: "img/icons.png", type: "image"}
+    {src: "dist/img/icons.png", type: "image"}
 ], function (prc, file) {
     log(file + " : " + prc + "%");
     if (prc >= 100) {
@@ -19,8 +19,8 @@ var media = loadMedia([
 
 /**
  * Main game class
- * @param holder HTML element holding the game
- * @param media All graphical resources
+ * @param {HTMLElement} holder - HTML element holding the game
+ * @param {Object} media - All graphical resources
  * @constructor
  */
 function Game (holder, media) {
@@ -32,6 +32,7 @@ function Game (holder, media) {
     this.collects = [];
     this.people = [];
     this.initialActions = new Collection();
+    this.knownLocations = new Collection();
 
     this.flags = {
         ready: false,
@@ -55,7 +56,7 @@ Game.prototype = {
      * @private
      */
     _init: function () {
-        log("Starting v" + window.version);
+        log("Starting " + window.VERSION);
 
         var game = this;
         deepBrowse(DataManager.data, function (item) {
@@ -67,7 +68,7 @@ Game.prototype = {
             }
         });
 
-        this.initialActions.push(DataManager.data.actions.settle);
+        this.initialActions.push(DataManager.data.actions.wakeUp);
 
         window.onkeypress = function (e) {
             switch (e.keyCode) {
@@ -97,8 +98,8 @@ Game.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
-        // A person arrives
-        TimerManager.timeout(this.welcome.bind(this), 400 * (Game.isDev ? 1 : 10));
+        // First person arrives
+        TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 
         // We may find resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function (given) {
@@ -134,7 +135,7 @@ Game.prototype = {
 
         // And we may die :'(
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-            this.log("We loose " + person.name, MessageBus.MSG_TYPES.WARN);
+            this.log("We loose " + person.name, MessageBus.MSG_TYPES.LOGS.WARN);
             // TODO : Decide of gameplay
             // this.resources.get(DataManager.data.resources.room.id).update(-1);
             this.people.out(person);
@@ -154,7 +155,16 @@ Game.prototype = {
             this.events.pop(event.data.id);
         }.bind(this));
 
-        var logTypes = [MessageBus.MSG_TYPES.INFO, MessageBus.MSG_TYPES.WARN, MessageBus.MSG_TYPES.FLAVOR];
+        // Lock or unlock actions for all
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
+            this.removeFromInitialActions(actions);
+        }.bind(this));
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
+            this.addToInitialActions(actions);
+        }.bind(this));
+
+        // Log informations
+        var logTypes = MessageBus.MSG_TYPES.LOGS.values();
         MessageBus.getInstance().observe(logTypes, function (message, type) {
             this.log(message, type);
         }.bind(this));
@@ -163,7 +173,7 @@ Game.prototype = {
     },
     /**
      * Add actions to initial actions list
-     * @param actions
+     * @param {Action|Array} actions - One or more action
      */
     addToInitialActions: function (actions) {
         if (!isArray(actions)) {
@@ -179,7 +189,7 @@ Game.prototype = {
     },
     /**
      * Remove actions from initial actions list
-     * @param actions
+     * @param {Action|Array} actions - One or more action
      */
     removeFromInitialActions: function (actions) {
         if (!isArray(actions)) {
@@ -209,17 +219,24 @@ Game.prototype = {
     },
     /**
      * Add some log
-     * @param message
-     * @param type
+     * @param {String} message
+     * @param {Number} type
      */
     log: function (message, type) {
-        type = type || 0;
-        var types = {
-            0: "info",
-            1: "warning",
-            2: "flavor"
-        };
-        this.logsList.insertBefore(wrap("log " + types[type], message), this.logsList.firstChild);
+        if (message.length) {
+            type = type || 0;
+            var types = {
+                0: "info",
+                1: "warning",
+                2: "flavor",
+                3: "event"
+            };
+            this.logsList.insertBefore(wrap("log " + types[type], message), this.logsList.firstChild);
+            var logs = Array.prototype.slice.call(this.logsList.children);
+            if (logs.length > LogManager.maxLog) {
+                logs.last().remove();
+            }
+        }
     },
     /**
      * Toggle pause state
@@ -227,7 +244,6 @@ Game.prototype = {
     togglePause: function () {
         this.flags.paused = !this.flags.paused;
         this.holder.classList.toggle("paused", this.flags.paused);
-        document.body.classList.toggle("backdrop", this.flags.paused);
         if (this.flags.paused) {
             TimerManager.stopAll();
         }
@@ -301,37 +317,49 @@ Game.prototype = {
     },
     /**
      * Check if game has enough of a resource
-     * @param id Resource ID
-     * @param amount Amount needed
+     * @param {String} id - Resource ID
+     * @param {Number} amount - Amount needed
      * @return {boolean}
      */
     hasEnough: function (id, amount) {
         return this.resources.get(id).has(amount);
     },
     /**
+     * A callback to handle missing resources
+     * @callback lackOfResources
+     * @param {Number} missingAmount
+     * @param {Object} resource - Resource data
+     */
+    /**
      * Need to use a resource
-     * @param amount Amount to use
-     * @param resource Resource
-     * @param lack A callback function in case of lack<br/>
-     * Will get (missingAmount, resource) as params
+     * @param {Number} amount - Amount to use
+     * @param {Object} resource - Resource data
+     * @param {lackOfResources} lack - A callback function in case of lack
      */
     consume: function (amount, resource, lack) {
         if (amount) {
             var instance = this.resources.get(resource.id);
             if (instance && instance.has(amount)) {
                 instance.update(-amount);
+                instance.warnLack = false;
             }
             else if (isFunction(lack)) {
                 var diff = amount - instance.get();
                 instance.set(0);
                 lack.call(this, diff, resource);
+
+                if (!instance.warnLack) {
+                    instance.warnLack = true;
+                    var message = "We run out of " + resource.name + ", we need to do something.";
+                    this.log(MessageBus.MSG_TYPES.LOGS.WARN, message);
+                }
             }
         }
     },
     /**
      * Earn some resource
-     * @param amount Amount to earn
-     * @param resource Resource
+     * @param {Number} amount - Amount to earn
+     * @param {Object} resource - Resource data
      */
     earn: function (amount, resource) {
         var id = resource.id;
@@ -346,9 +374,10 @@ Game.prototype = {
     },
     /**
      * Welcome people to the camp
-     * @param amount Number of person to rejoin
+     * @param {Number} amount - Number of person that rejoin
+     * @param {Boolean} silent - No log
      */
-    welcome: function (amount) {
+    welcome: function (amount, silent) {
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(this.initialActions.values());
@@ -357,13 +386,16 @@ Game.prototype = {
                 //noinspection BadExpressionStatementJS - force redraw
                 this.peopleList.appendChild(person.html).offsetHeight;
                 person.html.classList.add("arrived");
-                this.log(person.name + " arrives.");
+
+                if (!silent) {
+                    this.log(person.name + " arrives.", MessageBus.MSG_TYPES.LOGS.EVENT);
+                }
             }.bind(this));
         }.bind(this));
     },
     /**
      * Build something
-     * @param building Building
+     * @param {Object} building - Building data
      */
     build: function (building) {
         var id = building.id;
@@ -445,10 +477,17 @@ Game.prototype = {
                 }
             }
         }
-        // filter already running or unmatch conditions
-        return randomize(list.filter(function (event) {
+        // filter events already running or unmatched conditions
+        list = list.filter(function (event) {
             return !this.events.has(event.id) &&
                 (!event.condition || (isFunction(event.condition) && event.condition(event)));
-        }.bind(this)));
+        }.bind(this));
+
+        if (list.length) {
+            return randomize(list);
+        }
+        else {
+            return false;
+        }
     }
 };

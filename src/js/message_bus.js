@@ -13,8 +13,8 @@ function MessageBus () {
 MessageBus.prototype = {
     /**
      * Observe an event
-     * @param type One or more event type to observe
-     * @param action A function called when event is fired
+     * @param {Number} type - One or more event type to observe
+     * @param {Function} action - A function called when event is fired
      */
     observe: function (type, action) {
         if (!isArray(type)) {
@@ -29,8 +29,8 @@ MessageBus.prototype = {
     },
     /**
      * Fire an event
-     * @param type Type of event
-     * @param message Additionnal data attached
+     * @param {Number} type - Type of event
+     * @param {*} message - Additional data attached
      */
     notify: function (type, message) {
         if (this.observers[type]) {
@@ -53,9 +53,12 @@ MessageBus.getInstance = function () {
     return MessageBus.instance;
 };
 MessageBus.MSG_TYPES = {
-    INFO: 0, // Log information
-    WARN: 1, // Log a warning
-    FLAVOR: 2, // Log a flavor text
+    LOGS: {
+        INFO: 0, // Log information
+        WARN: 1, // Log a warning
+        FLAVOR: 2, // Log a flavor text
+        EVENT: 3 // Log event
+    },
     CLICK: 10, // Click an action
     REFRESH: 20, // The game has refreshed
     GIVE: 30, // Give some resources

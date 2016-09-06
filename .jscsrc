@@ -12,7 +12,9 @@
     "requireLineBreakAfterVariableAssignment": true,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "requireBlocksOnNewline": true,
-    "requireKeywordsOnNewLine": ["else"],
+    "requireKeywordsOnNewLine": [
+        "else"
+    ],
     "maximumLineLength": {
         "value": 120,
         "allExcept": [
@@ -54,5 +56,10 @@
     "jsDoc": {
         "enforceExistence": true
     },
-    "maxErrors": -1
+    "maxErrors": -1,
+    "excludeFiles": [
+        "./Gruntfile.js",
+        "js/script.js",
+        "js/script.js.map"
+    ]
 }

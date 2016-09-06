@@ -3,6 +3,7 @@
 #resourceList {
     padding: 5px;
     background-color: #e2bb6d;
+    display: flex;
 
     &:empty:before {
         content: "A vast empty desert";
@@ -26,7 +27,9 @@
         }
 
         &.more:before, &.less:after{
-            animation: shout linear .7s;
+            animation-name: shout;
+            animation-timing-function: linear;
+            animation-duration: .7s;
         }
 
         &:before {

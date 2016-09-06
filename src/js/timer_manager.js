@@ -1,8 +1,8 @@
 var TimerManager = (function () {
     /**
      * Class for timers
-     * @param action Callback function after timeout
-     * @param time Timeout length
+     * @param {Function} action - Callback function after timeout
+     * @param {Number} time - Timeout length
      * @constructor
      */
     function Timer (action, time) {
@@ -19,7 +19,7 @@ var TimerManager = (function () {
          * @return {number} ID of the timeout
          */
         setTimeout: function () {
-            return setTimeout(this._end.bind(this), this.time);
+            return setTimeout(this.action, this.time);
         },
         /**
          * Return time spend on the timer
@@ -52,7 +52,7 @@ var TimerManager = (function () {
         },
         /**
          * Restart the timer
-         * @param now
+         * @param {Number} now - The current timestamp
          * @return {*} False if already running, remaining time otherwise
          */
         restart: function (now) {
@@ -65,16 +65,6 @@ var TimerManager = (function () {
             else {
                 return false;
             }
-        },
-        /**
-         * End function of the timer
-         * @private
-         * @deprecated
-         * @return {boolean}
-         */
-        _end: function () {
-            this.action();
-            return true;
         }
     };
 
@@ -82,8 +72,8 @@ var TimerManager = (function () {
     return {
         /**
          * Set a timeout
-         * @param action A callback function called after timeout
-         * @param time The timeout length
+         * @param {Function} action - A callback function called after timeout
+         * @param {Number} time - The timeout length
          * @return {Number} The ID of the timeout
          */
         timeout: function (action, time) {
@@ -100,7 +90,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer
-         * @param timerId
+         * @param {Number} timerId
          * @return {*}
          */
         stop: function (timerId) {
@@ -118,7 +108,7 @@ var TimerManager = (function () {
         },
         /**
          * Restart a timer
-         * @param timerId
+         * @param {Number} timerId
          * @return {*}
          */
         restart: function (timerId) {
@@ -137,7 +127,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer and remove it from the list
-         * @param timerId
+         * @param {Number} timerId
          * @return {*}
          */
         clear: function (timerId) {

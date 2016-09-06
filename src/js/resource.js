@@ -1,14 +1,14 @@
 "use strict";
 /**
  * Class for resources
- * @param data
- * @param count
+ * @param {Object} data - The resource's data
+ * @param {Number} [count=0] - The resource amount
  * @constructor
  */
 function Resource (data, count) {
     this.data = {};
 
-    this.html = this.toHTML(data.icon);
+    this.html = this.toHTML(data);
 
     this._init(data);
 
@@ -20,7 +20,7 @@ function Resource (data, count) {
 Resource.prototype = {
     /**
      * Initialise object
-     * @param data
+     * @param {Object} data - The resource's data
      * @private
      * @returns {Resource} Itself
      */
@@ -36,22 +36,25 @@ Resource.prototype = {
     },
     /**
      * Return HTML for display
+     * @param {Object} data - The resource's data
      * @return {HTMLElement}
      */
-    toHTML: function (iconClass) {
+    toHTML: function (data) {
         var html = wrap("resource get-more");
 
         this.counter = wrap("counter", 1);
         html.appendChild(this.counter);
 
-        var icon = wrap("icon icon-" + iconClass);
+        var icon = wrap("icon icon-" + data.icon);
         html.appendChild(icon);
+
+        html.style.order = data.order;
 
         return html;
     },
     /**
      * Loop function called every game tick
-     * @param resources
+     * @param {Array} resources - Game's resources
      * @return {Resource} Itself
      */
     refresh: function (resources) {
@@ -63,7 +66,7 @@ Resource.prototype = {
     },
     /**
      * Change resource amount
-     * @param amount Diff to new value
+     * @param {Number} amount - Diff to new value
      * @return {Resource} Itself
      */
     update: function (amount) {
@@ -89,14 +92,14 @@ Resource.prototype = {
     },
     /**
      * Return this resource amount
-     * @return {number|*}
+     * @return {Number}
      */
     get: function () {
         return this.count | 0;
     },
     /**
      * Define this resource amount
-     * @param value
+     * @param {Number} value - A new amount
      * @return {Resource} Itself
      */
     set: function (value) {
@@ -108,7 +111,7 @@ Resource.prototype = {
     },
     /**
      * Check if has enough of this resource
-     * @param amount Amount needed
+     * @param {Number} amount - Amount needed
      * @returns {boolean}
      */
     has: function (amount) {

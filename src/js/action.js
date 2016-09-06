@@ -1,8 +1,8 @@
 "use strict";
 /**
  * Class for actions
- * @param owner
- * @param data
+ * @param {People} owner - THe action owner
+ * @param {Object} data - The action data
  * @constructor
  */
 function Action (owner, data) {
@@ -12,21 +12,21 @@ function Action (owner, data) {
     this.owner = owner;
     this.data = {};
 
-    this.html = this.toHTML();
+    this.html = this.toHTML(data);
 
     this._init(data);
 }
 Action.prototype = {
     /**
      * Initialise object
-     * @param data
+     * @param {Object} data - The action data
      * @private
      * @return {Action} Itself
      */
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
 
-        this.html.textContent = this.data.name;
+        this.html.textContent = capitalize(this.data.name);
         if (this.tooltip) {
             this.tooltip.remove();
         }
@@ -36,9 +36,10 @@ Action.prototype = {
     },
     /**
      * Return HTML for display
+     * @param {Object} data - The action data
      * @return {HTMLElement}
      */
-    toHTML: function () {
+    toHTML: function (data) {
         var html = wrap("action clickable disabled animated");
 
         html.addEvent("click", function () {
@@ -47,12 +48,14 @@ Action.prototype = {
             }
         }.bind(this));
 
+        html.style.order = data.order;
+
         return html;
     },
     /**
      * Loop function called every game tick
-     * @param resources Game resources
-     * @param flags Game flags
+     * @param {Collection} resources - Game resources
+     * @param {Object} flags - Game flags
      * @return {Action} Itself
      */
     refresh: function (resources, flags) {
@@ -98,40 +101,93 @@ Action.prototype = {
             this.html.classList.add("cooldown");
 
             this.timeout = TimerManager.timeout(function () {
-                var log = this.owner.name + " just finish to " + this.data.name;
                 this.timeout = 0;
                 this.owner.setBusy(false);
                 this.html.classList.remove("cooldown");
 
-                // Give
-                if (isFunction(this.data.give)) {
-                    var give = compactResources(this.data.give(this));
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, give);
-                    if (give.length) {
-                        log += " and give " + formatArray(give);
-                    }
-                }
-                // Start collect
-                if (isFunction(this.data.collect)) {
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.COLLECT, this.data.collect(this));
-                }
-                // Unlock
-                if (isFunction(this.data.unlock)) {
-                    this.owner.addAction(this.data.unlock(this));
-                }
-                // Lock
-                if (isFunction(this.data.lock)) {
-                    this.owner.lockAction(this.data.lock(this));
-                }
+                var effect = {
+                    name: this.data.name,
+                    people: this.owner.name,
+                    pronoun: this.owner.getPronoun()
+                };
+
                 // Build
                 if (isFunction(this.data.build)) {
                     var build = this.data.build(this);
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
-                    if (build.length) {
-                        log += " and build " + formatArray(build);
+                    effect.build = an(build.name);
+                }
+
+                // Give
+                var give = [];
+                if (isFunction(this.data.give)) {
+                    give = this.data.give(this);
+
+                    // very specific case of roaming which gives a new location
+                    if (this.data.id === DataManager.data.actions.roam.id) {
+                        var location = randomize(DataManager.data.locations);
+                        effect.location = an(location.name);
+                        if (location.hasRuin) {
+                            give.push([location.hasRuin, DataManager.data.resources.ruins]);
+                        }
                     }
                 }
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.INFO, log + ".");
+                // Add from constructed building
+                if (build && isFunction(build.give)) {
+                    give = give.concat(build.give(this));
+                }
+                give = compactResources(give);
+                if (give.length) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, give);
+                    effect.give = formatArray(give);
+                }
+
+                // Start collect
+                var collect = [];
+                if (isFunction(this.data.collect)) {
+                    collect = this.data.collect(this);
+                }
+                // Add from constructed building
+                if (build && isFunction(build.collect)) {
+                    collect = collect.concat(build.collect(this));
+                }
+                collect = compactResources(collect);
+                if (collect.length) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.COLLECT, collect);
+                    effect.collect = formatArray(collect);
+                }
+
+                // Unlock
+                if (isFunction(this.data.unlock)) {
+                    var unlock = this.data.unlock(this);
+                    this.owner.addAction(unlock);
+                    if (this.data.unique) {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
+                    }
+                }
+                // Lock
+                if (isFunction(this.data.lock)) {
+                    var lock = this.data.lock(this);
+                    this.owner.lockAction(lock);
+                }
+                if (this.data.unique) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, this.data);
+                }
+
+                if (build) {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
+                }
+
+                // Log
+                var log;
+                if (isFunction(this.data.log)) {
+                    log = this.data.log(effect, this);
+                }
+                else if (this.data.log) {
+                    log = this.data.log.replace(/@(\w+)/gi, function (match, capture) {
+                        return effect[capture] || "";
+                    });
+                }
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
             }.bind(this), duration);
             return true;
         }
@@ -147,7 +203,6 @@ Action.prototype = {
         this.cancel();
         this.html.remove();
         this.tooltip.remove();
-        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, this);
         return this;
     },
     /**

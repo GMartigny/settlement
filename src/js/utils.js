@@ -1,4 +1,5 @@
 "use strict";
+// TODO: could be better to have managers than basic global functions
 
 var str = "",
     noop = new Function(),
@@ -6,14 +7,14 @@ var str = "",
 
 /**
  * Add a tooltip to an HTMLElement
- * @param html The element
- * @param data Some data for the tooltip
+ * @param {HTMLElement} html - The element
+ * @param {Object} data - Some data for the tooltip
  * @returns {Object} Some functions
  */
 function tooltip (html, data) {
     var box = wrap("tooltip");
 
-    box.appendChild(wrap("title", data.name));
+    box.appendChild(wrap("title", capitalize(data.name)));
     if (data.desc) {
         box.appendChild(wrap("description", data.desc));
     }
@@ -32,17 +33,28 @@ function tooltip (html, data) {
         box.appendChild(resourcesContainer);
     }
 
-    html.classList.add("tooltiped");
-    html.addEvent("mouseover", function () {
-        document.body.appendChild(box);
-    });
-    html.addEvent("mousemove", function (e) {
-        var left = e.clientX + 10;
+    /**
+     * Position the tooltip
+     * @param {Number} x - The x coordinate
+     * @param {Number} y - The y coordinate
+     * @private
+     */
+    function _position (x, y) {
+        var left = x + 10;
         if (left + 255 > document.body.offsetWidth) {
             left = document.body.offsetWidth - 255;
         }
         box.style.left = left + "px";
-        box.style.top = (e.clientY + 10) + "px";
+        box.style.top = (y + 10) + "px";
+    }
+
+    html.classList.add("tooltiped");
+    html.addEvent("mouseover", function (event) {
+        document.body.appendChild(box);
+        _position(event.clientX, event.clientY);
+    });
+    html.addEvent("mousemove", function (event) {
+        _position(event.clientX, event.clientY);
     });
     html.addEvent("mouseout", function () {
         box.remove();
@@ -51,8 +63,8 @@ function tooltip (html, data) {
     return {
         /**
          * Update tooltip
-         * @param resources
-         * @param consume
+         * @param {Collection} resources
+         * @param {Array} consume
          */
         refresh: function (resources, consume) {
             if (resourcesContainer) {
@@ -79,20 +91,23 @@ function tooltip (html, data) {
 
 /**
  * Display a popup with choice buttons
- * @param data Text for the popup
- * @param onYes Action to do on validate
- * @param classes Additional classes for the popup
+ * @param {Object} data - Text for the popup
+ * @param {Function} onYes - Action to do on validate
+ * @param {String} [CSSClasses] - Additional classes for the popup
  * @returns {Object} Some functions
  */
-function popup (data, onYes, classes) {
+function popup (data, onYes, CSSClasses) {
     if (!isFunction(onYes)) {
         throw "Popup need a confirm function";
     }
 
-    classes = "popup" + (classes ? " " + classes : "");
-    var box = wrap(classes);
+    // FIXME: maybe
+    var holder = document.getElementById("main");
 
-    box.appendChild(wrap("title", data.name));
+    CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
+    var box = wrap(CSSClasses);
+
+    box.appendChild(wrap("title", capitalize(data.name)));
     box.appendChild(wrap("description", data.desc));
 
     var api = {
@@ -101,7 +116,7 @@ function popup (data, onYes, classes) {
          */
         remove: function () {
             box.remove();
-            document.body.classList.remove("backdrop");
+            holder.classList.remove("backdrop");
         }
     };
 
@@ -118,24 +133,24 @@ function popup (data, onYes, classes) {
         box.appendChild(noButton);
     }
 
-    document.body.appendChild(box);
-    document.body.classList.add("backdrop");
+    holder.appendChild(box);
+    holder.classList.add("backdrop");
 
-    box.style.top = floor((document.body.offsetHeight - box.offsetHeight) / 2) + "px";
+    box.style.top = floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
 
     return api;
 }
 
 /**
  * Wrap some text content with html tag
- * @param text
- * @param classe
+ * @param {String} CSSClasses
+ * @param {String} text
  * @returns {HTMLElement}
  */
-function wrap (classe, text) {
+function wrap (CSSClasses, text) {
     var html = document.createElement("div");
-    if (classe) {
-        html.classList.add.apply(html.classList, classe.split(" "));
+    if (CSSClasses) {
+        html.classList.add.apply(html.classList, CSSClasses.split(" "));
     }
     if (text) {
         html.innerHTML = text;
@@ -146,11 +161,11 @@ function wrap (classe, text) {
 
 /**
  * Format a time with multiple units
- * @param time Number of hour
+ * @param {Number} time - Number of hour
  * @returns {string}
  */
 function formatTime (time) {
-    var units = ["year", "month", "day", "hour"],
+    var units = ["year", "month", "day", "hour", "minute"],
         res = [],
         timeMatch = DataManager.time;
 
@@ -167,19 +182,16 @@ function formatTime (time) {
 
 /**
  * Format an array for human reading
- * @param array
+ * @param {Array} array
  * @return {String}
  */
 function formatArray (array) {
     var res = [];
 
     array.forEach(function (item) {
-        var name;
+        var name = pluralize(item[1].name, item[0]);
         if (item[1].icon) {
-            name = wrap("icon icon-" + item[1].icon).outerHTML;
-        }
-        else {
-            name = pluralize(item[1].name, item[0]);
+            name += " " + wrap("icon icon-" + item[1].icon).outerHTML;
         }
         res.push(item[0] + " " + name);
     });
@@ -189,8 +201,8 @@ function formatArray (array) {
 
 /**
  * Join an array for human reading
- * @param array
- * @param final [optional] The last word of the list
+ * @param {Array} array
+ * @param {String} [final="and"] - The last joiner of the list
  * @return {String}
  */
 function formatJoin (array, final) {
@@ -209,8 +221,8 @@ function formatJoin (array, final) {
 
 /**
  * Add "s" when plural
- * @param string Origin string
- * @param number How many
+ * @param {String} string - Origin string
+ * @param {Number} number - How many
  * @returns {string}
  */
 function pluralize (string, number) {
@@ -218,23 +230,28 @@ function pluralize (string, number) {
 }
 
 /**
- * Start every word with a capital letter
- * @param string
+ * Start every sentence with a capital letter
+ * @param {String} string
  */
 function capitalize (string) {
-    return string.split(" ").map(function (word) {
-        return word[0].toUpperCase() + word.slice(1);
-    }).join(" ");
+    string = string.replace(/([\.!\?]) ([a-z])/g, function (match, punctuation, letter) {
+        return punctuation + " " + letter.toUpperCase();
+    });
+    return string[0].toUpperCase() + string.slice(1);
 }
 
 /**
- * Pick a random item from nested array
- * @param list A potentially nested array
- * @param amount Interval for random "-" separated (0 can be omitted)
- * @returns {Array|*}
+ * Pick a random item from nested object
+ * @param {Object} list - A potentially nested object
+ * @param {String} [amount=1] - Interval for random "-" separated (0 can be omitted)
+ * @example
+ * randomize(data, "2-5") // between 2 and 5
+ * randomize(data, "5") // between 0 and 5
+ * randomize(data) // 1 result
+ * @returns {Array|Object} An array of Object or one Object if no amount requested
  */
 function randomize (list, amount) {
-    if (!list) {
+    if (!list.values().length) {
         throw "Can't pick from empty list";
     }
     var all = {},
@@ -266,8 +283,27 @@ function randomize (list, amount) {
 }
 
 /**
+ *
+ * @param {Object} list
+ * @param {String} amount
+ * @return {Array}
+ */
+function randomizeMultiple (list, amount) {
+    var res = [];
+    var cutAmount = amount.split("-");
+    var min = cutAmount[0];
+    var max = cutAmount[1];
+
+    for (var i = 0, l = round(random(1, min)); i < l; ++i) {
+        res.push([floor(random(min / l, max / l)), randomize(list)]);
+    }
+
+    return res;
+}
+
+/**
  * Display log while in dev
- * @param message Any message
+ * @param {String} message - Any message
  */
 function log (message) {
     if (Game.isDev) {
@@ -277,8 +313,8 @@ function log (message) {
 
 /**
  * Browse all item in a nested tree
- * @param tree A tree of object
- * @param action A function for each item
+ * @param {Object} tree - A tree of object
+ * @param {Function} action - A function for each item
  * @returns {object}
  */
 function deepBrowse (tree, action) {
@@ -297,8 +333,8 @@ function deepBrowse (tree, action) {
 
 /**
  * Return a new reference of an object
- * @param obj Any object
- * @return {*}
+ * @param {Object} obj - Any object
+ * @return {Object}
  */
 function clone (obj) {
     return Object.assign({}, obj);
@@ -306,35 +342,32 @@ function clone (obj) {
 
 /**
  * Transform data function to their values
- * @param context
- * @param object
- * @param fields
+ * @param {Function} context - A context passed to each functions
+ * @param {Object} object - A collection of functions
+ * @param {Array} [fields] - The object's field to consolidate
  * @return {*}
  */
 function consolidateData (context, object, fields) {
-    if (isArray(fields)) {
-        var data = clone(object);
-        fields.forEach(function (field) {
-            if (data[field] && isFunction(data[field])) {
-                data[field] = data[field](context);
-            }
-        });
-        return data;
-    }
-    else {
-        throw "Field is undefined or not an array";
-    }
+    fields = fields || Object.keys(object);
+
+    var data = clone(object);
+    fields.forEach(function (field) {
+        if (data[field] && isFunction(data[field])) {
+            data[field] = data[field](context);
+        }
+    });
+    return data;
 }
 
 /**
- * Give a random unique ID wihtout collision
+ * Give a random unique ID without collision
  * @returns {string}
  */
 function pickID () {
     var ID = "------".replace(/-/g, function () {
         return round(random(36)).toString(36);
     });
-    if (pickID.IDS.indexOf(ID) < 0) {
+    if (!pickID.IDS.includes(ID)) {
         pickID.IDS.push(ID);
         return ID;
     }
@@ -346,7 +379,7 @@ pickID.IDS = [];
 
 /**
  * Test if is a function
- * @param func Anything to test
+ * @param {*} func - Anything to test
  * @returns {boolean}
  */
 function isFunction (func) {
@@ -355,16 +388,16 @@ function isFunction (func) {
 
 /**
  * Test if is an array
- * @param array Anything to test
+ * @param {*} array - Anything to test
  * @return {boolean}
  */
 function isArray (array) {
-    return array instanceof Array;
+    return Array.isArray(array);
 }
 
 /**
  * Test if is undefined
- * @param value Anything to test
+ * @param {*} value - Anything to test
  * @return {boolean}
  */
 function isUndefined (value) {
@@ -373,7 +406,7 @@ function isUndefined (value) {
 
 /**
  * Make a string usable everywhere
- * @param str Any string
+ * @param {String} str - Any string
  * @return {string}
  */
 function sanitize (str) {
@@ -382,22 +415,23 @@ function sanitize (str) {
 
 /**
  * Add "a" or "an" according to the following word
- * @param word Any word
+ * @param {String} word - Any word
  * @return {string}
  */
 function an (word) {
     var vowels = "aeiou".split("");
-    return (vowels.indexOf(word[0]) < 0 ? "a" : "an") + " " + word;
+    return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
 }
 
 /**
  * Compact resources to one item per each
- * @example [ [1, {water}], [2, {water}] ] => [ [3, {water}] ]
- * @param array An array of resource with amount
+ * @param {Array} resources - An array of resource with amount
+ * @example
+ * [ [1, {water}], [2, {water}] ] => [ [3, {water}] ]
  * @return {Array}
  */
-function compactResources (array) {
-    return array.reduce(function (reduced, item) {
+function compactResources (resources) {
+    return resources.reduce(function (reduced, item) {
         var known = reduced.find(function (entry) {
             return entry[1].id === item[1].id;
         });
@@ -410,6 +444,14 @@ function compactResources (array) {
         return reduced;
     }, []);
 }
+
+/**
+ * Return the last item of the array
+ * @return {*}
+ */
+Array.prototype.last = function () {
+    return this[this.length - 1];
+};
 
 /**
  * Return all value of an object as array

@@ -9,22 +9,27 @@ function Collection () {
 Collection.prototype = {
     /**
      * Add an item
-     * @param id ID of the item
-     * @param item The item to insert
-     * @return {number} Collection length
+     * @param {String} id - ID of the item
+     * @param {*} item - The item to insert
+     * @return {number|Boolean} Collection length or false if already included
      */
     push: function (id, item) {
-        ++this.length;
         if (isUndefined(item)) {
             item = id;
-            id = item.id || this.length;
+            id = item.id || this.length + 1;
         }
-        this.items[id] = item;
-        return this.length;
+
+        if (!this.keys().includes(id)){
+            this.items[id] = item;
+            return ++this.length;
+        }
+        else {
+            return false;
+        }
     },
     /**
      * Remove and return an item from the collection
-     * @param id ID of the item
+     * @param {String} id - ID of the item
      * @return {*} The corresponding item
      */
     pop: function (id) {
@@ -35,7 +40,7 @@ Collection.prototype = {
     },
     /**
      * Check for the ID presence
-     * @param id ID of an item
+     * @param {String} id - ID of an item
      * @return {boolean}
      */
     has: function (id) {
@@ -43,7 +48,7 @@ Collection.prototype = {
     },
     /**
      * Return an item from the collection
-     * @param id ID of the item
+     * @param {String} id - ID of the item
      * @return {*} The corresponding item
      */
     get: function (id) {
@@ -54,8 +59,8 @@ Collection.prototype = {
     },
     /**
      * Set an existing item from the collection
-     * @param id ID of the item
-     * @param value It's new value
+     * @param {String} id - ID of the item
+     * @param {*} value - It's new value
      * @return {*} The inserted value
      */
     set: function (id, value) {
@@ -65,16 +70,22 @@ Collection.prototype = {
         return this.items[id] = value;
     },
     /**
+     * The callback executed on Collection
+     * @callback collectionCallback
+     * @param {*} item - The current item
+     * @param {String} id - The current ID
+     * @param {Collection} collection - The whole collection
+     */
+    /**
      * Execute a function for each item
-     * @param action A callback function called on each item<br/>
-     * Will get (item, id, collection) as params
+     * @param {collectionCallback} action - A callback function called on each item
      * @return {Collection} Itself
      */
     forEach: function (action) {
         if (this.length > 0) {
             for (var id in this.items) {
                 if (this.items.hasOwnProperty(id)) {
-                    action(this.items[id], id, this.items);
+                    action(this.items[id], id, this);
                 }
             }
         }
@@ -82,14 +93,14 @@ Collection.prototype = {
     },
     /**
      * Filter out item with a function
-     * @param action A callback function called on each item<br/>
+     * @param {collectionCallback} action - A callback function called on each item
      * Should return true to keep items
      * @return {Collection} A new Collection instance
      */
     filter: function (action) {
         var kept = new Collection();
-        this.forEach(function (item, id) {
-            if (action(item, id)) {
+        this.forEach(function (item, id, collection) {
+            if (action(item, id, collection)) {
                 kept.push(id, item);
             }
         });
@@ -101,6 +112,13 @@ Collection.prototype = {
      */
     values: function () {
         return this.items.values();
+    },
+    /**
+     * Return all keys in the collection
+     * @return {Array}
+     */
+    keys: function () {
+        return Object.keys(this.items);
     },
     /**
      * Empty the collection
@@ -116,6 +134,6 @@ Collection.prototype = {
      * @return {string}
      */
     toString: function () {
-        return "[" + Object.keys(this.items).join(", ") + "]";
+        return "[" + this.keys().join(", ") + "]";
     }
 };
