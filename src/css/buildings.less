@@ -1,8 +1,10 @@
+@import (reference) "base";
+
 #buildingsList {
     padding: 5px;
 
     width: 50%;
-    height: 50%;
+    height: ~'calc(50% -' @resourceListHeight/2 ~')';
     float: left;
 
     .building {

@@ -1,67 +1,77 @@
 /**
- * A manager for saves
- * @constructor
+ *
+ * @type {{store, load, erase}}
  */
-function SaveManager () {
-}
+var SaveManager = (function () {
+    var storage = localStorage;
+    var saveKey = "_s";
+    var localSave = storage.getItem(saveKey);
+    var saltLength = 6;
+    var salt;
 
-(function () {
-
-    var keys = {
-        knownVisitor: "k",
-        gameData: "d",
-        salt: "s"
-    };
-    var salt = localStorage.getItem(keys.salt) || random().toString(36).slice(-6);
+    if (localSave) {
+        salt = localSave.slice(-saltLength);
+    }
+    else {
+        salt = random().toString(36).slice(-saltLength);
+    }
 
     /**
-     * Hash a string
-     * @param {Object} obj - Any Object
+     * Encrypt (kind of) a string with a key
+     * @param {String} str - Any string
+     * @param {String} key - A key for encryption
      * @return {string}
      */
-    function hash (obj) {
-        return salt + btoa(JSON.stringify(obj));
+    function encrypt (str, key) {
+        return btoa(str + key) + key;
     }
 
     /**
-     * Unhash a string
-     * @param {String} str - A string coming from the hash function
+     * Decrypt
+     * @param {String} str -
+     * @param {String} key -
+     * @return {string}
      */
-    function unhash (str) {
-        return JSON.parse(atob(str.slice(6)));
+    function decrypt (str, key) {
+        return atob(str.slice(0, -key.length)).slice(0, -key.length);
     }
 
-    window.saveManager = {
+    return {
         /**
-         * Persist data in localStorage
-         * @param {Object} obj
-         * @return {boolean}
+         * Persist some data
+         * @param {*} data - Any valid json stringify data
+         * @return {boolean} Success
          */
-        save: function (obj) {
+        store: function (data) {
             try {
-                return localStorage.setItem(keys.gameData, hash(obj));
+                var text = encrypt(JSON.stringify(data), salt);
+                localSave = text;
+                storage.setItem(saveKey, text);
+                return true;
             }
             catch (e) {
+                console.warn(e);
                 return false;
             }
         },
         /**
-         * Get data from localStorage
-         * @return {*}
+         * Return previously persisted data
+         * @return {*} The data or false on fail
          */
         load: function () {
             try {
-                return unhash(localStorage.getItem(keys.gameData));
+                return JSON.parse(decrypt(localSave, salt));
             }
             catch (e) {
+                console.warn(e);
                 return false;
             }
         },
         /**
-         * Clear all from localStorage
+         * Clear saved data
          */
         erase: function () {
-            localStorage.clear();
+            storage.removeItem(saveKey);
         }
     };
 })();

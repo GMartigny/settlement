@@ -15,6 +15,7 @@ MessageBus.prototype = {
      * Observe an event
      * @param {Number} type - One or more event type to observe
      * @param {Function} action - A function called when event is fired
+     * @return {MessageBus} Itself
      */
     observe: function (type, action) {
         if (!isArray(type)) {
@@ -26,11 +27,13 @@ MessageBus.prototype = {
             }
             this.observers[type[i]].push(action);
         }
+        return this;
     },
     /**
      * Fire an event
      * @param {Number} type - Type of event
      * @param {*} message - Additional data attached
+     * @return {MessageBus} Itself
      */
     notify: function (type, message) {
         if (this.observers[type]) {
@@ -38,6 +41,7 @@ MessageBus.prototype = {
                 this.observers[type][i](message, type);
             }
         }
+        return this;
     }
 };
 

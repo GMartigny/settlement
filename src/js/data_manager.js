@@ -313,11 +313,14 @@ var DataManager = (function () {
         actions: {
             wakeUp: {
                 name: "wake up",
-                unlock: function () {
+                unlock: function (action) {
+                    action.owner.updateEnergy(100);
+                    action.owner.updateLife(100);
                     return [
                         data.actions.look
                     ];
                 },
+                relaxing: 1,
                 log: "@people gets up painfully.",
                 order: 0,
                 unique: true
@@ -341,6 +344,7 @@ var DataManager = (function () {
                         data.actions.settle
                     ];
                 },
+                relaxing: 1,
                 log: "After some thinking, @people remembers the attack. @pronoun grabs @give laying around.",
                 order: 0,
                 unique: true
@@ -361,6 +365,7 @@ var DataManager = (function () {
                 give: function () {
                     return [];
                 },
+                relaxing: 1,
                 log: "@people installs @build with @give to sleep in.",
                 order: 0,
                 unique: true
@@ -518,7 +523,7 @@ var DataManager = (function () {
                 build: function (action) {
                     return action.owner.plan;
                 },
-                log: "Building @building gives @give",
+                log: "Building @build gives @give",
                 order: 50
             },
             drawFrom: {
@@ -540,7 +545,7 @@ var DataManager = (function () {
                     time: 2,
                     give: function () {
                         return [
-                            [round(random(1, 2)), data.resources.gatherable.common.water]
+                            [round(random(1, 3)), data.resources.gatherable.common.water]
                         ];
                     },
                     log: "Using our well, @people get @give.",
@@ -678,7 +683,8 @@ var DataManager = (function () {
                     effect: function (isOn) {
                         this.flags.cantGoOut = isOn;
                     },
-                    dropRate: 100
+                    dropRate: 100,
+                    log: "A sandstorm has started and prevent anyone from leaving the camp."
                 },
                 crate: {
                     name: "you find an old crate",
@@ -690,7 +696,8 @@ var DataManager = (function () {
                             MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, data.actions.gather.give());
                         }
                     },
-                    dropRate: 50
+                    dropRate: 50,
+                    log: "Upon opening, you find @give in it."
                 }
             },
             medium: {
@@ -722,7 +729,8 @@ var DataManager = (function () {
                             ]);
                         }
                     },
-                    dropRate: 25
+                    dropRate: 25,
+                    log: "We make a little party to try forget our situation."
                 }
             },
             hard: {
@@ -736,7 +744,8 @@ var DataManager = (function () {
                     effect: function (isOn) {
                         this.flags.drought = isOn;
                     },
-                    dropRate: 6
+                    dropRate: 6,
+                    log: "A harsh drought fall on us, water will be more important than ever."
                 }
             }
         }

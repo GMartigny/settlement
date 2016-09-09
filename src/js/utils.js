@@ -49,14 +49,14 @@ function tooltip (html, data) {
     }
 
     html.classList.add("tooltiped");
-    html.addEvent("mouseover", function (event) {
+    html.addEventListener("mouseover", function (event) {
         document.body.appendChild(box);
         _position(event.clientX, event.clientY);
     });
-    html.addEvent("mousemove", function (event) {
+    html.addEventListener("mousemove", function (event) {
         _position(event.clientX, event.clientY);
     });
-    html.addEvent("mouseout", function () {
+    html.addEventListener("mouseout", function () {
         box.remove();
     });
 
@@ -121,7 +121,7 @@ function popup (data, onYes, CSSClasses) {
     };
 
     var yesButton = wrap("yes clickable", data.yes || "Ok");
-    yesButton.addEvent("click", function () {
+    yesButton.addEventListener("click", function () {
         onYes();
         api.remove();
     });
@@ -129,7 +129,7 @@ function popup (data, onYes, CSSClasses) {
 
     if (data.no) {
         var noButton = wrap("no clickable", data.no);
-        noButton.addEvent("click", api.remove);
+        noButton.addEventListener("click", api.remove);
         box.appendChild(noButton);
     }
 
@@ -143,8 +143,8 @@ function popup (data, onYes, CSSClasses) {
 
 /**
  * Wrap some text content with html tag
- * @param {String} CSSClasses
- * @param {String} text
+ * @param {String} [CSSClasses]
+ * @param {String} [text]
  * @returns {HTMLElement}
  */
 function wrap (CSSClasses, text) {
@@ -454,6 +454,24 @@ Array.prototype.last = function () {
 };
 
 /**
+ * Get a random item from an array
+ * @return {*}
+ */
+Array.prototype.random = function () {
+    return this[floor(random(0, this.length))];
+};
+
+/**
+ * Remove en item from an array
+ * @param item
+ * @return {Number} The array length
+ */
+Array.prototype.out = function (item) {
+    this.splice(this.indexOf(item), 1);
+    return this.length;
+};
+
+/**
  * Return all value of an object as array
  * @return {Array}
  */
@@ -468,3 +486,26 @@ Object.prototype.values = function () {
 
     return values;
 };
+
+/**
+ *
+ * @param {Array} images -
+ * @param {Function} action -
+ * @return {Promise}
+ */
+function preloadImages (images, action) {
+    var loaded = 0;
+    return Promise.all(images.map(function (url) {
+        return (new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = resolve.bind(null, img);
+            img.onerror = reject;
+            img.src = url;
+        })).then(function (img) {
+            action(++loaded / images.length * 100, url);
+            return img;
+        }).catch(function () {
+            console.log("Can't load " + url);
+        });
+    }));
+}

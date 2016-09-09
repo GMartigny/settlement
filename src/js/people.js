@@ -16,7 +16,8 @@ function peopleFactory (amount) {
                     var results = JSON.parse(data.target.response).results;
                     var people = [];
                     results.forEach(function (res) {
-                        var people = new People(capitalize(res.name.first) + " " + capitalize(res.name.last), res.gender);
+                        var name = capitalize(res.name.first) + " " + capitalize(res.name.last);
+                        var people = new People(name, res.gender);
                         people.push(people);
                     });
                     resolve(people);

@@ -1,19 +1,22 @@
 "use strict";
 
 console.groupCollapsed("Loading");
+/**
+ * Global var for the game object
+ */
 var G;
-var media = loadMedia([
-    {src: "dist/img/icons.png", type: "image"}
-], function (prc, file) {
-    log(file + " : " + prc + "%");
-    if (prc >= 100) {
-        console.groupEnd();
-        try {
-            G = new Game(document.getElementById("main"), media);
-        }
-        catch (e) {
-            log("Fail to load game : " + e.message);
-        }
+preloadImages([
+    "dist/img/icons.png",
+    "dist/img/icons.png"
+], function (percent, file) {
+    console.log(file + " : " + percent + "%");
+}).then(function (media) {
+    console.groupEnd();
+    try {
+        G = new Game(document.getElementById("main"), media);
+    }
+    catch (e) {
+        log("Fail to load game : " + e.message);
     }
 });
 
@@ -25,6 +28,7 @@ var media = loadMedia([
  */
 function Game (holder, media) {
     this.holder = holder;
+    this.media = media;
 
     this.resources = new Collection();
     this.buildings = new Collection();
@@ -267,7 +271,7 @@ Game.prototype = {
             elapse = 0;
         }
 
-        raf(this.refresh.bind(this));
+        requestAnimationFrame(this.refresh.bind(this));
 
         if (elapse > 0) {
             if (this.flags.settled) {
@@ -314,6 +318,11 @@ Game.prototype = {
                 people.refresh(this.resources.items, elapse, this.flags);
             }.bind(this));
         }
+    },
+    save: function () {
+        var state = {};
+
+        SaveManager.store(state);
     },
     /**
      * Check if game has enough of a resource
@@ -375,21 +384,29 @@ Game.prototype = {
     /**
      * Welcome people to the camp
      * @param {Number} amount - Number of person that rejoin
-     * @param {Boolean} silent - No log
+     * @param {Boolean} first - First person
      */
-    welcome: function (amount, silent) {
+    welcome: function (amount, first) {
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(this.initialActions.values());
 
                 this.people.push(person);
-                //noinspection BadExpressionStatementJS - force redraw
-                this.peopleList.appendChild(person.html).offsetHeight;
-                person.html.classList.add("arrived");
+                this.peopleList.appendChild(person.html);
 
-                if (!silent) {
+                if (first) {
+                    person.life = 0;
+                    person.energy = 0;
+                    person.updateLife(0);
+                    person.updateEnergy(0);
+                }
+                else {
+                    //noinspection BadExpressionStatementJS - force redraw
+                    person.html.offsetHeight;
                     this.log(person.name + " arrives.", MessageBus.MSG_TYPES.LOGS.EVENT);
                 }
+
+                person.html.classList.add("arrived");
             }.bind(this));
         }.bind(this));
     },

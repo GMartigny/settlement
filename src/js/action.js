@@ -27,6 +27,7 @@ Action.prototype = {
         this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
 
         this.html.textContent = capitalize(this.data.name);
+
         if (this.tooltip) {
             this.tooltip.remove();
         }
@@ -42,7 +43,7 @@ Action.prototype = {
     toHTML: function (data) {
         var html = wrap("action clickable disabled animated");
 
-        html.addEvent("click", function () {
+        html.addEventListener("click", function () {
             if (!this.locked && !this.running && !this.owner.busy) {
                 this.click.call(this);
             }
