@@ -1,4 +1,5 @@
 .idea
+nbproject
 .grunt
 node_modules
 dist

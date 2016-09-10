@@ -56,7 +56,7 @@ Event.prototype = {
             if (this.data.time) {
                 MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this)
                     .notify(MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(an(this.data.name) + " has started."));
-                var duration = this.data.time * Game.hourToMs;
+                var duration = this.data.time * GameController.tickLength;
 
                 this.progressBar.style.animationDuration = duration + "ms";
                 this.html.classList.add("ongoing");

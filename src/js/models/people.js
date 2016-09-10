@@ -7,7 +7,7 @@
 function peopleFactory (amount) {
     amount = amount || 1;
     return new Promise(function (resolve, reject) {
-        if (Game.isDev) {
+        if (window.isDev) {
             resolve((new Array(amount)).fill(new People("John Doe", "male")));
         }
         else {

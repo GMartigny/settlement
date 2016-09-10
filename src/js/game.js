@@ -6,17 +6,16 @@ console.groupCollapsed("Loading");
  */
 var G;
 preloadImages([
-    "dist/img/icons.png",
     "dist/img/icons.png"
 ], function (percent, file) {
     console.log(file + " : " + percent + "%");
 }).then(function (media) {
     console.groupEnd();
     try {
-        G = new Game(document.getElementById("main"), media);
+        G = new GameController(document.getElementById("main"), media);
     }
     catch (e) {
-        log("Fail to load game : " + e.message);
+        console.warn("Fail to load game : " + e.message);
     }
 });
 
@@ -26,7 +25,7 @@ preloadImages([
  * @param {Object} media - All graphical resources
  * @constructor
  */
-function Game (holder, media) {
+function GameController (holder, media) {
     this.holder = holder;
     this.media = media;
 
@@ -42,6 +41,7 @@ function Game (holder, media) {
         ready: false,
         paused: false,
         settled: false,
+        survived: 0,
         popup: false,
         productivity: 1
     };
@@ -51,10 +51,8 @@ function Game (holder, media) {
 
     this.refresh();
 }
-Game.isDev = 1;
-Game.hourToMs = 2000;
-Game.tickLength = Game.hourToMs;
-Game.prototype = {
+GameController.tickLength = 2000;
+GameController.prototype = {
     /**
      * Start a new adventure
      * @private
@@ -112,6 +110,10 @@ Game.prototype = {
                     this.earn.apply(this, r);
                 }.bind(this));
             }
+        }.bind(this));
+
+        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.FIND_LOCATION, function (location) {
+            this.knownLocations.push(location);
         }.bind(this));
 
         // We may have a resource collector
@@ -173,7 +175,7 @@ Game.prototype = {
             this.log(message, type);
         }.bind(this));
 
-        this.flags.ready = 1;
+        this.flags.ready = true;
     },
     /**
      * Add actions to initial actions list
@@ -209,14 +211,14 @@ Game.prototype = {
     },
     /**
      * Return the time since settlement
-     * @return {number}
+     * @return {Number}
      */
     getSettledTime: function () {
-        return this.flags.settled ? (performance.now() - this.flags.settled) / Game.hourToMs : 0;
+        return this.flags.settled ? this.flags.survived / GameController.tickLength : 0;
     },
     /**
      * Return a well formatted play duration
-     * @return {string}
+     * @return {String}
      */
     getSurvivalDuration: function () {
         return formatTime(this.getSettledTime());
@@ -260,14 +262,10 @@ Game.prototype = {
      */
     refresh: function () {
         var now = performance.now(),
-            elapse = floor((now - this.lastTick) / Game.tickLength);
-        this.lastTick += elapse * Game.tickLength;
+            elapse = floor((now - this.lastTick) / GameController.tickLength);
+        this.lastTick += elapse * GameController.tickLength;
 
         if (this.flags.paused) {
-            if (this.flags.settled) {
-                // shift time to keep same difference
-                this.flags.settled += elapse * Game.tickLength;
-            }
             elapse = 0;
         }
 
@@ -275,6 +273,7 @@ Game.prototype = {
 
         if (elapse > 0) {
             if (this.flags.settled) {
+                this.flags.survived += elapse * GameController.tickLength;
                 // We use some resources
                 // TODO : need refacto
                 var needs = DataManager.data.people.need();
@@ -315,20 +314,20 @@ Game.prototype = {
             });
 
             this.people.forEach(function (people) {
-                people.refresh(this.resources.items, elapse, this.flags);
+                people.refresh(this.resources, elapse, this.flags);
             }.bind(this));
         }
     },
     save: function () {
         var state = {};
 
-        SaveManager.store(state);
+//        SaveManager.store(state);
     },
     /**
      * Check if game has enough of a resource
      * @param {String} id - Resource ID
      * @param {Number} amount - Amount needed
-     * @return {boolean}
+     * @return {Boolean}
      */
     hasEnough: function (id, amount) {
         return this.resources.get(id).has(amount);
@@ -471,7 +470,7 @@ Game.prototype = {
     },
     /**
      * Decide if someone can join the colony
-     * @return {boolean}
+     * @return {Boolean}
      */
     canSomeoneArrive: function () {
         return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1) &&

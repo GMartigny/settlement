@@ -53,14 +53,14 @@ var DataManager = (function () {
                         desc: "About a liter of gas-oil.",
                         icon: "oil",
                         dropRate: 30,
-                        order: 50
+                        order: 60
                     },
                     plastic: {
                         name: "plastic",
                         desc: "A sturdy piece of plastic.",
                         icon: "plastic",
                         dropRate: 50,
-                        order: 60
+                        order: 50
                     }
                 },
                 rare: {
@@ -354,7 +354,7 @@ var DataManager = (function () {
                 desc: "Ok, let's settle right there !",
                 time: 3,
                 unlock: function () {
-                    this.flags.settled = performance.now();
+                    this.flags.settled = true;
                     return [
                         data.actions.gather
                     ];
@@ -366,7 +366,7 @@ var DataManager = (function () {
                     return [];
                 },
                 relaxing: 1,
-                log: "@people installs @build with @give to sleep in.",
+                log: "@people installs @build inside a ship-wreck with @give to sleep in.",
                 order: 0,
                 unique: true
             },

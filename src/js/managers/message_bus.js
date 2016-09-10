@@ -66,11 +66,12 @@ MessageBus.MSG_TYPES = {
     CLICK: 10, // Click an action
     REFRESH: 20, // The game has refreshed
     GIVE: 30, // Give some resources
-    COLLECT: 31, // Start to collect a resource
-    USE: 32, // Use some resources
-    RUNS_OUT: 33, // Runs out of some resources
-    LOOSE: 34, // Loose some resources
-    LOOSE_SOMEONE: 36, // Loose a person
+    FIND_LOCATION: 31, // Find a new location
+    COLLECT: 32, // Start to collect a resource
+    USE: 35, // Use some resources
+    RUNS_OUT: 36, // Runs out of some resources
+    LOOSE: 38, // Loose some resources
+    LOOSE_SOMEONE: 39, // Loose a person
     UNLOCK: 40, // Unlock an action
     LOCK: 50, // Lock an action
     BUILD: 60, // Build a building

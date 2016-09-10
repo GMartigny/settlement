@@ -47,13 +47,13 @@ module.exports = function (grunt) {
                     mangle: false,
                     beautify: true,
                     sourceMap: true,
-                    banner: versionStr,
+                    banner: versionStr + "\nwindow.isDev = true;",
                     compress: {
                         drop_debugger: false
                     }
                 },
                 files: {
-                    "dist/js/script.js": ["src/js/*.js"]
+                    "dist/js/script.js": ["src/js/**/*.js"]
                 }
             },
             prod: {
@@ -63,18 +63,22 @@ module.exports = function (grunt) {
                     enclose: {}
                 },
                 files: {
-                    "dist/js/script.js": ["src/js/*.js"]
+                    "dist/js/script.js": ["src/js/**/*.js"]
                 }
             }
         },
 
         watch: {
+            sprite: {
+                files: ["src/img/**/*.png"],
+                tasks: ["icon"]
+            },
             less2css: {
-                files: ["src/css/*.less"],
+                files: ["src/css/**/*.less"],
                 tasks: ["css"]
             },
             jsbuild: {
-                files: ["src/js/*.js"],
+                files: ["src/js/**/*.js"],
                 tasks: ["js"]
             }
         },

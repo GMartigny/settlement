@@ -9,13 +9,6 @@ var SaveManager = (function () {
     var saltLength = 6;
     var salt;
 
-    if (localSave) {
-        salt = localSave.slice(-saltLength);
-    }
-    else {
-        salt = random().toString(36).slice(-saltLength);
-    }
-
     /**
      * Encrypt (kind of) a string with a key
      * @param {String} str - Any string
@@ -27,13 +20,29 @@ var SaveManager = (function () {
     }
 
     /**
-     * Decrypt
-     * @param {String} str -
-     * @param {String} key -
+     * Decrypt a string
+     * @param {String} str - Encrypted string
+     * @param {String} key - A key used for encryption
      * @return {string}
      */
     function decrypt (str, key) {
         return atob(str.slice(0, -key.length)).slice(0, -key.length);
+    }
+
+    /**
+     * Get the salt for encryption
+     * @returns {String}
+     */
+    function passTheSalt () {
+        if (!salt) {
+            if (localSave) {
+                salt = localSave.slice(-saltLength);
+            }
+            else {
+                salt = random().toString(36).slice(-saltLength);
+            }
+        }
+        return salt;
     }
 
     return {
@@ -44,7 +53,7 @@ var SaveManager = (function () {
          */
         store: function (data) {
             try {
-                var text = encrypt(JSON.stringify(data), salt);
+                var text = encrypt(JSON.stringify(data), passTheSalt());
                 localSave = text;
                 storage.setItem(saveKey, text);
                 return true;
@@ -60,7 +69,7 @@ var SaveManager = (function () {
          */
         load: function () {
             try {
-                return JSON.parse(decrypt(localSave, salt));
+                return JSON.parse(decrypt(localSave, passTheSalt()));
             }
             catch (e) {
                 console.warn(e);

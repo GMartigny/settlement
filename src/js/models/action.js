@@ -12,6 +12,8 @@ function Action (owner, data) {
     this.owner = owner;
     this.data = {};
 
+    this.location = false;
+
     this.html = this.toHTML(data);
 
     this._init(data);
@@ -68,8 +70,8 @@ Action.prototype = {
             this.tooltip.refresh(resources, this.data.consume);
             if (!this.locked) {
                 this.data.consume.forEach(function (r) {
-                    var res = resources[r[1].id];
-                    if (!res || !res.has(r[0])) {
+                    var id = r[1].id;
+                    if (!resources.has(id) || !resources.get(id).has(r[0])) {
                         this.locked = true;
                     }
                 }.bind(this));
@@ -96,7 +98,7 @@ Action.prototype = {
             }
 
             this.owner.setBusy(this.data);
-            var duration = (this.data.time || 0) * Game.hourToMs;
+            var duration = (this.data.time || 0) * GameController.tickLength;
 
             this.html.style.animationDuration = duration + "ms";
             this.html.classList.add("cooldown");
@@ -126,6 +128,7 @@ Action.prototype = {
                     // very specific case of roaming which gives a new location
                     if (this.data.id === DataManager.data.actions.roam.id) {
                         var location = randomize(DataManager.data.locations);
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.FIND_LOCATION, location);
                         effect.location = an(location.name);
                         if (location.hasRuin) {
                             give.push([location.hasRuin, DataManager.data.resources.ruins]);

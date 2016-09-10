@@ -19,7 +19,7 @@ Collection.prototype = {
             id = item.id || this.length + 1;
         }
 
-        if (!this.keys().includes(id)){
+        if (!this.has(id)){
             this.items[id] = item;
             return ++this.length;
         }
@@ -119,6 +119,13 @@ Collection.prototype = {
      */
     keys: function () {
         return Object.keys(this.items);
+    },
+    /**
+     * Return a random item
+     * @returns {*}
+     */
+    random: function () {
+        return this.values().random();
     },
     /**
      * Empty the collection

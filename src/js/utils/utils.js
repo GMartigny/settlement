@@ -1,145 +1,7 @@
 "use strict";
-// TODO: could be better to have managers than basic global functions
 
 var str = "",
-    noop = new Function(),
-    undef = undefined;
-
-/**
- * Add a tooltip to an HTMLElement
- * @param {HTMLElement} html - The element
- * @param {Object} data - Some data for the tooltip
- * @returns {Object} Some functions
- */
-function tooltip (html, data) {
-    var box = wrap("tooltip");
-
-    box.appendChild(wrap("title", capitalize(data.name)));
-    if (data.desc) {
-        box.appendChild(wrap("description", data.desc));
-    }
-    if (data.time) {
-        box.appendChild(wrap("time", formatTime(data.time)));
-    }
-    if (data.consume) {
-        var resourcesContainer = wrap("consumption"),
-            resourcesMapper = {},
-            item;
-        data.consume.forEach(function (r) {
-            item = wrap("resource not-enough", r[0] + " " + r[1].name);
-            resourcesMapper[r[1].id] = item;
-            resourcesContainer.appendChild(item);
-        });
-        box.appendChild(resourcesContainer);
-    }
-
-    /**
-     * Position the tooltip
-     * @param {Number} x - The x coordinate
-     * @param {Number} y - The y coordinate
-     * @private
-     */
-    function _position (x, y) {
-        var left = x + 10;
-        if (left + 255 > document.body.offsetWidth) {
-            left = document.body.offsetWidth - 255;
-        }
-        box.style.left = left + "px";
-        box.style.top = (y + 10) + "px";
-    }
-
-    html.classList.add("tooltiped");
-    html.addEventListener("mouseover", function (event) {
-        document.body.appendChild(box);
-        _position(event.clientX, event.clientY);
-    });
-    html.addEventListener("mousemove", function (event) {
-        _position(event.clientX, event.clientY);
-    });
-    html.addEventListener("mouseout", function () {
-        box.remove();
-    });
-
-    return {
-        /**
-         * Update tooltip
-         * @param {Collection} resources
-         * @param {Array} consume
-         */
-        refresh: function (resources, consume) {
-            if (resourcesContainer) {
-                var id;
-                consume.forEach(function (data) {
-                    id = data[1].id;
-                    if (resources[id] && resources[id].has(data[0])) {
-                        resourcesMapper[id].classList.remove("not-enough");
-                    }
-                    else {
-                        resourcesMapper[id].classList.add("not-enough");
-                    }
-                });
-            }
-        },
-        /**
-         * Remove tooltip from DOM
-         */
-        remove: function () {
-            box.remove();
-        }
-    };
-}
-
-/**
- * Display a popup with choice buttons
- * @param {Object} data - Text for the popup
- * @param {Function} onYes - Action to do on validate
- * @param {String} [CSSClasses] - Additional classes for the popup
- * @returns {Object} Some functions
- */
-function popup (data, onYes, CSSClasses) {
-    if (!isFunction(onYes)) {
-        throw "Popup need a confirm function";
-    }
-
-    // FIXME: maybe
-    var holder = document.getElementById("main");
-
-    CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
-    var box = wrap(CSSClasses);
-
-    box.appendChild(wrap("title", capitalize(data.name)));
-    box.appendChild(wrap("description", data.desc));
-
-    var api = {
-        /**
-         * Remove popup from DOM
-         */
-        remove: function () {
-            box.remove();
-            holder.classList.remove("backdrop");
-        }
-    };
-
-    var yesButton = wrap("yes clickable", data.yes || "Ok");
-    yesButton.addEventListener("click", function () {
-        onYes();
-        api.remove();
-    });
-    box.appendChild(yesButton);
-
-    if (data.no) {
-        var noButton = wrap("no clickable", data.no);
-        noButton.addEventListener("click", api.remove);
-        box.appendChild(noButton);
-    }
-
-    holder.appendChild(box);
-    holder.classList.add("backdrop");
-
-    box.style.top = floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
-
-    return api;
-}
+    noop = new Function();
 
 /**
  * Wrap some text content with html tag
@@ -306,7 +168,7 @@ function randomizeMultiple (list, amount) {
  * @param {String} message - Any message
  */
 function log (message) {
-    if (Game.isDev) {
+    if (window.isDev) {
         console.log(message);
     }
 }
@@ -380,7 +242,7 @@ pickID.IDS = [];
 /**
  * Test if is a function
  * @param {*} func - Anything to test
- * @returns {boolean}
+ * @returns {Boolean}
  */
 function isFunction (func) {
     return func instanceof Function;
@@ -389,7 +251,7 @@ function isFunction (func) {
 /**
  * Test if is an array
  * @param {*} array - Anything to test
- * @return {boolean}
+ * @return {Boolean}
  */
 function isArray (array) {
     return Array.isArray(array);
@@ -398,16 +260,16 @@ function isArray (array) {
 /**
  * Test if is undefined
  * @param {*} value - Anything to test
- * @return {boolean}
+ * @return {Boolean}
  */
 function isUndefined (value) {
-    return value === undef;
+    return value === undefined;
 }
 
 /**
  * Make a string usable everywhere
  * @param {String} str - Any string
- * @return {string}
+ * @return {String}
  */
 function sanitize (str) {
     return str.toLowerCase().replace(/(\W)+/g, "_");
@@ -416,7 +278,7 @@ function sanitize (str) {
 /**
  * Add "a" or "an" according to the following word
  * @param {String} word - Any word
- * @return {string}
+ * @return {String}
  */
 function an (word) {
     var vowels = "aeiou".split("");
@@ -462,8 +324,8 @@ Array.prototype.random = function () {
 };
 
 /**
- * Remove en item from an array
- * @param item
+ * Remove an item from an array
+ * @param {*} item - Any item of the array
  * @return {Number} The array length
  */
 Array.prototype.out = function (item) {
@@ -488,9 +350,9 @@ Object.prototype.values = function () {
 };
 
 /**
- *
- * @param {Array} images -
- * @param {Function} action -
+ * Load some image with a promise
+ * @param {Array} images - An array of url string
+ * @param {Function} action - A function called with each loading
  * @return {Promise}
  */
 function preloadImages (images, action) {
