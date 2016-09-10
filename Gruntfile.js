@@ -15,6 +15,7 @@ module.exports = function (grunt) {
         img: "src/img/**/*.png"
     };
     var versionStr = "window.VERSION = 'v<%= version %>';";
+    var versionStr = "window.VERSION='v<%= version %>';";
 
     grunt.initConfig({
         version: grunt.file.readJSON('package.json').version,
@@ -52,7 +53,7 @@ module.exports = function (grunt) {
                     mangle: false,
                     beautify: true,
                     sourceMap: true,
-                    banner: versionStr + "\nwindow.isDev = true;",
+                    banner: versionStr + "\nwindow.isDev=true;",
                     compress: {
                         drop_debugger: false
                     }
@@ -121,14 +122,16 @@ module.exports = function (grunt) {
 
     // Sources building
     grunt.registerTask("icon", ["sprite:all"]);
-    grunt.registerTask("css", ["less:dev"]);
     grunt.registerTask("js", ["uglify:dev"]);
-    grunt.registerTask("build", ["js", "icon", "css"]);
+    grunt.registerTask("css", ["less:dev"]);
+
+    grunt.registerTask("build", ["icon", "js", "css"]);
+    grunt.registerTask("build:prod", ["icon", "uglify:prod", "less:prod"]);
 
     grunt.registerTask("default", ["build", "watch"]);
 
     grunt.registerTask("patch", ["bump-only:patch"]);
 
-    grunt.registerTask("pushtoprod", ["uglify:prod", "icon", "less:prod", "gh-pages", "build"]);
+    grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 };

@@ -17,8 +17,8 @@ function peopleFactory (amount) {
                     var people = [];
                     results.forEach(function (res) {
                         var name = capitalize(res.name.first) + " " + capitalize(res.name.last);
-                        var people = new People(name, res.gender);
-                        people.push(people);
+                        var person = new People(name, res.gender);
+                        people.push(person);
                     });
                     resolve(people);
                 }
@@ -243,8 +243,14 @@ People.LST_ID = "peopleList";
  */
 People.randomName = function (amount) {
     return new Promise(function (resolve, reject) {
-        var baseUrl = "https://randomuser.me/api?inc=gender,name",
-            countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
-        get(baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + amount, resolve, reject);
+        var baseUrl = "https://randomuser.me/api?inc=gender,name";
+        var countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
+        var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + amount;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", url);
+        xhr.onload = resolve;
+        xhr.onerror = reject;
+        xhr.send();
     });
 };
