@@ -31,9 +31,11 @@ Action.prototype = {
         this.html.textContent = capitalize(this.data.name);
 
         if (this.tooltip) {
-            this.tooltip.remove();
+            this.tooltip.remove().update(this.data);
         }
-        this.tooltip = tooltip(this.html, this.data);
+        else {
+            this.tooltip = tooltip(this.html, this.data);
+        }
 
         return this;
     },
@@ -163,9 +165,13 @@ Action.prototype = {
                 // Unlock
                 if (isFunction(this.data.unlock)) {
                     var unlock = this.data.unlock(this);
-                    this.owner.addAction(unlock);
                     if (this.data.unique) {
+                        // add to all
                         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
+                    }
+                    else {
+                        // add to owner
+                        this.owner.addAction(unlock);
                     }
                 }
                 // Lock

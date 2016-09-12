@@ -5,27 +5,9 @@
  * @returns {Object} Some functions
  */
 function tooltip (html, data) {
-    var box = wrap("tooltip");
+    var box = null;
 
-    box.appendChild(wrap("title", capitalize(data.name)));
-    if (data.desc) {
-        box.appendChild(wrap("description", data.desc));
-    }
-    if (data.time) {
-        box.appendChild(wrap("time", formatTime(data.time)));
-    }
-    if (data.consume) {
-        var resourcesContainer = wrap("consumption"),
-            resourcesMapper = {},
-            item;
-        data.consume.forEach(function (r) {
-            item = wrap("resource not-enough", r[0] + " " + r[1].name);
-            resourcesMapper[r[1].id] = item;
-            resourcesContainer.appendChild(item);
-        });
-        box.appendChild(resourcesContainer);
-    }
-
+    var bodyWidth = document.body.offsetWidth;
     /**
      * Position the tooltip
      * @param {Number} x - The x coordinate
@@ -34,8 +16,8 @@ function tooltip (html, data) {
      */
     function _position (x, y) {
         var left = x + 10;
-        if (left + 255 > document.body.offsetWidth) {
-            left = document.body.offsetWidth - 255;
+        if (left + 255 > bodyWidth) {
+            left = bodyWidth - 255;
         }
         box.style.left = left + "px";
         box.style.top = (y + 10) + "px";
@@ -47,20 +29,45 @@ function tooltip (html, data) {
         _position(event.clientX, event.clientY);
     });
     html.addEventListener("mousemove", function (event) {
+        document.body.appendChild(box);
         _position(event.clientX, event.clientY);
     });
     html.addEventListener("mouseout", function () {
         box.remove();
     });
 
-    return {
+    var resourcesMapper = {};
+
+    var api = {
+        update: function (data) {
+            box = wrap("tooltip");
+
+            box.appendChild(wrap("title", capitalize(data.name)));
+            if (data.desc) {
+                box.appendChild(wrap("description", data.desc));
+            }
+            if (data.time) {
+                box.appendChild(wrap("time", formatTime(data.time)));
+            }
+            if (data.consume) {
+                var resourcesContainer = wrap("consumption");
+                var item;
+                data.consume.forEach(function (r) {
+                    item = wrap("resource not-enough", r[0] + " " + r[1].name);
+                    resourcesMapper[r[1].id] = item;
+                    resourcesContainer.appendChild(item);
+                });
+                box.appendChild(resourcesContainer);
+            }
+            return api;
+        },
         /**
          * Update tooltip
          * @param {Collection} resources
          * @param {Array} consume
          */
         refresh: function (resources, consume) {
-            if (resourcesContainer) {
+            if (data.consume) {
                 var id;
                 consume.forEach(function (data) {
                     id = data[1].id;
@@ -72,12 +79,17 @@ function tooltip (html, data) {
                     }
                 });
             }
+            return api;
         },
         /**
          * Remove tooltip from DOM
          */
         remove: function () {
             box.remove();
+            return api;
         }
     };
+    api.update(data);
+
+    return api;
 }
