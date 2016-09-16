@@ -9,7 +9,7 @@ function Collection () {
 Collection.prototype = {
     /**
      * Add an item
-     * @param {String} id - ID of the item
+     * @param {String} [id] - ID of the item
      * @param {*} item - The item to insert
      * @return {number|Boolean} Collection length or false if already included
      */
@@ -19,7 +19,7 @@ Collection.prototype = {
             id = item.id || this.length + 1;
         }
 
-        if (!this.has(id)){
+        if (!this.has(id)) {
             this.items[id] = item;
             return ++this.length;
         }

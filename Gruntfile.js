@@ -9,6 +9,11 @@ module.exports = function (grunt) {
         sprite: "grunt-spritesmith"
     });
 
+    var sourceDir = {
+        js: "src/js/**/*.js",
+        css: "src/css/**/*.less",
+        img: "src/img/**/*.png"
+    };
     var versionStr = "window.VERSION = 'v<%= version %>';";
 
     grunt.initConfig({
@@ -17,7 +22,7 @@ module.exports = function (grunt) {
 
         sprite: {
             all: {
-                src: "src/img/*.png",
+                src: sourceDir.img,
                 dest: "dist/img/icons.png",
                 destCss: "src/css/sprites.less"
             }
@@ -28,7 +33,7 @@ module.exports = function (grunt) {
                 options: {
                 },
                 files: {
-                    "dist/css/style.css": "src/css/*.less"
+                    "dist/css/style.css": sourceDir.css
                 }
             },
             prod: {
@@ -36,7 +41,7 @@ module.exports = function (grunt) {
                     compress: true
                 },
                 files: {
-                    "dist/css/style.css": "src/css/*.less"
+                    "dist/css/style.css": sourceDir.css
                 }
             }
         },
@@ -53,7 +58,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    "dist/js/script.js": ["src/js/**/*.js"]
+                    "dist/js/script.js": [sourceDir.js]
                 }
             },
             prod: {
@@ -63,31 +68,31 @@ module.exports = function (grunt) {
                     enclose: {}
                 },
                 files: {
-                    "dist/js/script.js": ["src/js/**/*.js"]
+                    "dist/js/script.js": [sourceDir.js]
                 }
             }
         },
 
         watch: {
             sprite: {
-                files: ["src/img/**/*.png"],
+                files: [sourceDir.img],
                 tasks: ["icon"]
             },
             less2css: {
-                files: ["src/css/**/*.less"],
+                files: [sourceDir.css],
                 tasks: ["css"]
             },
             jsbuild: {
-                files: ["src/js/**/*.js"],
+                files: [sourceDir.js],
                 tasks: ["js"]
             }
         },
 
         jscs: {
-            src: "src/js/*.js"
+            src: sourceDir.js
         },
         lesslint: {
-            src: "src/css/*.less",
+            src: sourceDir.css,
             options: {
                 csslint: {
                     csslintrc: ".csslintrc"

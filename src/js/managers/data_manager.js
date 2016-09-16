@@ -17,7 +17,7 @@ var DataManager = (function () {
         resources: {
             /***** GATHERABLES *****/
             gatherable: {
-                common: {
+                common: { // drop rate more than 80
                     water: {
                         name: "water",
                         desc: "Water is definitely important to survive in this harsh environment.",
@@ -47,108 +47,203 @@ var DataManager = (function () {
                         order: 40
                     }
                 },
-                uncommon: {
-                    oil: {
-                        name: "oil",
-                        desc: "About a liter of gas-oil.",
-                        icon: "oil",
-                        dropRate: 30,
-                        order: 60
-                    },
+                uncommon: { // drop rate between 80 and 30
                     plastic: {
                         name: "plastic",
                         desc: "A sturdy piece of plastic.",
                         icon: "plastic",
                         dropRate: 50,
                         order: 50
+                    },
+                    sand: {
+                        name: "sand",
+                        desc: "",
+                        icon: "",
+                        dropRate: 30,
+                        order: 55
+                    },
+                    oil: {
+                        name: "oil",
+                        desc: "About a liter of gas-oil.",
+                        icon: "oil",
+                        dropRate: 20,
+                        order: 60
                     }
                 },
-                rare: {
+                rare: { // drop rate lower than 30
                     medication: {
                         name: "medication",
                         desc: "An unmark medication, hope it'll help.",
                         icon: "medication",
                         dropRate: 10,
                         order: 70
+                    },
+                    electronic: {
+                        name: "electronic",
+                        desc: "",
+                        icon: "",
+                        dropRate: 15,
+                        order: 75
                     }
                 }
             },
             ruins: {
-                name: "ruin",
-                desc: "The location of an ancient building.",
+                name: "location",
+                desc: "A location we find earlier.",
                 icon: "ruin",
-                order: 80
+                order: 80,
+                dropRate: 0.6
             },
             /***** CRAFTABLES *****/
             craftable: {
-                component: {
-                    name: "component",
-                    desc: "A mechanical part for others craftables.",
-                    icon: "component",
-                    consume: function () {
-                        return [
-                            [2, data.resources.gatherable.common.scrap],
-                            [2, data.resources.gatherable.uncommon.plastic]
-                        ];
+                basic: { // Max 2 gatherables, no more than uncommon
+                    stone: {
+                        name: "smooth stone",
+                        desc: "A well polish stone.",
+                        icon: "stone",
+                        consume: function () {
+                            return [
+                                [6, data.resources.gatherable.common.rock]
+                            ];
+                        },
+                        dropRate: 100,
+                        order: 90
                     },
-                    dropRate: 100,
-                    order: 90
+                    glass: {
+                        name: "glass panel",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [4, data.resources.gatherable.uncommon.sand]
+                            ];
+                        },
+                        dropRate: 100,
+                        order: 100
+                    },
+                    component: {
+                        name: "component",
+                        desc: "A mechanical part for others craftables.",
+                        icon: "component",
+                        consume: function () {
+                            return [
+                                [2, data.resources.gatherable.common.scrap],
+                                [2, data.resources.gatherable.uncommon.plastic]
+                            ];
+                        },
+                        dropRate: 100,
+                        order: 110
+                    },
+                    tool: {
+                        name: "tool",
+                        desc: "The base of any tinkerer.",
+                        icon: "tool",
+                        consume: function () {
+                            return [
+                                [2, data.resources.craftable.component],
+                                [3, data.resources.gatherable.common.rock]
+                            ];
+                        },
+                        dropRate: 90,
+                        order: 111
+                    }
                 },
-                tool: {
-                    name: "tool",
-                    desc: "The base of any tinkerer.",
-                    icon: "tool",
-                    consume: function () {
-                        return [
-                            [2, data.resources.gatherable.common.scrap],
-                            [2, data.resources.craftable.component],
-                            [1, data.resources.gatherable.common.rock]
-                        ];
+                complex: { // At least 2 requirements with 1 craftables
+                    brick: {
+                        name: "brick",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [3, data.resources.craftable.basic.stone],
+                                [1, data.resources.craftable.basic.tool]
+                            ];
+                        },
+                        dropRate: 80,
+                        order: 112
                     },
-                    dropRate: 90,
-                    order: 100
+                    circuit: {
+                        name: "circuit",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [2, data.resources.gatherable.common.scrap],
+                                [1, data.resources.craftable.basic.component],
+                                [1, data.resources.gatherable.rare.electronic]
+                            ];
+                        },
+                        dropRate: 70,
+                        order: 114
+                    },
+                    metalPipe: {
+                        name: "metal pipe",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [5, data.resources.gatherable.common.scrap],
+                                [1, data.resources.craftable.basic.tool]
+                            ];
+                        },
+                        condition: function () {
+                            return this.buildings.has(data.buildings.medium.forge.id);
+                        },
+                        dropRate: 70,
+                        order: 115
+                    }
                 },
-                stone: {
-                    name: "smooth stone",
-                    desc: "A well polish stone.",
-                    icon: "stone",
-                    consume: function () {
-                        return [
-                            [6, data.resources.gatherable.common.rock]
-                        ];
+                advanced: { // At least 3 requirements with 2 craftables (and more)
+                    engine: {
+                        name: "engine",
+                        desc: "Amazing what you manage to do with all those scraps !",
+                        icon: "engine",
+                        consume: function () {
+                            return [
+                                [15, data.resources.gatherable.uncommon.oil]
+                                [5, data.resources.craftable.basic.tool],
+                                [5, data.resources.craftable.complex.metalPipe]
+                            ];
+                        },
+                        condition: function () {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
+                        dropRate: 30,
+                        order: 120
                     },
-                    dropRate: 110,
-                    order: 110
-                },
-                engine: {
-                    name: "engine",
-                    desc: "Amazing what you manage to do with all those scraps !",
-                    icon: "engine",
-                    consume: function () {
-                        return [
-                            [10, data.resources.gatherable.common.scrap],
-                            [20, data.resources.craftable.component],
-                            [5, data.resources.craftable.tool],
-                            [10, data.resources.gatherable.uncommon.oil]
-                        ];
+                    computer: {
+                        name: "computer",
+                        desc: "Well, Internet is down since 2136 but it can still be useful.",
+                        icon: "computer",
+                        consume: function () {
+                            return [
+                                [10, data.resources.craftable.basic.component],
+                                [7, data.resources.craftable.basic.tool],
+                                [3, data.resources.craftable.complex.circuit]
+                            ];
+                        },
+                        condition: function () {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
+                        dropRate: 20,
+                        order: 130
                     },
-                    dropRate: 70,
-                    order: 120
-                },
-                computer: {
-                    name: "computer",
-                    desc: "Well, Internet is down since 2136 but it can be useful.",
-                    icon: "computer",
-                    consume: function () {
-                        return [
-                            [5, data.resources.craftable.component],
-                            [3, data.resources.craftable.tool],
-                            [10, data.resources.gatherable.common.scrap],
-                            [2, data.resources.gatherable.uncommon.plastic]
-                        ];
-                    },
-                    dropRate: 15,
-                    order: 130
+                    beacon: {
+                        name: "beacon",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [6, data.resources.craftable.basic.glass],
+                                [4, data.resources.craftable.complex.circuit],
+                                [1, data.resources.craftable.advanced.computer]
+                            ];
+                        },
+                        give: function () {
+                            data.people.dropRate = 0.9;
+                            return [];
+                        }
+                    }
                 }
             },
             room: {
@@ -167,7 +262,7 @@ var DataManager = (function () {
                     [1 / time.day, data.resources.gatherable.common.water]
                 ];
             },
-            dropRate: 0.05
+            dropRate: 0.03
         },
         /***** BUILDINGS *****/
         buildings: {
@@ -175,12 +270,11 @@ var DataManager = (function () {
                 tent: {
                     name: "tent",
                     desc: "Allow someone to rejoin your colony.",
-                    time: 3,
+                    time: 4,
                     consume: function () {
                         return [
-                            [3, data.resources.gatherable.common.rock],
-                            [5, data.resources.gatherable.common.scrap],
-                            [2, data.resources.craftable.component]
+                            [6, data.resources.gatherable.common.scrap],
+                            [3, data.resources.craftable.basic.stone]
                         ];
                     },
                     give: function () {
@@ -190,105 +284,122 @@ var DataManager = (function () {
                     },
                     dropRate: 100
                 },
+                plot: {
+                    name: "farm plot",
+                    desc: "",
+                    time: 12,
+                    consume: function () {
+                        return [
+                            [5, data.resources.gatherable.common.food],
+                            [10, data.resources.gatherable.uncommon.sand]
+                        ];
+                    },
+                    unlock: function () {
+                        return [];
+                    }
+                },
                 well: {
                     name: "well",
                     desc: "Just a large hole into the ground.",
-                    time: 12,
-                    unlock: function () {
-                        return [data.actions.drawFrom.well];
+                    time: 16,
+                    condition: function () {
+                        return !this.buildings.has(data.buildings.big.pump.id);
                     },
                     consume: function () {
                         return [
-                            [8, data.resources.gatherable.common.rock],
-                            [4, data.resources.gatherable.common.scrap],
-                            [1, data.resources.gatherable.uncommon.plastic]
+                            [10, data.resources.craftable.basic.stone],
+                            [3, data.resources.craftable.basic.tool]
                         ];
                     },
                     give: function () {
                         return [
-                            [8, data.resources.gatherable.common.water]
+                            [5, data.resources.gatherable.common.water]
                         ];
+                    },
+                    unlock: function () {
+                        return [data.actions.drawFrom.well];
                     },
                     dropRate: 80
-                },
-                farm: {
-                    name: "farm",
-                    desc: "A plotted land with some seeds has always provided food.",
-                    time: time.day,
-                    unlock: function () {
-                        return [data.actions.harvest];
-                    },
+                }
+            },
+            medium: {
+                forge: {
+                    name: "forge",
+                    desc: "",
+                    time: 10,
                     consume: function () {
                         return [
-                            [6, data.resources.gatherable.common.rock],
-                            [6, data.resources.gatherable.uncommon.plastic],
-                            [1, data.resources.craftable.tool]
+                            [5, data.resources.gatherable.uncommon.oil],
+                            [10, data.resources.craftable.basic.stone],
+                            [3, data.resources.craftable.basic.tool]
                         ];
-                    }
-                },
-                dropRate: 70
+                    },
+                    dropRate: 60
+                }
             },
             big: {
-                pump: {
-                    name: "water pump",
-                    desc: "A buried contraption that collect water from the earth moisture.",
-                    time: 3 * time.day,
-                    unlock: function () {
-                        return [data.actions.drawFrom.well];
-                    },
+                barrack: {
+                    name: "barrack",
+                    desc: "Some place to sleep for a few people.",
+                    time: 2 * time.day,
+                    relaxing: 1 - 1 / 2.2,
                     consume: function () {
                         return [
-                            [100, data.resources.craftable.stone],
-                            [10, data.resources.gatherable.uncommon.plastic],
-                            [10, data.resources.craftable.component],
-                            [1, data.resources.craftable.engine],
-                            [3, data.resources.craftable.tool],
-                            [15, data.resources.gatherable.common.water]
+                            [5, data.resources.gatherable.uncommon.sand],
+                            [5, data.resources.gatherable.uncommon.plastic],
+                            [10, data.resources.craftable.complex.brick],
+                            [2, data.resources.craftable.basic.glass]
                         ];
                     },
                     give: function () {
-                        return [
-                            [40, data.resources.gatherable.common.water]
-                        ];
+                        return [round(random(3, 4)), data.resources.room];
                     },
-                    collect: function () {
-                        return [
-                            [2 / time.day, data.resources.gatherable.common.water]
-                        ];
-                    },
-                    dropRate: 15
+                    dropRate: 20
                 },
                 workshop: {
                     name: "workshop",
                     desc: "Organizing your workforce make them more efficient at crafting.",
                     time: 3 * time.day,
+                    relaxing: 1 - 1 / 3.5,
                     unique: true,
                     consume: function () {
                         return [
-                            [20, data.resources.craftable.stone],
-                            [20, data.resources.gatherable.common.scrap],
-                            [15, data.resources.craftable.component],
-                            [8, data.resources.craftable.tool]
+                            [6, data.resources.gatherable.common.scrap],
+                            [5, data.resources.craftable.basic.glass],
+                            [10, data.resources.craftable.basic.tool],
+                            [15, data.resources.craftable.complex.brick]
                         ];
                     },
                     give: function () {
                         return [];
                     },
-                    dropRate: 10
+                    dropRate: 20
                 },
-                barrak: {
-                    name: "barrack",
-                    desc: "Some place to sleep for a few people.",
-                    time: 2 * time.day + 5 * time.hour,
+                pump: {
+                    name: "water pump",
+                    desc: "A buried contraption that collect water from the earth moisture.",
+                    time: 3 * time.day,
+                    relaxing: 1 - 1 / 3,
+                    unique: true,
                     consume: function () {
                         return [
-                            [5, data.resources.craftable.tool],
-                            [10, data.resources.gatherable.common.scrap],
-                            [7, data.resources.gatherable.common.rock]
+                            [30, data.resources.craftable.basic.stone],
+                            [7, data.resources.craftable.complex.metalPipe],
+                            [1, data.resources.craftable.advanced.engine]
                         ];
                     },
                     give: function () {
-                        return [round(random(2, 4)), data.resources.room];
+                        return [
+                            [10, data.resources.gatherable.common.water]
+                        ];
+                    },
+                    unlock: function () {
+                        return [data.actions.drawFrom.well];
+                    },
+                    collect: function () {
+                        return [
+                            [2 / time.day, data.resources.gatherable.common.water]
+                        ];
                     },
                     dropRate: 10
                 }
@@ -330,9 +441,8 @@ var DataManager = (function () {
                 desc: "What am I doing here ?",
                 time: 2,
                 give: function () {
-                    TimerManager.timeout(function () {
-                        this.log("We need a shelter.", MessageBus.MSG_TYPES.LOGS.FLAVOR);
-                    }.bind(this), 1000);
+                    var messageType = MessageBus.MSG_TYPES.LOGS.FLAVOR;
+                    TimerManager.timeout(this.log.bind(this, "We need a shelter.", messageType), 1000);
                     return [,
                         [10, data.resources.gatherable.common.water],
                         [5, data.resources.gatherable.common.food],
@@ -376,7 +486,9 @@ var DataManager = (function () {
                 time: 3,
                 isOut: 1,
                 unlock: function () {
-                    return [data.actions.roam];
+                    return [
+                        data.actions.roam
+                    ];
                 },
                 give: function () {
                     return randomizeMultiple(data.resources.gatherable, "3-6");
@@ -395,14 +507,34 @@ var DataManager = (function () {
                     ];
                 },
                 unlock: function () {
-                    return [data.actions.explore, data.actions.craft];
+                    return [
+                        data.actions.explore,
+                        data.actions.craft
+                    ];
                 },
                 give: function () {
                     return [
                         randomize(data.resources.gatherable, "1-3")
                     ];
                 },
-                log: "Not far from here, @people finds @location. @pronoun also brings back @give.",
+                log: function (effect) {
+                    var log;
+                    if (effect.location) {
+                        log = "Heading @direction, @people spots @location. @pronoun also brings back @give.";
+                    }
+                    else {
+                        log = "";
+                    }
+                    var direction = ["north", "south", "", ""].random();
+                    if (direction.length && random() < 0.5) {
+                        direction += "-";
+                    }
+                    direction += ["east", "west"].random();
+
+                    return log.replace(/@(\w+)/gi, function (match, capture) {
+                        return effect[capture] || "";
+                    });
+                },
                 order: 10
             },
             explore: {
@@ -440,7 +572,9 @@ var DataManager = (function () {
             craft: {
                 name: "craft something",
                 desc: "Use some resources to tinker something useful.",
-                time: 6,
+                time: function () {
+                    return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 6;
+                },
                 unlock: function () {
                     return [data.actions.plan];
                 },
@@ -544,9 +678,19 @@ var DataManager = (function () {
                     desc: "Get some water from our well.",
                     time: 2,
                     give: function () {
+                        var draw;
+                        if (this.buildings.has(data.buildings.big.pump.id)) {
+                            draw = random(5, 10);
+                        }
+                        else {
+                            draw = random(1, 3);
+                        }
                         return [
-                            [round(random(1, 3)), data.resources.gatherable.common.water]
+                            [round(draw), data.resources.gatherable.common.water]
                         ];
+                    },
+                    lock: function () {
+                        return [data.actions.drawFrom.river];
                     },
                     log: "Using our well, @people get @give.",
                     order: 60
@@ -555,10 +699,10 @@ var DataManager = (function () {
             harvest: {
                 name: "harvest crops",
                 desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
-                time: 4,
+                time: 5,
                 consume: function () {
                     return [
-                        [2, data.resources.gatherable.common.water]
+                        [1, data.resources.gatherable.common.water]
                     ];
                 },
                 give: function () {
@@ -602,70 +746,78 @@ var DataManager = (function () {
         },
         /***** LOCATIONS *****/
         locations: {
-            river: {
-                name: "river",
-                unlock: function () {
-                    return [data.actions.drawFrom.river];
+            near: {
+                mountain: {
+                    name: "mountain",
+                    give: function () {
+                        return [
+                            data.resources.gatherable.common.rock,
+                            data.resources.gatherable.common.scrap,
+                            data.resources.craftable.basic.component
+                        ];
+                    },
+                    dropRate: 80
                 },
-                give: function () {
-                    return [
-                        data.resources.gatherable.common.water,
-                        data.resources.gatherable.common.rock,
-                        data.resources.gatherable.uncommon.plastic,
-                        data.resources.craftable.stone
-                    ];
+                desert: {
+                    name: "desert",
+                    give: function () {
+                        return [
+                            data.resources.gatherable.common.scrap,
+                            data.resources.gatherable.uncommon.oil,
+                            data.resources.gatherable.uncommon.sand
+                        ];
+                    },
+                    dropRate: 120
                 },
-                dropRate: 20
-            },
-            mountain: {
-                name: "mountain",
-                give: function () {
-                    return [
-                        data.resources.gatherable.common.rock,
-                        data.resources.gatherable.common.food,
-                        data.resources.craftable.component,
-                        data.resources.craftable.tool
-                    ];
-                },
-                dropRate: 80
-            },
-            desert: {
-                name: "desert",
-                give: function () {
-                    return [
-                        data.resources.gatherable.common.rock,
-                        data.resources.gatherable.common.scrap,
-                        data.resources.gatherable.uncommon.oil,
-                        data.resources.craftable.engine
-                    ];
-                },
-                dropRate: 120
-            },
-            building: {
-                name: "abandoned building",
-                dropRate: 100,
-                hasRuin: 1,
-                give: function () {
-                    return [
-                        data.resources.gatherable.common.scrap,
-                        data.resources.gatherable.uncommon.plastic,
-                        data.resources.craftable.tool,
-                        data.resources.craftable.computer,
-                        data.resources.gatherable.rare.medication
-                    ];
+                supermarket: {
+                    name: "supermarket",
+                    give: function () {
+                        return [
+                            data.resources.gatherable.common.food,
+                            data.resources.gatherable.rare.medication,
+                            data.resources.craftable.basic.glass
+                        ];
+                    }
                 }
             },
-            ruin: {
-                name: "old ruin",
-                dropRate: 100,
-                hasRuin: 1,
-                give: function () {
-                    return [
-                        data.resources.gatherable.common.rock,
-                        data.resources.gatherable.common.food,
-                        data.resources.craftable.stone,
-                        data.resources.craftable.component
-                    ];
+            far: {
+                river: {
+                    name: "river",
+                    unlock: function () {
+                        return [data.actions.drawFrom.river];
+                    },
+                    give: function () {
+                        return [
+                            data.resources.gatherable.common.water,
+                            data.resources.gatherable.uncommon.plastic,
+                            data.resources.craftable.basic.stone
+                        ];
+                    },
+                    dropRate: 20
+                },
+                ruin: {
+                    name: "old ruin",
+                    give: function () {
+                        return [
+                            data.resources.gatherable.rare.electronic,
+                            data.resources.craftable.basic.component,
+                            data.resources.craftable.basic.tool
+                        ];
+                    },
+                    dropRate: 100
+                }
+            },
+            epic: {
+                building: {
+                    name: "abandoned building",
+                    give: function () {
+                        return [
+                            data.resources.gatherable.rare.medication,
+                            data.resources.craftable.basic.glass,
+                            data.resources.craftable.complex.circuit
+                        ];
+                    },
+                    dropRate: 100
                 }
             }
         },
@@ -737,10 +889,8 @@ var DataManager = (function () {
                 drought: {
                     name: "drought",
                     desc: "The climate is so hot, we consume more water.",
-                    time: function () {
-                        var delta = time.day;
-                        return 3 * time.day + round(random(-delta, delta));
-                    },
+                    time: 3 * time.day,
+                    timeDelta: time.day,
                     effect: function (isOn) {
                         this.flags.drought = isOn;
                     },

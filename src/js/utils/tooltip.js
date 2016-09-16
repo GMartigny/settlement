@@ -15,6 +15,9 @@ function tooltip (html, data) {
      * @private
      */
     function _position (x, y) {
+        // may be sub-optimal, but looks better
+        document.body.appendChild(box);
+
         var left = x + 10;
         if (left + 255 > bodyWidth) {
             left = bodyWidth - 255;
@@ -25,11 +28,9 @@ function tooltip (html, data) {
 
     html.classList.add("tooltiped");
     html.addEventListener("mouseover", function (event) {
-        document.body.appendChild(box);
         _position(event.clientX, event.clientY);
     });
     html.addEventListener("mousemove", function (event) {
-        document.body.appendChild(box);
         _position(event.clientX, event.clientY);
     });
     html.addEventListener("mouseout", function () {
@@ -39,6 +40,11 @@ function tooltip (html, data) {
     var resourcesMapper = {};
 
     var api = {
+        /**
+         * Update tooltip content
+         * @param data
+         * @return {Object} Itself
+         */
         update: function (data) {
             box = wrap("tooltip");
 
@@ -62,9 +68,10 @@ function tooltip (html, data) {
             return api;
         },
         /**
-         * Update tooltip
+         * Update consumption on tooltip
          * @param {Collection} resources
          * @param {Array} consume
+         * @return {Object} Itself
          */
         refresh: function (resources, consume) {
             if (data.consume) {
@@ -83,6 +90,7 @@ function tooltip (html, data) {
         },
         /**
          * Remove tooltip from DOM
+         * @return {Object} Itself
          */
         remove: function () {
             box.remove();

@@ -10,6 +10,7 @@ function Action (owner, data) {
     this.running = false;
 
     this.owner = owner;
+    this.repeated = 0;
     this.data = {};
 
     this.location = false;
@@ -99,6 +100,8 @@ Action.prototype = {
                 MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, this.data.consume);
             }
 
+            ++this.repeated;
+
             this.owner.setBusy(this.data);
             var duration = (this.data.time || 0) * GameController.tickLength;
 
@@ -128,13 +131,12 @@ Action.prototype = {
                     give = this.data.give(this);
 
                     // very specific case of roaming which gives a new location
-                    if (this.data.id === DataManager.data.actions.roam.id) {
-                        var location = randomize(DataManager.data.locations);
+                    if (this.data.id === DataManager.data.actions.roam.id && random() < DataManager.data.resources.ruins.dropRate) {
+                        give.push([location.hasRuin, DataManager.data.resources.ruins]);
+
+                        var location = randomize(DataManager.data.locations.near);
                         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.FIND_LOCATION, location);
                         effect.location = an(location.name);
-                        if (location.hasRuin) {
-                            give.push([location.hasRuin, DataManager.data.resources.ruins]);
-                        }
                     }
                 }
                 // Add from constructed building

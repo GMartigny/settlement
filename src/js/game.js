@@ -20,7 +20,8 @@ preloadImages([
 });
 
 /**
- * Main game class
+ * Main game controller
+ * This is where all game logic is decided
  * @param {HTMLElement} holder - HTML element holding the game
  * @param {Object} media - All graphical resources
  * @constructor
@@ -269,7 +270,7 @@ GameController.prototype = {
             elapse = 0;
         }
 
-        requestAnimationFrame(this.refresh.bind(this));
+        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 3);
 
         if (elapse > 0) {
             if (this.flags.settled) {
@@ -318,10 +319,13 @@ GameController.prototype = {
             }.bind(this));
         }
     },
+    /**
+     * Save the game state
+     */
     save: function () {
         var state = {};
 
-//        SaveManager.store(state);
+        SaveManager.store(state);
     },
     /**
      * Check if game has enough of a resource
@@ -436,9 +440,11 @@ GameController.prototype = {
      * @return {Array}
      */
     possibleCraftables: function () {
-        var craftables = [],
-            resources = this.resources.items;
-        deepBrowse(DataManager.data.resources.craftable, function (craft) {
+        var craftables = [];
+        var resources = this.resources.items;
+        var unlockedCraftables = DataManager.data.resources.craftable.basic;
+
+        deepBrowse(unlockedCraftables, function (craft) {
             var ok = true;
             if (craft.consume && isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
