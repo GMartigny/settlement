@@ -48,6 +48,12 @@ Building.prototype = {
         this.number += number;
         this.counter.textContent = this.number;
         return this;
+    },
+    getState: function () {
+        return {
+            number: this.number,
+            data: this.data
+        };
     }
 };
 Building.LST_ID = "buildingsList";

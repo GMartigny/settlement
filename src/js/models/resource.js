@@ -116,6 +116,12 @@ Resource.prototype = {
      */
     has: function (amount) {
         return this.count >= amount;
+    },
+    getState: function () {
+        return {
+            count: this.count,
+            data: this.data
+        };
     }
 };
 Resource.LST_ID = "resourceList";

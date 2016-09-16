@@ -47,7 +47,7 @@ function People (name, gender) {
     this.life = 100;
     this.thirsty = false;
 
-    this.plan = false;
+    this.plan = null;
 
     this.html = this.toHTML();
 }
@@ -233,6 +233,18 @@ People.prototype = {
             }.bind(this), 400);
         }
         return this;
+    },
+    getState: function () {
+        return {
+            name: this.name,
+            gender: this.gender,
+            energy: this.energy,
+            life: this.life,
+            plan: this.plan ? this.plan.getState() : null,
+            actions: this.actions.values().map(function (action) {
+                return action.getState();
+            })
+        };
     }
 };
 People.LST_ID = "peopleList";

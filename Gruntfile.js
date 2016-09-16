@@ -14,7 +14,6 @@ module.exports = function (grunt) {
         css: "src/css/**/*.less",
         img: "src/img/**/*.png"
     };
-    var versionStr = "window.VERSION = 'v<%= version %>';";
     var versionStr = "window.VERSION='v<%= version %>';";
 
     grunt.initConfig({

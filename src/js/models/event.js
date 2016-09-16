@@ -6,6 +6,7 @@
  */
 function Event (data) {
     this.data = {};
+    this.timer = null;
 
     this.html = this.toHTML();
 
@@ -61,7 +62,7 @@ Event.prototype = {
                 this.progressBar.style.animationDuration = duration + "ms";
                 this.html.classList.add("ongoing");
 
-                TimerManager.timeout(this.end.bind(this), duration);
+                this.timer = TimerManager.timeout(this.end.bind(this), duration);
             }
             callback && callback(this);
         }.bind(this), "event");
@@ -72,9 +73,16 @@ Event.prototype = {
      */
     end: function () {
         this.data.effect(false);
+        this.timer = null;
         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
 
         this.html.remove();
+    },
+    getState: function () {
+        return {
+            data: this.data,
+            remaining: this.timer ? TimerManager.getRemaining(this.timer) : 0
+        };
     }
 };
 Event.LST_ID = "eventList";

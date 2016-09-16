@@ -641,7 +641,7 @@ var DataManager = (function () {
                     return consume;
                 },
                 lock: function (action) {
-                    var lock = [data.actions.build];
+                    var lock = [action.data];
                     if (isFunction(action.owner.plan.lock)) {
                         lock.push.apply(lock, action.owner.plan.lock(action));
                     }

@@ -154,6 +154,9 @@ var TimerManager = (function () {
                 timer.clear();
             });
             return this;
+        },
+        getRemaining: function (timerId) {
+            return getTimers().get(timerId).getRemaining();
         }
     };
 })();

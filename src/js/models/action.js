@@ -228,5 +228,11 @@ Action.prototype = {
             this.html.classList.remove("cooldown");
         }
         return this;
+    },
+    getState: function () {
+        return {
+            data: this.data,
+            location: this.location
+        };
     }
 };
