@@ -27,7 +27,10 @@ Action.prototype = {
      * @return {Action} Itself
      */
     _init: function (data) {
-        this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
+        this.data = consolidateData(this, data, ["name", "desc", "time", "energy", "consume"]);
+        if (isUndefined(this.data.energy)) {
+            this.data.energy = this.data.time * 5;
+        }
 
         this.html.textContent = capitalize(this.data.name);
 
@@ -65,7 +68,7 @@ Action.prototype = {
      * @return {Action} Itself
      */
     refresh: function (resources, flags) {
-        this.locked = (this.data.relaxing !== 1 && this.owner.isTired()) ||
+        this.locked = (this.owner.isTired() && this.data.energy > 0) ||
             (this.data.isOut && flags.cantGoOut);
 
         // check consummation
@@ -94,7 +97,7 @@ Action.prototype = {
      * @return {boolean} Is launched
      */
     click: function () {
-        if (!this.owner.busy && (!this.owner.isTired() || this.data.relaxing > 0) && !this.locked) {
+        if (!this.owner.busy && !this.locked) {
             // Use
             if (isArray(this.data.consume)) {
                 MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, this.data.consume);
@@ -104,6 +107,10 @@ Action.prototype = {
 
             this.owner.setBusy(this.data);
             var duration = (this.data.time || 0) * GameController.tickLength;
+
+            if (this.data.deltaTime) {
+                duration += random(-this.data.deltaTime, this.data.deltaTime);
+            }
 
             this.html.style.animationDuration = duration + "ms";
             this.html.classList.add("cooldown");
@@ -128,16 +135,7 @@ Action.prototype = {
                 // Give
                 var give = [];
                 if (isFunction(this.data.give)) {
-                    give = this.data.give(this);
-
-                    // very specific case of roaming which gives a new location
-                    if (this.data.id === DataManager.data.actions.roam.id && random() < DataManager.data.resources.ruins.dropRate) {
-                        give.push([location.hasRuin, DataManager.data.resources.ruins]);
-
-                        var location = randomize(DataManager.data.locations.near);
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.FIND_LOCATION, location);
-                        effect.location = an(location.name);
-                    }
+                    give = this.data.give(this, effect);
                 }
                 // Add from constructed building
                 if (build && isFunction(build.give)) {
@@ -166,7 +164,9 @@ Action.prototype = {
 
                 // Unlock
                 if (isFunction(this.data.unlock)) {
-                    var unlock = this.data.unlock(this);
+                    var unlock = this.data.unlock(this).filter(function (action) {
+                        return !action.condition || (action.condition && action.condition(this));
+                    }.bind(this));
                     if (this.data.unique) {
                         // add to all
                         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock);

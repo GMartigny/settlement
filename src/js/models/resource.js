@@ -85,7 +85,7 @@ Resource.prototype = {
                 this.html.classList.remove("less");
             }.bind(this);
         }
-        if (cb) {
+        if (isFunction(cb)) {
             TimerManager.timeout(cb, 700);
         }
         return this;

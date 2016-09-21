@@ -79,7 +79,7 @@ People.prototype = {
     /**
      * Loop function called every game tick
      * @param {Collection} resources - Resources list
-     * @param {Number} elapse - Elapse time since last call
+     * @param {Number} elapse - Elapse tick since last call
      * @param {Object} flags - Game flags
      * @return {People} Itself
      */
@@ -90,10 +90,7 @@ People.prototype = {
         if (flags.settled) {
             var ratio = 1;
             if (this.busy) {
-                ratio = 5;
-                if (this.busy.relaxing) {
-                    ratio *= (1 - this.busy.relaxing);
-                }
+                ratio = (this.busy.energy || 0) / this.busy.time;
             }
             this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
             if (this.thirsty) { // drying

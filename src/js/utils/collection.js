@@ -34,9 +34,14 @@ Collection.prototype = {
      */
     pop: function (id) {
         var item = this.items[id];
-        delete this.items[id];
-        --this.length;
-        return item;
+        if (item) {
+            delete this.items[id];
+            --this.length;
+            return item;
+        }
+        else {
+            return false;
+        }
     },
     /**
      * Check for the ID presence

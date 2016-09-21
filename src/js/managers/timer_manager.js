@@ -155,6 +155,11 @@ var TimerManager = (function () {
             });
             return this;
         },
+        /**
+         * Return
+         * @param timerId
+         * @return {*|number}
+         */
         getRemaining: function (timerId) {
             return getTimers().get(timerId).getRemaining();
         }

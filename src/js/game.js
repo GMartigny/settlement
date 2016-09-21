@@ -113,10 +113,6 @@ GameController.prototype = {
             }
         }.bind(this));
 
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.FIND_LOCATION, function (location) {
-            this.knownLocations.push(location);
-        }.bind(this));
-
         // We may have a resource collector
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
             if (isArray(collected)) {
@@ -270,7 +266,7 @@ GameController.prototype = {
             elapse = 0;
         }
 
-        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 3);
+        setTimeout(this.refresh.bind(this), GameController.tickLength / 3);
 
         if (elapse > 0) {
             if (this.flags.settled) {
@@ -321,8 +317,17 @@ GameController.prototype = {
             this.save();
         }
     },
+    /**
+     * Return the game state
+     * @return {Object}
+     */
     getState: function () {
 
+        /**
+         * Extract state from array
+         * @param array
+         * @return {Array}
+         */
         function extract (array) {
             return array.values().map(function (item) {
                 return item.getState();
@@ -337,11 +342,15 @@ GameController.prototype = {
             events: extract(this.events),
             collects: extract(this.collects),
             initialAction: this.initialActions.values(),
-            knownLocations: extract(this.knownLocations)
+            knownLocations: this.knownLocations.values()
         };
     },
+    /**
+     * Save the game
+     */
     save: function () {
-//        SaveManager.store(state);
+        // var state = this.getState();
+        // SaveManager.store(state);
     },
     /**
      * Check if game has enough of a resource
