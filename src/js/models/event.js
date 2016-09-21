@@ -59,6 +59,10 @@ Event.prototype = {
                     .notify(MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(an(this.data.name) + " has started."));
                 var duration = this.data.time * GameController.tickLength;
 
+                if (this.data.deltaTime) {
+                    duration += random(-this.data.deltaTime, this.data.deltaTime);
+                }
+
                 this.progressBar.style.animationDuration = duration + "ms";
                 this.html.classList.add("ongoing");
 

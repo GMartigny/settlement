@@ -11,7 +11,31 @@ var DataManager = (function () {
         month: 30 * 24,
         year: 12 * 30 * 24
     };
+    var directions = [
+        "north", "south", "east", "west",
+        "north-east", "north-west", "south-east", "south-west"
+    ];
     // jscs:disable jsDoc
+    /**
+     * Common fields description
+     * name: A name for display
+     * desc: Description for tooltip
+     * icon: Name of the icon
+     * condition: A condition to match
+     * time: Time it take
+     * deltaTime: Random margin time
+     * energy: Energy it draw (default: 5 * time)
+     * consume: Resources consumed
+     * give: Resources to earn
+     * collect: Start to collect resources
+     * lock: Actions to lock
+     * unlock: Actions to unlock
+     * build: Something to build
+     * unique: Should done only once
+     * dropRate: Chance of drop compare to others
+     * log: Message to display on logs
+     * order: How to sort with others
+     */
     var data = {
         /***** RESOURCES *****/
         resources: {
@@ -264,7 +288,7 @@ var DataManager = (function () {
                     [1 / time.day, data.resources.gatherable.common.water]
                 ];
             },
-            dropRate: 0.03
+            dropRate: 0.01
         },
         /***** BUILDINGS *****/
         buildings: {
@@ -297,13 +321,14 @@ var DataManager = (function () {
                         ];
                     },
                     unlock: function () {
-                        return [];
+                        return [data.actions.harvest];
                     }
                 },
                 well: {
                     name: "well",
                     desc: "Just a large hole into the ground.",
                     time: 16,
+                    energy: 80,
                     condition: function () {
                         return !this.buildings.has(data.buildings.big.pump.id);
                     },
@@ -344,7 +369,7 @@ var DataManager = (function () {
                     name: "barrack",
                     desc: "Some place to sleep for a few people.",
                     time: 2 * time.day,
-                    relaxing: 1 - 1 / 2.2,
+                    energy: 110,
                     consume: function () {
                         return [
                             [5, data.resources.gatherable.uncommon.sand],
@@ -362,7 +387,7 @@ var DataManager = (function () {
                     name: "workshop",
                     desc: "Organizing your workforce make them more efficient at crafting.",
                     time: 3 * time.day,
-                    relaxing: 1 - 1 / 3.5,
+                    energy: 90,
                     unique: true,
                     consume: function () {
                         return [
@@ -381,7 +406,7 @@ var DataManager = (function () {
                     name: "water pump",
                     desc: "A buried contraption that collect water from the earth moisture.",
                     time: 3 * time.day,
-                    relaxing: 1 - 1 / 3,
+                    energy: 120,
                     unique: true,
                     consume: function () {
                         return [
@@ -426,6 +451,7 @@ var DataManager = (function () {
         actions: {
             wakeUp: {
                 name: "wake up",
+                energy: 0,
                 unlock: function (action) {
                     action.owner.updateEnergy(100);
                     action.owner.updateLife(100);
@@ -433,7 +459,6 @@ var DataManager = (function () {
                         data.actions.look
                     ];
                 },
-                relaxing: 1,
                 log: "@people gets up painfully.",
                 order: 0,
                 unique: true
@@ -442,6 +467,7 @@ var DataManager = (function () {
                 name: "look around",
                 desc: "What am I doing here ?",
                 time: 2,
+                energy: 0,
                 give: function () {
                     var messageType = MessageBus.MSG_TYPES.LOGS.FLAVOR;
                     TimerManager.timeout(this.log.bind(this, "We need a shelter.", messageType), 1000);
@@ -456,7 +482,6 @@ var DataManager = (function () {
                         data.actions.settle
                     ];
                 },
-                relaxing: 1,
                 log: "After some thinking, @people remembers the attack. @pronoun grabs @give laying around.",
                 order: 0,
                 unique: true
@@ -465,6 +490,7 @@ var DataManager = (function () {
                 name: "settle here",
                 desc: "Ok, let's settle right there !",
                 time: 3,
+                energy: 0,
                 unlock: function () {
                     this.flags.settled = true;
                     return [
@@ -477,7 +503,6 @@ var DataManager = (function () {
                 give: function () {
                     return [];
                 },
-                relaxing: 1,
                 log: "@people installs @build inside a ship-wreck with @give to sleep in.",
                 order: 0,
                 unique: true
@@ -501,23 +526,45 @@ var DataManager = (function () {
             roam: {
                 name: "roam",
                 desc: "Explore the surroundings hoping to find something interesting.",
-                time: 7,
+                time: 2,
                 isOut: 1,
                 consume: function () {
                     return [
                         [2, data.resources.gatherable.common.water]
                     ];
                 },
-                unlock: function () {
-                    return [
+                condition: function (action) {
+                    return !action.owner.actions.has(data.actions.scour.id);
+                },
+                unlock: function (action) {
+                    var unlock = [
                         data.actions.explore,
                         data.actions.craft
                     ];
+                    if (action.repeated > 10) {
+                        unlock.push(data.actions.scour);
+                    }
+                    return unlock;
                 },
-                give: function () {
-                    return [
+                lock: function (action) {
+                    if (action.repeated > 10) {
+                        return [action.data];
+                    }
+                    else {
+                        return [];
+                    }
+                },
+                give: function (action, effet) {
+                    var give = [
                         randomize(data.resources.gatherable, "1-3")
                     ];
+                    if (random() < data.resources.ruins.dropRate) {
+                        give.push([1, data.resources.ruins]);
+                        var location = randomize(data.locations.near);
+                        this.knownLocations.push(location);
+                        effet.location = an(location.name);
+                    }
+                    return give;
                 },
                 log: function (effect) {
                     var log;
@@ -525,14 +572,48 @@ var DataManager = (function () {
                         log = "Heading @direction, @people spots @location. @pronoun also brings back @give.";
                     }
                     else {
-                        log = "";
+                        log = "Despite nothing special found towards @direction, @people brings back @give.";
                     }
-                    var direction = ["north", "south", "", ""].random();
-                    if (direction.length && random() < 0.5) {
-                        direction += "-";
-                    }
-                    direction += ["east", "west"].random();
+                    effect.direction = directions.random();
 
+                    return log.replace(/@(\w+)/gi, function (match, capture) {
+                        return effect[capture] || "";
+                    });
+                },
+                order: 10
+            },
+            scour: { // OP ?
+                name: "scour",
+                desc: "Knowledge of ",
+                time: 6,
+                isOut: 1,
+                consume: function () {
+                    return [
+                        [2, data.resources.gatherable.common.water]
+                    ];
+                },
+                give: function () {
+                    var give = [
+                        randomize(data.resources.gatherable, "2-4")
+                    ];
+                    // Add 50% chance for ruins
+                    var chance = data.resources.ruins.dropRate + (1 - data.resources.ruins.dropRate) * 0.5;
+                    if (random() < chance) {
+                        give.push([1, data.resources.ruins]);
+                        var location = randomize(data.locations.near);
+                        this.knownLocations.push(location);
+                        effet.location = an(location.name);
+                    }
+                    return give;
+                },
+                log: function (effect) {
+                    var log;
+                    if (effect.location) {
+                        log = "Heading @direction, @people spots @location. @pronoun also brings back @give.";
+                    }
+                    else {
+                        log = "Despite nothing special found towards @direction, @people brings back @give.";
+                    }
                     return log.replace(/@(\w+)/gi, function (match, capture) {
                         return effect[capture] || "";
                     });
@@ -542,9 +623,9 @@ var DataManager = (function () {
             explore: {
                 name: "explore a ruin",
                 desc: "Remember that location we saw the other day ? Let's see what we can find.",
-                time: time.day,
+                time: 2 * time.day,
+                energy: 110,
                 isOut: 1,
-                relaxing: 0.17,
                 consume: function () {
                     return [
                         [4, data.resources.gatherable.common.water],
@@ -604,7 +685,7 @@ var DataManager = (function () {
                 name: "plan a building",
                 desc: "Prepare blueprint and space for a new building.",
                 time: 8,
-                relaxing: 0.5,
+                energy: 20,
                 unlock: function () {
                     return [data.actions.build];
                 },
@@ -631,6 +712,9 @@ var DataManager = (function () {
                 },
                 time: function (action) {
                     return action.owner.plan.time;
+                },
+                energy: function (action) {
+                    return action.owner.plan.energy;
                 },
                 consume: function (action) {
                     var consume = [
@@ -667,6 +751,10 @@ var DataManager = (function () {
                     name: "draw water",
                     desc: "Get some water from the river.",
                     time: 8,
+                    energy: 50,
+                    condition: function (action) {
+                        return !action.owner.actions.has(data.actions.drawFrom.well.id);
+                    },
                     give: function () {
                         return [
                             [round(random(2, 5)), data.resources.gatherable.common.water]
@@ -679,14 +767,15 @@ var DataManager = (function () {
                     name: "draw water",
                     desc: "Get some water from our well.",
                     time: 2,
+                    energy: 15,
                     give: function () {
                         var draw;
                         if (this.buildings.has(data.buildings.big.pump.id)) {
-                            draw = random(5, 10);
+                            draw = random(5, 9);
                         }
-                        else {
+                        else if (this.buildings.has(data.buildings.small.well.id)) {
                             draw = random(1, 3);
-                        }
+                        } // shouldn't have other case
                         return [
                             [round(draw), data.resources.gatherable.common.water]
                         ];
@@ -718,7 +807,7 @@ var DataManager = (function () {
                 name: "sleep",
                 desc: "Get some rest.",
                 time: 10,
-                relaxing: 1,
+                energy: 0,
                 give: function (action) {
                     action.owner.updateEnergy(100);
                     return [];
@@ -733,7 +822,7 @@ var DataManager = (function () {
                 name: "heal",
                 desc: "\"I really hope those pills are still good.\"",
                 time: 2,
-                relaxing: 0.8,
+                energy: 0,
                 consume: function () {
                     return [
                         [2, data.resources.gatherable.rare.medication]
@@ -830,10 +919,8 @@ var DataManager = (function () {
                 sandstorm: {
                     name: "sandstorm",
                     desc: "The wind is blowing hard, impossible to go out for now.",
-                    time: function () {
-                        var delta = time.day / 3;
-                        return time.day + round(random(-delta, delta));
-                    },
+                    time: 20,
+                    deltaTime: 4,
                     effect: function (isOn) {
                         this.flags.cantGoOut = isOn;
                     },
@@ -892,7 +979,7 @@ var DataManager = (function () {
                     name: "drought",
                     desc: "The climate is so hot, we consume more water.",
                     time: 3 * time.day,
-                    timeDelta: time.day,
+                    timeDelta: 10,
                     effect: function (isOn) {
                         this.flags.drought = isOn;
                     },
