@@ -6,7 +6,9 @@ module.exports = function (grunt) {
 
     // Load all libs
     require("jit-grunt")(grunt, {
-        sprite: "grunt-spritesmith"
+        sprite: "grunt-spritesmith",
+        "bump-only": "grunt-bump",
+        "bump-commit": "grunt-bump"
     });
 
     var sourceDir = {
@@ -129,7 +131,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("default", ["build", "watch"]);
 
-    grunt.registerTask("patch", ["bump-only:patch"]);
+    grunt.registerTask("patch", ["bump:patch"]);
 
     grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
