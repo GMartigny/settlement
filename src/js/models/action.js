@@ -195,10 +195,11 @@ Action.prototype = {
                     log = this.data.log(effect, this);
                 }
                 else if (this.data.log) {
-                    log = this.data.log.replace(/@(\w+)/gi, function (match, capture) {
-                        return effect[capture] || "";
-                    });
+                    log = this.data.log;
                 }
+                log = log.replace(/@(\w+)/gi, function (match, capture) {
+                    return effect[capture] || "";
+                });
                 MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
             }.bind(this), duration);
             return true;

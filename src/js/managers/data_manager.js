@@ -526,7 +526,7 @@ var DataManager = (function () {
             roam: {
                 name: "roam",
                 desc: "Explore the surroundings hoping to find something interesting.",
-                time: 2,
+                time: 7,
                 isOut: 1,
                 consume: function () {
                     return [
@@ -569,16 +569,17 @@ var DataManager = (function () {
                 log: function (effect) {
                     var log;
                     if (effect.location) {
-                        log = "Heading @direction, @people spots @location. @pronoun also brings back @give.";
+                        log = "Heading @direction, @people spots @location so @pronoun brings back @give.";
                     }
                     else {
                         log = "Despite nothing special found towards @direction, @people brings back @give.";
                     }
                     effect.direction = directions.random();
-
-                    return log.replace(/@(\w+)/gi, function (match, capture) {
-                        return effect[capture] || "";
+                    effect.give.filter(function (resource) {
+                        return resource.id !== data.resources.ruins;
                     });
+
+                    return log;
                 },
                 order: 10
             },
@@ -592,7 +593,7 @@ var DataManager = (function () {
                         [2, data.resources.gatherable.common.water]
                     ];
                 },
-                give: function () {
+                give: function (action, effect) {
                     var give = [
                         randomize(data.resources.gatherable, "2-4")
                     ];
@@ -602,7 +603,7 @@ var DataManager = (function () {
                         give.push([1, data.resources.ruins]);
                         var location = randomize(data.locations.near);
                         this.knownLocations.push(location);
-                        effet.location = an(location.name);
+                        effect.location = an(location.name);
                     }
                     return give;
                 },
@@ -614,9 +615,7 @@ var DataManager = (function () {
                     else {
                         log = "Despite nothing special found towards @direction, @people brings back @give.";
                     }
-                    return log.replace(/@(\w+)/gi, function (match, capture) {
-                        return effect[capture] || "";
-                    });
+                    return log;
                 },
                 order: 10
             },
@@ -645,9 +644,7 @@ var DataManager = (function () {
                         return log(effect, action);
                     }
                     else if (log) {
-                        return log.replace(/@(\w+)/gi, function (match, capture) {
-                            return effect[capture] || "";
-                        });
+                        return log;
                     }
                 },
                 order: 20
@@ -656,7 +653,7 @@ var DataManager = (function () {
                 name: "craft something",
                 desc: "Use some resources to tinker something useful.",
                 time: function () {
-                    return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 6;
+                    return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 5;
                 },
                 unlock: function () {
                     return [data.actions.plan];
@@ -678,7 +675,14 @@ var DataManager = (function () {
                         return [];
                     }
                 },
-                log: "@people succeeds to craft @give.",
+                log: function (effect) {
+                    if (effect.give) {
+                        return "@people succeeds to craft @give.";
+                    }
+                    else {
+                        return "Nothing could be made with what you have right now."
+                    }
+                },
                 order: 30
             },
             plan: {
@@ -697,7 +701,7 @@ var DataManager = (function () {
                     return [
                         [1, data.resources.gatherable.common.water],
                         [1, data.resources.gatherable.common.food],
-                        [1, data.resources.craftable.tool]
+                        [1, data.resources.craftable.basic.tool]
                     ];
                 },
                 log: "Everything's ready to build @plan",
