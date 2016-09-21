@@ -527,5 +527,17 @@ GameController.prototype = {
         else {
             return false;
         }
+    },
+    debug: {
+        /**
+         * Earn one of each resources
+         * @returns {Game} Itself
+         */
+        oneOfEach: function () {
+            deepBrowse(DataManager.data.resources, function (resource) {
+                this.earn(1, resource);
+            }.bind(this));
+            return this;
+        }
     }
 };

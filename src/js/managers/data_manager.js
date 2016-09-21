@@ -21,14 +21,14 @@ var DataManager = (function () {
                     water: {
                         name: "water",
                         desc: "Water is definitely important to survive in this harsh environment.",
-                        icon: "water",
+                        icon: "water-bottle",
                         dropRate: 130,
                         order: 10
                     },
                     food: {
                         name: "food",
                         desc: "Everyone need food to keep his strength.",
-                        icon: "food",
+                        icon: "foodcan",
                         dropRate: 120,
                         order: 20
                     },
@@ -42,7 +42,7 @@ var DataManager = (function () {
                     scrap: {
                         name: "scrap metal",
                         desc: "An old rusty piece of metal.",
-                        icon: "scrap",
+                        icon: "scrap-metal",
                         dropRate: 80,
                         order: 40
                     }
@@ -51,21 +51,21 @@ var DataManager = (function () {
                     plastic: {
                         name: "plastic",
                         desc: "A sturdy piece of plastic.",
-                        icon: "plastic",
-                        dropRate: 50,
+                        icon: "jerrican",
+                        dropRate: 60,
                         order: 50
                     },
                     sand: {
                         name: "sand",
-                        desc: "",
-                        icon: "",
+                        desc: "It's pure fine sand.",
+                        icon: "sand-pile",
                         dropRate: 30,
                         order: 55
                     },
                     oil: {
                         name: "oil",
                         desc: "About a liter of gas-oil.",
-                        icon: "oil",
+                        icon: "oil-bucket",
                         dropRate: 20,
                         order: 60
                     }
@@ -80,19 +80,12 @@ var DataManager = (function () {
                     },
                     electronic: {
                         name: "electronic",
-                        desc: "",
-                        icon: "",
+                        desc: "Basic micro-electronics components.",
+                        icon: "electronic-parts",
                         dropRate: 15,
                         order: 75
                     }
                 }
-            },
-            ruins: {
-                name: "location",
-                desc: "A location we find earlier.",
-                icon: "ruin",
-                order: 80,
-                dropRate: 0.6
             },
             /***** CRAFTABLES *****/
             craftable: {
@@ -110,9 +103,9 @@ var DataManager = (function () {
                         order: 90
                     },
                     glass: {
-                        name: "glass panel",
+                        name: "glass pane",
                         desc: "",
-                        icon: "",
+                        icon: "glass-pane",
                         consume: function () {
                             return [
                                 [4, data.resources.gatherable.uncommon.sand]
@@ -124,7 +117,7 @@ var DataManager = (function () {
                     component: {
                         name: "component",
                         desc: "A mechanical part for others craftables.",
-                        icon: "component",
+                        icon: "pipe-large",
                         consume: function () {
                             return [
                                 [2, data.resources.gatherable.common.scrap],
@@ -140,7 +133,7 @@ var DataManager = (function () {
                         icon: "tool",
                         consume: function () {
                             return [
-                                [2, data.resources.craftable.component],
+                                [2, data.resources.craftable.basic.component],
                                 [3, data.resources.gatherable.common.rock]
                             ];
                         },
@@ -151,8 +144,8 @@ var DataManager = (function () {
                 complex: { // At least 2 requirements with 1 craftables
                     brick: {
                         name: "brick",
-                        desc: "",
-                        icon: "",
+                        desc: "Bricks will give wall to larger constructions.",
+                        icon: "brick",
                         consume: function () {
                             return [
                                 [3, data.resources.craftable.basic.stone],
@@ -164,8 +157,8 @@ var DataManager = (function () {
                     },
                     circuit: {
                         name: "circuit",
-                        desc: "",
-                        icon: "",
+                        desc: "That's a little rough, but it's actually a functioning circuit board.",
+                        icon: "circuit-board",
                         consume: function () {
                             return [
                                 [2, data.resources.gatherable.common.scrap],
@@ -178,8 +171,8 @@ var DataManager = (function () {
                     },
                     metalPipe: {
                         name: "metal pipe",
-                        desc: "",
-                        icon: "",
+                        desc: "Simple pipes that you smith from junk metal.",
+                        icon: "pipe-small",
                         consume: function () {
                             return [
                                 [5, data.resources.gatherable.common.scrap],
@@ -200,7 +193,7 @@ var DataManager = (function () {
                         icon: "engine",
                         consume: function () {
                             return [
-                                [15, data.resources.gatherable.uncommon.oil]
+                                [15, data.resources.gatherable.uncommon.oil],
                                 [5, data.resources.craftable.basic.tool],
                                 [5, data.resources.craftable.complex.metalPipe]
                             ];
@@ -231,7 +224,7 @@ var DataManager = (function () {
                     beacon: {
                         name: "beacon",
                         desc: "",
-                        icon: "",
+                        icon: "radio-station",
                         consume: function () {
                             return [
                                 [6, data.resources.craftable.basic.glass],
@@ -242,14 +235,23 @@ var DataManager = (function () {
                         give: function () {
                             data.people.dropRate = 0.9;
                             return [];
-                        }
+                        },
+                        dropRate: 10,
+                        order: 140
                     }
                 }
+            },
+            ruins: {
+                name: "location",
+                desc: "Directions to a point of interest we found earlier.",
+                icon: "map",
+                order: 80,
+                dropRate: 0.6
             },
             room: {
                 name: "room",
                 desc: "A place for someone in the camp.",
-                icon: "room",
+                icon: "person",
                 order: 0
             }
         },
@@ -446,7 +448,7 @@ var DataManager = (function () {
                     return [,
                         [10, data.resources.gatherable.common.water],
                         [5, data.resources.gatherable.common.food],
-                        [2, data.resources.craftable.component]
+                        [2, data.resources.craftable.basic.component]
                     ];
                 },
                 unlock: function () {
