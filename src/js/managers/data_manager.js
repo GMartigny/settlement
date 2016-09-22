@@ -46,14 +46,14 @@ var DataManager = (function () {
                         name: "water",
                         desc: "Water is definitely important to survive in this harsh environment.",
                         icon: "water-bottle",
-                        dropRate: 130,
+                        dropRate: 140,
                         order: 10
                     },
                     food: {
                         name: "food",
                         desc: "Everyone need food to keep his strength.",
                         icon: "foodcan",
-                        dropRate: 120,
+                        dropRate: 140,
                         order: 20
                     },
                     rock: {
@@ -106,7 +106,7 @@ var DataManager = (function () {
                         name: "electronic",
                         desc: "Basic micro-electronics components.",
                         icon: "electronic-parts",
-                        dropRate: 15,
+                        dropRate: 10,
                         order: 75
                     }
                 }
@@ -186,8 +186,8 @@ var DataManager = (function () {
                         consume: function () {
                             return [
                                 [2, data.resources.gatherable.common.scrap],
-                                [1, data.resources.craftable.basic.component],
-                                [1, data.resources.gatherable.rare.electronic]
+                                [3, data.resources.craftable.basic.component],
+                                [2, data.resources.gatherable.rare.electronic]
                             ];
                         },
                         dropRate: 70,
@@ -575,9 +575,6 @@ var DataManager = (function () {
                         log = "Despite nothing special found towards @direction, @people brings back @give.";
                     }
                     effect.direction = directions.random();
-                    effect.give.filter(function (resource) {
-                        return resource.id !== data.resources.ruins;
-                    });
 
                     return log;
                 },
@@ -585,7 +582,7 @@ var DataManager = (function () {
             },
             scour: { // OP ?
                 name: "scour",
-                desc: "Knowledge of ",
+                desc: "Knowledge of the area allows for better findings.",
                 time: 6,
                 isOut: 1,
                 consume: function () {
@@ -662,8 +659,9 @@ var DataManager = (function () {
                     return [];
                 },
                 give: function () {
-                    var pick = randomize(this.possibleCraftables());
-                    if (pick) {
+                    var possible = this.possibleCraftables();
+                    if (possible.length) {
+                        var pick = randomize(possible);
                         if (isFunction(pick.consume)) {
                             MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
                         }
@@ -680,6 +678,7 @@ var DataManager = (function () {
                         return "@people succeeds to craft @give.";
                     }
                     else {
+                        effect.logType = MessageBus.MSG_TYPES.LOGS.WARN;
                         return "Nothing could be made with what you have right now."
                     }
                 },

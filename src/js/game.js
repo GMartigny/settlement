@@ -467,11 +467,13 @@ GameController.prototype = {
     possibleCraftables: function () {
         var craftables = [];
         var resources = this.resources.items;
-        var unlockedCraftables = DataManager.data.resources.craftable.basic;
 
-        deepBrowse(unlockedCraftables, function (craft) {
+        deepBrowse(DataManager.data.resources.craftable, function (craft) {
             var ok = true;
-            if (craft.consume && isFunction(craft.consume)) {
+            if (isFunction(craft.condition)) {
+                ok = craft.condition();
+            }
+            if (isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
                     ok = ok && resources[res[1].id] && resources[res[1].id].has(res[0]);
                 });

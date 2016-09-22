@@ -190,7 +190,7 @@ Action.prototype = {
                 }
 
                 // Log
-                var log;
+                var log = "";
                 if (isFunction(this.data.log)) {
                     log = this.data.log(effect, this);
                 }
@@ -200,7 +200,7 @@ Action.prototype = {
                 log = log.replace(/@(\w+)/gi, function (match, capture) {
                     return effect[capture] || "";
                 });
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
+                MessageBus.getInstance().notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
             }.bind(this), duration);
             return true;
         }

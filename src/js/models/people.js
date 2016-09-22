@@ -224,6 +224,7 @@ People.prototype = {
             this.html.classList.remove("arrived");
             this.actions.forEach(function (action) {
                 action.cancel();
+                action.tooltip.remove();
             });
             TimerManager.timeout(function () {
                 this.html.remove();
