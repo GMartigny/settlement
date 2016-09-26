@@ -81,12 +81,6 @@ Event.prototype = {
         MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
 
         this.html.remove();
-    },
-    getState: function () {
-        return {
-            data: this.data,
-            remaining: this.timer ? TimerManager.getRemaining(this.timer) : 0
-        };
     }
 };
 Event.LST_ID = "eventList";

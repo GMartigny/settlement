@@ -313,44 +313,7 @@ GameController.prototype = {
             this.people.forEach(function (people) {
                 people.refresh(this.resources, elapse, this.flags);
             }.bind(this));
-
-            this.save();
         }
-    },
-    /**
-     * Return the game state
-     * @return {Object}
-     */
-    getState: function () {
-
-        /**
-         * Extract state from array
-         * @param array
-         * @return {Array}
-         */
-        function extract (array) {
-            return array.values().map(function (item) {
-                return item.getState();
-            });
-        }
-
-        return {
-            flags: this.flags,
-            people: extract(this.people),
-            resources: extract(this.resources),
-            buildings: extract(this.buildings),
-            events: extract(this.events),
-            collects: extract(this.collects),
-            initialAction: this.initialActions.values(),
-            knownLocations: this.knownLocations.values()
-        };
-    },
-    /**
-     * Save the game
-     */
-    save: function () {
-        // var state = this.getState();
-        // SaveManager.store(state);
     },
     /**
      * Check if game has enough of a resource

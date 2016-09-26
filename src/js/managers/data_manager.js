@@ -679,7 +679,7 @@ var DataManager = (function () {
                     }
                     else {
                         effect.logType = MessageBus.MSG_TYPES.LOGS.WARN;
-                        return "Nothing could be made with what you have right now."
+                        return "Nothing could be made with what you have right now.";
                     }
                 },
                 order: 30
