@@ -1,5 +1,5 @@
 [![devDependencies Status](https://david-dm.org/GMartigny/settlement/dev-status.svg)](https://david-dm.org/GMartigny/settlement?type=dev)
-
+[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&maxAge=2592000)](https://twitter.com/settlement_game)
 
 # Settlement
 
@@ -30,6 +30,7 @@ All help is welcomed in this project. I'll try to answer every request, so feel 
 
 You can go check [the wiki to learn about ways to contribute](https://github.com/GMartigny/settlement/wiki).
 
+Also, I'm looking for a talented pixel-artist for all the game's visuals. Hit me up !
 
 ## License
 
