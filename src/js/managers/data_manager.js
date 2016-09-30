@@ -71,11 +71,11 @@ var DataManager = (function () {
                         order: 40
                     }
                 },
-                uncommon: { // drop rate between 80 and 30
+                uncommon: { // drop rate between 80 and 20
                     plastic: {
                         name: "plastic",
                         desc: "A sturdy piece of plastic.",
-                        icon: "jerrican",
+                        icon: "",
                         dropRate: 60,
                         order: 50
                     },
@@ -87,17 +87,17 @@ var DataManager = (function () {
                         order: 55
                     },
                     oil: {
-                        name: "oil",
+                        name: "fuel",
                         desc: "About a liter of gas-oil.",
-                        icon: "oil-bucket",
+                        icon: "jerrycan",
                         dropRate: 20,
                         order: 60
                     }
                 },
-                rare: { // drop rate lower than 30
+                rare: { // drop rate lower than 20
                     medication: {
                         name: "medication",
-                        desc: "An unmark medication, hope it'll help.",
+                        desc: "An unlabeled medication, hope it's still good.",
                         icon: "medication",
                         dropRate: 10,
                         order: 70
@@ -109,6 +109,15 @@ var DataManager = (function () {
                         dropRate: 10,
                         order: 75
                     }
+                },
+                special: {
+                    quartz: {
+                        name: "quartz cristal",
+                        desc: "",
+                        icon: "",
+                        dropRate: 0.1,
+                        order: 77
+                    }
                 }
             },
             /***** CRAFTABLES *****/
@@ -116,11 +125,11 @@ var DataManager = (function () {
                 basic: { // Max 2 gatherables, no more than uncommon
                     stone: {
                         name: "smooth stone",
-                        desc: "A well polish stone.",
+                        desc: "A well polish and round stone.",
                         icon: "stone",
                         consume: function () {
                             return [
-                                [6, data.resources.gatherable.common.rock]
+                                [5, data.resources.gatherable.common.rock]
                             ];
                         },
                         dropRate: 100,
@@ -130,6 +139,9 @@ var DataManager = (function () {
                         name: "glass pane",
                         desc: "",
                         icon: "glass-pane",
+                        condition: function () {
+                            return this.buildings.has(data.buildings.small.furnace.id);
+                        },
                         consume: function () {
                             return [
                                 [4, data.resources.gatherable.uncommon.sand]
@@ -140,7 +152,7 @@ var DataManager = (function () {
                     },
                     component: {
                         name: "component",
-                        desc: "A mechanical part for others craftables.",
+                        desc: "Some mechanical parts for others craftables.",
                         icon: "pipe-large",
                         consume: function () {
                             return [
@@ -186,7 +198,7 @@ var DataManager = (function () {
                         consume: function () {
                             return [
                                 [2, data.resources.gatherable.common.scrap],
-                                [3, data.resources.craftable.basic.component],
+                                [1, data.resources.craftable.basic.component],
                                 [2, data.resources.gatherable.rare.electronic]
                             ];
                         },
@@ -195,19 +207,48 @@ var DataManager = (function () {
                     },
                     metalPipe: {
                         name: "metal pipe",
-                        desc: "Simple pipes that you smith from junk metal.",
+                        desc: "Simple pipes that you forge from junk metal.",
                         icon: "pipe-small",
+                        condition: function () {
+                            return this.buildings.has(data.buildings.medium.forge.id);
+                        },
                         consume: function () {
                             return [
                                 [5, data.resources.gatherable.common.scrap],
                                 [1, data.resources.craftable.basic.tool]
                             ];
                         },
-                        condition: function () {
-                            return this.buildings.has(data.buildings.medium.forge.id);
-                        },
                         dropRate: 70,
                         order: 115
+                    },
+                    furniture: {
+                        name: "furniture",
+                        desc: "",
+                        icon: "",
+                        consume: function () {
+                            return [
+                                [3, data.resources.craftable.basic.glass],
+                                [6, data.resources.craftable.complex.metalPipe]
+                            ];
+                        },
+                        dropRate: 60,
+                        order: 116
+                    },
+                    jewelry: {
+                        name: "jewelry",
+                        desc: "",
+                        icon: "",
+                        condition: function () {
+                            return this.buildings.has(data.buildings.small.furnace.id);
+                        },
+                        consume: function () {
+                            return [
+                                [2, data.resources.gatherable.rare.electronic],
+                                [3, data.resources.gatherable.special.quartz]
+                            ];
+                        },
+                        dropRate: 50,
+                        order: 117
                     }
                 },
                 advanced: { // At least 3 requirements with 2 craftables (and more)
@@ -215,15 +256,15 @@ var DataManager = (function () {
                         name: "engine",
                         desc: "Amazing what you manage to do with all those scraps !",
                         icon: "engine",
+                        condition: function () {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
                         consume: function () {
                             return [
                                 [15, data.resources.gatherable.uncommon.oil],
                                 [5, data.resources.craftable.basic.tool],
                                 [5, data.resources.craftable.complex.metalPipe]
                             ];
-                        },
-                        condition: function () {
-                            return this.buildings.has(data.buildings.big.workshop.id);
                         },
                         dropRate: 30,
                         order: 120
@@ -232,6 +273,9 @@ var DataManager = (function () {
                         name: "computer",
                         desc: "Well, Internet is down since 2136 but it can still be useful.",
                         icon: "computer",
+                        condition: function () {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
                         consume: function () {
                             return [
                                 [10, data.resources.craftable.basic.component],
@@ -239,29 +283,8 @@ var DataManager = (function () {
                                 [3, data.resources.craftable.complex.circuit]
                             ];
                         },
-                        condition: function () {
-                            return this.buildings.has(data.buildings.big.workshop.id);
-                        },
                         dropRate: 20,
                         order: 130
-                    },
-                    beacon: {
-                        name: "beacon",
-                        desc: "",
-                        icon: "radio-station",
-                        consume: function () {
-                            return [
-                                [6, data.resources.craftable.basic.glass],
-                                [4, data.resources.craftable.complex.circuit],
-                                [1, data.resources.craftable.advanced.computer]
-                            ];
-                        },
-                        give: function () {
-                            data.people.dropRate = 0.9;
-                            return [];
-                        },
-                        dropRate: 10,
-                        order: 140
                     }
                 }
             },
@@ -308,7 +331,22 @@ var DataManager = (function () {
                             [1, data.resources.room]
                         ];
                     },
+                    log: "",
                     dropRate: 100
+                },
+                furnace: {
+                    name: "furnace",
+                    desc: "",
+                    time: 7,
+                    consume: function () {
+                        return [
+                            [8, data.resources.gatherable.common.rock],
+                            [3, data.resources.gatherable.uncommon.oil]
+                        ];
+                    },
+                    log: "",
+                    unique: true,
+                    dropRate: 70
                 },
                 plot: {
                     name: "farm plot",
@@ -322,7 +360,23 @@ var DataManager = (function () {
                     },
                     unlock: function () {
                         return [data.actions.harvest];
-                    }
+                    },
+                    log: "",
+                    dropRate: 90
+                },
+                pharmacy: {
+                    name: "pharmacy",
+                    desc: "",
+                    time: 6,
+                    consume: function () {
+                        return [
+                            [5, data.resources.gatherable.rare.medication],
+                            [4, data.resources.craftable.basic.component]
+                        ];
+                    },
+                    log: "",
+                    unique: true,
+                    dropRate: 80
                 },
                 well: {
                     name: "well",
@@ -346,14 +400,19 @@ var DataManager = (function () {
                     unlock: function () {
                         return [data.actions.drawFrom.well];
                     },
+                    log: "",
+                    unique: true,
                     dropRate: 80
                 }
             },
             medium: {
                 forge: {
                     name: "forge",
-                    desc: "",
+                    desc: "A good upgrade to our little furnace.",
                     time: 10,
+                    condition: function () {
+                        this.buildings.has(data.buildings.small.furnace.id);
+                    },
                     consume: function () {
                         return [
                             [5, data.resources.gatherable.uncommon.oil],
@@ -361,7 +420,28 @@ var DataManager = (function () {
                             [3, data.resources.craftable.basic.tool]
                         ];
                     },
+                    log: "",
+                    unique: true,
                     dropRate: 60
+                },
+                house: {
+                    name: "house",
+                    desc: "",
+                    time: 13,
+                    condition: function () {
+                        this.buildings.has(data.buildings.small.tent.id);
+                    },
+                    consume: function () {
+                        return [
+                            [8, data.resources.craftable.basic.stone],
+                            [2, data.resources.craftable.complex.furniture]
+                        ];
+                    },
+                    give: function () {
+                        return [round(random(3, 4)), data.resources.room];
+                    },
+                    log: "",
+                    dropRate: 50
                 }
             },
             big: {
@@ -402,6 +482,20 @@ var DataManager = (function () {
                     },
                     dropRate: 20
                 },
+                radio: {
+                    name: "radio-station",
+                    desc: "",
+                    time: 6,
+                    energy: 60,
+                    unique: true,
+                    consume: function () {
+                        return [
+                            [4, data.resources.craftable.complex.circuit],
+                            [1, data.resources.craftable.advanced.computer]
+                        ];
+                    },
+                    dropRate: 15
+                },
                 pump: {
                     name: "water pump",
                     desc: "A buried contraption that collect water from the earth moisture.",
@@ -429,6 +523,45 @@ var DataManager = (function () {
                         ];
                     },
                     dropRate: 10
+                },
+                trading: {
+                    name: "trading post",
+                    desc: "",
+                    time: time.day,
+                    energy: 70,
+                    unique: true,
+                    consume: function () {
+                        return [
+                            [2, data.resources.craftable.basic.glass],
+                            [10, data.resources.craftable.complex.brick],
+                            [2, data.resources.craftable.complex.furniture]
+                        ];
+                    },
+                    give: function () {
+                        return [
+                            [1, data.resources.craftable.complex.jewelry]
+                        ];
+                    },
+                    unlock: function () {
+                        return [];
+                    },
+                    dropRate: 10
+                },
+                module: {
+                    name: "module",
+                    desc: "",
+                    time: time.week,
+                    energy: 100,
+                    unique: true,
+                    consume: function () {
+                        return [
+                            [10, data.resources.gatherable.uncommon.oil],
+                            [3, data.resources.craftable.complex.furniture],
+                            [1, data.resources.craftable.advanced.computer],
+                            [2, data.resources.craftable.advanced.engine]
+                        ];
+                    },
+                    dropRate: 8
                 }
             },
             special: {
@@ -569,7 +702,7 @@ var DataManager = (function () {
                 log: function (effect) {
                     var log;
                     if (effect.location) {
-                        log = "Heading @direction, @people spots @location so @pronoun brings back @give.";
+                        log = "Heading @direction, @people spots @location, so @pronoun brings back @give.";
                     }
                     else {
                         log = "Despite nothing special found towards @direction, @people brings back @give.";
@@ -607,10 +740,11 @@ var DataManager = (function () {
                 log: function (effect) {
                     var log;
                     if (effect.location) {
-                        log = "Heading @direction, @people spots @location. @pronoun also brings back @give.";
+                        log = "@people knew @pronoun could find @location towards @direction, " +
+                            "so @pronoun comes back with @give.";
                     }
                     else {
-                        log = "Despite nothing special found towards @direction, @people brings back @give.";
+                        log = "No special location towards @direction, but @people find @give.";
                     }
                     return log;
                 },
@@ -746,7 +880,10 @@ var DataManager = (function () {
                 build: function (action) {
                     return action.owner.plan;
                 },
-                log: "Building @build gives @give",
+                log: function (effect, action) {
+                    var log = action.owner.plan.log;
+                    return isFunction(log) ? log(effect, action) : log;
+                },
                 order: 50
             },
             drawFrom: {
@@ -760,7 +897,7 @@ var DataManager = (function () {
                     },
                     give: function () {
                         return [
-                            [round(random(2, 5)), data.resources.gatherable.common.water]
+                            [round(random(2, 6)), data.resources.gatherable.common.water]
                         ];
                     },
                     log: "Coming back from the river, @people brings back @give.",
@@ -772,13 +909,14 @@ var DataManager = (function () {
                     time: 2,
                     energy: 15,
                     give: function () {
-                        var draw;
-                        if (this.buildings.has(data.buildings.big.pump.id)) {
-                            draw = random(5, 9);
-                        }
-                        else if (this.buildings.has(data.buildings.small.well.id)) {
+                        var draw = 0;
+                        if (this.buildings.has(data.buildings.small.well.id)) {
                             draw = random(1, 3);
+                        }
+                        else if (this.buildings.has(data.buildings.big.pump.id)) {
+                            draw = random(5, 7);
                         } // shouldn't have other case
+
                         return [
                             [round(draw), data.resources.gatherable.common.water]
                         ];
@@ -804,6 +942,7 @@ var DataManager = (function () {
                         [round(random(1, 3)), data.resources.gatherable.common.food]
                     ];
                 },
+                log: "",
                 order: 70
             },
             sleep: {
@@ -835,7 +974,21 @@ var DataManager = (function () {
                     action.owner.updateLife(random() > 0.05 ? 100 : -10);
                     return [];
                 },
+                log: "",
                 order: 6
+            },
+            launch: {
+                name: "launch",
+                desc: "",
+                time: 4,
+                consume: function () {
+                    return [
+                        [10, data.resources.gatherable.uncommon.oil]
+                    ];
+                },
+                unlock: function () {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.WIN);
+                }
             }
         },
         /***** LOCATIONS *****/

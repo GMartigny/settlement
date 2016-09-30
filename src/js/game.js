@@ -457,7 +457,8 @@ GameController.prototype = {
             done = this.buildings;
 
         deepBrowse(DataManager.data.buildings, function (build) {
-            if (!build.unique || build.unique && !done.has(build.id)) {
+            if ((!build.unique || build.unique && !done.has(build.id)) &&
+                (isFunction(build.condition) && build.condition())) {
                 buildings.push(build);
             }
         });

@@ -6,28 +6,27 @@
  */
 function peopleFactory (amount) {
     amount = amount || 1;
-    return new Promise(function (resolve, reject) {
-        if (window.isDev) {
-            resolve((new Array(amount)).fill(new People("John Doe", "male")));
-        }
-        else {
-            People.randomName(amount).then(function (data) {
-                try {
-                    var results = JSON.parse(data.target.response).results;
-                    var people = [];
-                    results.forEach(function (res) {
-                        var name = capitalize(res.name.first) + " " + capitalize(res.name.last);
-                        var person = new People(name, res.gender);
-                        people.push(person);
-                    });
-                    resolve(people);
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
-        }
-    });
+    if (window.isDev) {
+        var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
+        return Promise.resolve((new Array(amount)).fill(new People(code)));
+    }
+    else {
+        return People.randomName(amount).then(function (data) {
+            try {
+                var results = JSON.parse(data.target.response).results;
+                var people = [];
+                results.forEach(function (res) {
+                    var name = capitalize(res.name.first)/* + " " + capitalize(res.name.last)*/;
+                    var person = new People(name, res.gender);
+                    people.push(person);
+                });
+                resolve(people);
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
+    }
 }
 
 /**
@@ -38,7 +37,7 @@ function peopleFactory (amount) {
  */
 function People (name, gender) {
     this.name = name;
-    this.gender = gender;
+    this.gender = gender || "other";
     this.actions = new Collection();
 
     this.busy = false;
@@ -88,7 +87,7 @@ People.prototype = {
             action.refresh(resources, flags);
         });
         if (flags.settled) {
-            var ratio = 1;
+            var ratio = 0.7;
             if (this.busy) {
                 ratio = (this.busy.energy || 0) / this.busy.time;
             }
@@ -109,7 +108,14 @@ People.prototype = {
      * @return {string}
      */
     getPronoun: function () {
-        return this.gender === "male" ? "he" : "she";
+        switch (this.gender) {
+            case "female":
+                return "she";
+            case "male":
+                return "he";
+            default:
+                return "it";
+        }
     },
     /**
      * Set busy with an action
