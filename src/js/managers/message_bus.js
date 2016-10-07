@@ -6,7 +6,7 @@
  */
 function MessageBus () {
     if (MessageBus.instance) {
-        throw "An instance already exists.";
+        throw new ReferenceError("An instance already exists.");
     }
     this.observers = {};
 }
@@ -57,25 +57,23 @@ MessageBus.getInstance = function () {
     return MessageBus.instance;
 };
 MessageBus.MSG_TYPES = {
-    LOGS: {
-        INFO: 0, // Log information
-        WARN: 1, // Log a warning
-        FLAVOR: 2, // Log a flavor text
-        EVENT: 3 // Log event
-    },
+    LOGS: LogManager.LOG_TYPES,
     CLICK: 10, // Click an action
     REFRESH: 20, // The game has refreshed
     GIVE: 30, // Give some resources
     FIND_LOCATION: 31, // Find a new location
     COLLECT: 32, // Start to collect a resource
+    ARRIVAL: 33, // Someone arrive
     USE: 35, // Use some resources
     RUNS_OUT: 36, // Runs out of some resources
-    LOOSE: 38, // Loose some resources
+    LOOSE_RESOURCE: 38, // Loose some resources
     LOOSE_SOMEONE: 39, // Loose a person
     UNLOCK: 40, // Unlock an action
     LOCK: 50, // Lock an action
     BUILD: 60, // Build a building
     EVENT_START: 70, // An event start
     EVENT_CANCEL: 71, // Cancel an event
-    EVENT_END: 72 // An event end
+    EVENT_END: 72, // An event end
+    LOOSE: 80, // Game over
+    WIN: 85 // Congratulation
 };

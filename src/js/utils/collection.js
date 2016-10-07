@@ -58,7 +58,7 @@ Collection.prototype = {
      */
     get: function (id) {
         if (!this.has(id)) {
-            throw "Unknown ID (" + id + ") in Collection (" + this + ")";
+            throw new RangeError("Unknown ID (" + id + ") in Collection (" + this + ")");
         }
         return this.items[id];
     },
@@ -70,7 +70,7 @@ Collection.prototype = {
      */
     set: function (id, value) {
         if (!this.has(id)) {
-            throw "Unknown ID (" + id + ") in Collection (" + this + ")";
+            throw new RangeError("Unknown ID (" + id + ") in Collection (" + this + ")");
         }
         return this.items[id] = value;
     },

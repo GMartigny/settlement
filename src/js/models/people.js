@@ -47,6 +47,7 @@ function People (name, gender) {
     this.thirsty = false;
 
     this.plan = null;
+    this.project = null;
 
     this.html = this.toHTML();
 }
@@ -177,8 +178,16 @@ People.prototype = {
      * @returns {People} Itself
      */
     planBuilding: function (building) {
-        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "Reay to build " + an(building.name));
         this.plan = building;
+        return this;
+    },
+    /**
+     * Prepare a project
+     * @param {Object} craftable - Craftable tto prepare's data
+     * @return {People} Itself
+     */
+    prepareProject: function (craftable) {
+        this.project = craftable;
         return this;
     },
     /**

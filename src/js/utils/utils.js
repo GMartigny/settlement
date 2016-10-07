@@ -114,7 +114,7 @@ function capitalize (string) {
  */
 function randomize (list, amount) {
     if (!list.values().length) {
-        throw "Can't pick from empty list";
+        throw new TypeError("Can't pick from empty list");
     }
     var all = {},
         dropRateScale = [],
@@ -137,7 +137,7 @@ function randomize (list, amount) {
     }
 
     if (amount) {
-        return [round(random.apply(null, amount.split("-"))), all[pick]];
+        return [round(random.apply(null, (amount + "").split("-"))), all[pick]];
     }
     else {
         return all[pick];
@@ -145,19 +145,25 @@ function randomize (list, amount) {
 }
 
 /**
- *
- * @param {Object} list
- * @param {String} amount
+ * Return a random amount of random items
+ * @param {Object} list - A list draw from
+ * @param {String} amount - Interval for randomness separated by "-"
+ * @see randomize
  * @return {Array}
  */
 function randomizeMultiple (list, amount) {
+    if (!amount) {
+        throw new TypeError("Need an amount");
+    }
     var res = [];
-    var cutAmount = amount.split("-");
-    var min = cutAmount[0];
-    var max = cutAmount[1];
 
-    for (var i = 0, l = round(random(1, min)); i < l; ++i) {
-        res.push([floor(random(min / l, max / l)), randomize(list)]);
+    var total = round(random.apply(null, (amount + "").split("-")));
+    var sum = 0;
+
+    while (sum + 1 <= total) { // can't add 1
+        var pick = round(random(1, total - sum));
+        res.push([pick, randomize(list)]);
+        sum += pick;
     }
 
     return res;
@@ -225,19 +231,22 @@ function consolidateData (context, object, fields) {
  * Give a random unique ID without collision
  * @returns {string}
  */
-function pickID () {
-    var ID = "------".replace(/-/g, function () {
-        return round(random(36)).toString(36);
-    });
-    if (!pickID.IDS.includes(ID)) {
-        pickID.IDS.push(ID);
-        return ID;
-    }
-    else {
-        return pickID();
-    }
-}
-pickID.IDS = [];
+var pickID = (function () {
+    var IDS = [];
+
+    return function () {
+        var ID = "------".replace(/-/g, function () {
+            return round(random(36)).toString(36);
+        });
+        if (!IDS.includes(ID)) {
+            IDS.push(ID);
+            return ID;
+        }
+        else {
+            return pickID();
+        }
+    };
+})();
 
 /**
  * Test if is a function

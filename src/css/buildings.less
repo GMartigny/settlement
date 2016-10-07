@@ -1,11 +1,13 @@
 @import (reference) "base";
 
 #buildingsList {
+    position: absolute;
+    bottom: 0;
     padding: 5px;
 
-    width: 50%;
-    height: ~'calc(50% -' @resourceListHeight/2 ~')';
-    float: left;
+    width: 100%;
+    height: @secondPartHeight;
+    clear: both;
 
     .building {
         border: 1px solid #666;

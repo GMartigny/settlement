@@ -30,6 +30,10 @@ module.exports = function (grunt) {
             }
         },
 
+        imagemin: {
+            // TODO
+        },
+
         less: {
             dev: {
                 options: {

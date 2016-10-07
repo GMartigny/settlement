@@ -1,11 +1,14 @@
 @import (reference) "base";
 
 #peopleList {
+    position: absolute;
+    left: 0;
+    top: @resourceListHeight;
+
     padding: 5px;
 
     width: 50%;
-    height: ~'calc(50% -' @resourceListHeight/2 ~')';
-    float: left;
+    height: @firstPartHeight;
 
     .people {
         border: 1px solid #666;

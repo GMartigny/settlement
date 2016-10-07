@@ -7,7 +7,6 @@
 function tooltip (html, data) {
     var box = null;
 
-    var bodyWidth = document.body.offsetWidth;
     /**
      * Position the tooltip
      * @param {Number} x - The x coordinate
@@ -15,20 +14,23 @@ function tooltip (html, data) {
      * @private
      */
     function _position (x, y) {
-        // may be sub-optimal, but looks better
-        document.body.appendChild(box);
-
         var left = x + 10;
-        if (left + 255 > bodyWidth) {
-            left = bodyWidth - 255;
+        if (left + tooltipWidth > bodyWidth) {
+            left = bodyWidth - tooltipWidth;
         }
         box.style.left = left + "px";
         box.style.top = (y + 10) + "px";
     }
 
+    var bodyWidth = document.body.offsetWidth;
+    var tooltipWidth = 300 + 5;
+
     html.classList.add("tooltiped");
-    html.addEventListener("mouseover", function (event) {
-        _position(event.clientX, event.clientY);
+    html.addEventListener("mouseover", function () {
+        document.body.appendChild(box);
+    });
+    html.addEventListener("mouenter", function () {
+        document.body.appendChild(box);
     });
     html.addEventListener("mousemove", function (event) {
         _position(event.clientX, event.clientY);

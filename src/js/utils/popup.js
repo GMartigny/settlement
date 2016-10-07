@@ -7,7 +7,7 @@
  */
 function popup (data, onYes, CSSClasses) {
     if (!isFunction(onYes)) {
-        throw "Popup need a confirm function";
+        throw new TypeError("Popup need a confirm function");
     }
 
     // FIXME: maybe

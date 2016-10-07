@@ -55,8 +55,7 @@ Event.prototype = {
             this.data.effect(true);
 
             if (this.data.time) {
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this)
-                    .notify(MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(an(this.data.name) + " has started."));
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
                 var duration = this.data.time * GameController.tickLength;
 
                 if (this.data.deltaTime) {

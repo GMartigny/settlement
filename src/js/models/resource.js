@@ -16,6 +16,7 @@ function Resource (data, count) {
     if (count) {
         this.update(+count);
     }
+    this.warnLack = false;
 }
 Resource.prototype = {
     /**
@@ -105,7 +106,7 @@ Resource.prototype = {
     set: function (value) {
         this.count = value;
         if (this.count < 0) {
-            throw "Resources count can't be negative";
+            throw new RangeError("Resources count can't be negative");
         }
         return this.refresh();
     },

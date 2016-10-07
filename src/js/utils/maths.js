@@ -1,6 +1,3 @@
-var PI = Math.PI;
-var RANDOM = Math.random;
-
 /**
  * Floor a number
  * @param {Number} x
@@ -30,8 +27,8 @@ function ceil (x) {
 
 /**
  * Return a random number between marks
- * @param {} from
- * @param to
+ * @param {Number} from
+ * @param {Number} [to]
  * @return {*}
  */
 function random (from, to) {
@@ -48,5 +45,5 @@ function random (from, to) {
     else {
         to = +to;
     }
-    return RANDOM() * (to - from) + from;
+    return Math.random() * (to - from) + from;
 }

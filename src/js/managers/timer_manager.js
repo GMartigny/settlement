@@ -69,19 +69,10 @@ var TimerManager = (function () {
 
     var _timers = null;
 
-    /**
-     * Protect timers from being null
-     * @return {Collection} The timers collection
-     * @private
-     */
-    function _getTimers () {
-        if (!_timers) {
-            _timers = new Collection();
-        }
-        return _timers;
-    }
-
     return {
+        start: function () {
+            _timers = new Collection();
+        },
         /**
          * Set a timeout
          * @param {Function} action - A callback function called after timeout
@@ -94,10 +85,10 @@ var TimerManager = (function () {
              * Wrapper for calling action and popping from collection
              */
             var func = function () {
-                _getTimers().pop(timerId);
+                _timers.pop(timerId);
                 action();
             };
-            timerId = _getTimers().push(new Timer(func, time));
+            timerId = _timers.push(new Timer(func, time));
             return timerId;
         },
         /**
@@ -106,14 +97,14 @@ var TimerManager = (function () {
          * @return {*}
          */
         stop: function (timerId) {
-            return _getTimers().get(timerId).stop();
+            return _timers.get(timerId).stop();
         },
         /**
          * Stop all known timers
          * @return {TimerManager} Itself
          */
         stopAll: function () {
-            _getTimers().forEach(function (timer) {
+            _timers.forEach(function (timer) {
                 timer.stop();
             });
             return this;
@@ -124,7 +115,7 @@ var TimerManager = (function () {
          * @return {*}
          */
         restart: function (timerId) {
-            return _getTimers().get(timerId).restart(performance.now());
+            return _timers.get(timerId).restart(performance.now());
         },
         /**
          * Restart all known timers
@@ -132,7 +123,7 @@ var TimerManager = (function () {
          */
         restartAll: function () {
             var now = performance.now();
-            _getTimers().forEach(function (timer) {
+            _timers.forEach(function (timer) {
                 timer.restart(now);
             });
             return this;
@@ -143,14 +134,14 @@ var TimerManager = (function () {
          * @return {*}
          */
         clear: function (timerId) {
-            return _getTimers().pop(timerId).stop();
+            return _timers.pop(timerId).stop();
         },
         /**
          * Clear all known timers
          * @return {TimerManager} Itself
          */
         clearAll: function () {
-            _getTimers().forEach(function (timer) {
+            _timers.forEach(function (timer) {
                 timer.clear();
             });
             return this;

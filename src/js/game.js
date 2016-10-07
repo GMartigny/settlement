@@ -15,7 +15,7 @@ preloadImages([
         G = new GameController(document.getElementById("main"), media);
     }
     catch (e) {
-        console.warn("Fail to load game : " + e.message);
+        console.warn("Fail to load game : " + e.message, e.stack);
     }
 });
 
@@ -59,7 +59,7 @@ GameController.prototype = {
      * @private
      */
     _init: function () {
-        log("Starting " + window.VERSION);
+        console.log("Starting " + window.VERSION);
 
         var game = this;
         deepBrowse(DataManager.data, function (item) {
@@ -73,13 +73,7 @@ GameController.prototype = {
 
         this.initialActions.push(DataManager.data.actions.wakeUp);
 
-        window.onkeypress = function (e) {
-            switch (e.keyCode) {
-                case 32:
-                    this.togglePause();
-                    break;
-            }
-        }.bind(this);
+        KeyManager.attach(KeyManager.KEYS.SPACE, this.togglePause.bind(this));
 
         this.resourcesList = wrap();
         this.resourcesList.id = Resource.LST_ID;
@@ -101,6 +95,9 @@ GameController.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
+        LogManager.start(this.logsList);
+        TimerManager.start();
+
         // First person arrives
         TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 
@@ -108,71 +105,73 @@ GameController.prototype = {
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function (given) {
             if (isArray(given)) {
                 given.forEach(function (r) {
-                    this.earn.apply(this, r);
-                }.bind(this));
+                    game.earn.apply(game, r);
+                });
             }
-        }.bind(this));
+        });
 
         // We may have a resource collector
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
             if (isArray(collected)) {
-                compactResources(this.collects.concat(collected));
+                compactResources(game.collects.concat(collected));
             }
-        }.bind(this));
+        });
 
         // We may use resources
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
-                compactResources(use).forEach(function (r) {
-                    this.consume.apply(this, r);
-                }.bind(this));
+                compactResources(use).forEach(function (resource) {
+                    game.consume.apply(game, resource);
+                });
             }
-        }.bind(this));
+        });
 
         // We may build
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
-                this.build(building);
+                game.build(building);
             }
-        }.bind(this));
+        });
 
         // And we may die :'(
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-            this.log("We loose " + person.name, MessageBus.MSG_TYPES.LOGS.WARN);
-            // TODO : Decide of gameplay
-            // this.resources.get(DataManager.data.resources.room.id).update(-1);
-            this.people.out(person);
+            game.people.out(person);
             // The last hope fade away
-            if (this.people.length <= 0) {
-                this.log("We held up for " + this.getSurvivalDuration());
-                this.flags.paused = true;
+            if (game.people.length <= 0) {
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
+                game.flags.paused = true;
             }
-        }.bind(this));
+        });
 
         // Keep track of running events
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
-            this.events.push(event.data.id, event);
-            this.flags.popup = false;
-        }.bind(this));
+            game.events.push(event.data.id, event);
+        });
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-            this.events.pop(event.data.id);
-        }.bind(this));
+            game.events.pop(event.data.id);
+        });
 
         // Lock or unlock actions for all
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
-            this.removeFromInitialActions(actions);
-        }.bind(this));
+            game.removeFromInitialActions(actions);
+        });
         MessageBus.getInstance().observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
-            this.addToInitialActions(actions);
-        }.bind(this));
+            game.addToInitialActions(actions);
+        });
 
-        // Log informations
-        var logTypes = MessageBus.MSG_TYPES.LOGS.values();
-        MessageBus.getInstance().observe(logTypes, function (message, type) {
-            this.log(message, type);
-        }.bind(this));
+        if (!window.isDev) {
+            // early access warning
+            popup({
+                name: "Early access",
+                desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
+                "If you want to report a bug or any issue, go to " +
+                "<a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/>" +
+                "Thanks for playing !"
+            }, function () {
+                this.flags.ready = true;
+            }.bind(this));
+        }
 
-        this.flags.ready = true;
     },
     /**
      * Add actions to initial actions list
@@ -219,27 +218,6 @@ GameController.prototype = {
      */
     getSurvivalDuration: function () {
         return formatTime(this.getSettledTime());
-    },
-    /**
-     * Add some log
-     * @param {String} message
-     * @param {Number} type
-     */
-    log: function (message, type) {
-        if (message.length) {
-            type = type || 0;
-            var types = {
-                0: "info",
-                1: "warning",
-                2: "flavor",
-                3: "event"
-            };
-            this.logsList.insertBefore(wrap("log " + types[type], message), this.logsList.firstChild);
-            var logs = Array.prototype.slice.call(this.logsList.children);
-            if (logs.length > LogManager.maxLog) {
-                logs.last().remove();
-            }
-        }
     },
     /**
      * Toggle pause state
@@ -294,13 +272,12 @@ GameController.prototype = {
                     // in the right conditions
                     if (eventData) {
                         var event = new Event(eventData);
-                        event.start(function (event) {
+                        this.flags.popup = event.start(function (event) {
                             if (event.data.time) {
                                 this.eventsList.appendChild(event.html);
                             }
                             this.flags.popup = false;
                         }.bind(this));
-                        this.flags.popup = true;
                     }
                 }
             }
@@ -350,8 +327,7 @@ GameController.prototype = {
 
                 if (!instance.warnLack) {
                     instance.warnLack = true;
-                    var message = "We run out of " + resource.name + ", we need to do something.";
-                    this.log(MessageBus.MSG_TYPES.LOGS.WARN, message);
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.RUNS_OUT, resource.name);
                 }
             }
         }
@@ -394,7 +370,16 @@ GameController.prototype = {
                 else {
                     //noinspection BadExpressionStatementJS - force redraw
                     person.html.offsetHeight;
-                    this.log(person.name + " arrives.", MessageBus.MSG_TYPES.LOGS.EVENT);
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
+
+                    if (this.people.length === 2) {
+                        TimerManager.timeout(function () {
+                            MessageBus.getInstance().notify(
+                                MessageBus.MSG_TYPES.LOGS.FLAVOR,
+                                person.name + " say that there's other desert-walkers " +
+                                    "ready to join you if there's room for them.");
+                        }.bind(this), 2000);
+                    }
                 }
 
                 person.html.classList.add("arrived");
@@ -424,29 +409,36 @@ GameController.prototype = {
         }
     },
     /**
+     * Return all unlocked craftables
+     * @return {Array}
+     */
+    unlockedCraftables: function () {
+        var craftables = [];
+
+        deepBrowse(DataManager.data.resources.craftable, function (craft) {
+            if (!craft.condition || (isFunction(craft.condition) && craft.condition())) {
+                craftables.push(craft);
+            }
+        });
+
+        return craftables;
+    },
+    /**
      * Return all possible craftables
      * @return {Array}
      */
     possibleCraftables: function () {
-        var craftables = [];
         var resources = this.resources.items;
 
-        deepBrowse(DataManager.data.resources.craftable, function (craft) {
-            var ok = true;
-            if (isFunction(craft.condition)) {
-                ok = craft.condition();
-            }
+        return this.unlockedCraftables().filter(function (craft) {
+            var keep = true;
             if (isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
-                    ok = ok && resources[res[1].id] && resources[res[1].id].has(res[0]);
+                    keep = keep && resources[res[1].id] && resources[res[1].id].has(res[0]);
                 });
             }
-
-            if (ok) {
-                craftables.push(craft);
-            }
+            return keep;
         });
-        return craftables;
     },
     /**
      * Return all accessible buildings
