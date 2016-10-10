@@ -135,8 +135,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask("default", ["build", "watch"]);
 
-    grunt.registerTask("patch", ["bump:patch"]);
-
     grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
+
+    grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 };

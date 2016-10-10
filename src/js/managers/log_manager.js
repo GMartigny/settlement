@@ -38,7 +38,7 @@ var LogManager = (function () {
             });
 
             messageBusInstance.observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
-                self.log("We held up for " + survivalDuration + ", but now all is lost.", self.LOG_TYPES.WARN);
+                self.log("We held up for " + survivalDuration + ", but now all is lost.", self.LOG_TYPES.FLAVOR);
             });
 
             messageBusInstance.observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceName) {
