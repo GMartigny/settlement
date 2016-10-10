@@ -12,19 +12,14 @@ function peopleFactory (amount) {
     }
     else {
         return People.randomName(amount).then(function (data) {
-            try {
-                var results = JSON.parse(data.target.response).results;
-                var people = [];
-                results.forEach(function (res) {
-                    var name = capitalize(res.name.first)/* + " " + capitalize(res.name.last)*/;
-                    var person = new People(name, res.gender);
-                    people.push(person);
-                });
-                resolve(people);
-            }
-            catch (e) {
-                reject(e);
-            }
+            var results = JSON.parse(data.target.response).results;
+            var people = [];
+            results.forEach(function (res) {
+                var name = capitalize(res.name.first)/* + " " + capitalize(res.name.last)*/;
+                var person = new People(name, res.gender);
+                people.push(person);
+            });
+            return people;
         });
     }
 }
