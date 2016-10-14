@@ -127,13 +127,11 @@ Action.prototype = {
      */
     end: function () {
         this.timeout = 0;
-        this.owner.setBusy(false);
         this.html.classList.remove("cooldown");
 
         var effect = {
             name: this.data.name,
-            people: this.owner.name,
-            pronoun: this.owner.getPronoun()
+            people: this.owner
         };
 
         // Build
@@ -200,17 +198,28 @@ Action.prototype = {
         }
 
         // Log
-        var log = "";
+        var rawLog = "";
         if (isFunction(this.data.log)) {
-            log = this.data.log(effect, this);
+            rawLog = this.data.log(effect, this);
         }
         else if (this.data.log) {
-            log = this.data.log;
+            rawLog = this.data.log;
         }
-        log = log.replace(/@(\w+)/gi, function (match, capture) {
-            return effect[capture] || "";
-        });
+        var log = LogManager.personify(rawLog, effect);
         MessageBus.getInstance().notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
+        this.owner.finishAction();
+    },
+    /**
+     * Change the action according to an effect
+     * @param effect
+     * @return {Action} Itself
+     */
+    applyEffect: function (effect) {
+        if (isFunction(effect)) {
+            effect(this.data);
+            this._init(this.data);
+        }
+        return this;
     },
     /**
      * Lock this action

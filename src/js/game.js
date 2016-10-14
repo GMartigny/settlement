@@ -101,8 +101,9 @@ GameController.prototype = {
         // First person arrives
         TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 
+        var busInstance = MessageBus.getInstance();
         // We may find resources
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.GIVE, function (given) {
+        busInstance.observe(MessageBus.MSG_TYPES.GIVE, function (given) {
             if (isArray(given)) {
                 given.forEach(function (r) {
                     game.earn.apply(game, r);
@@ -111,14 +112,14 @@ GameController.prototype = {
         });
 
         // We may have a resource collector
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
+        busInstance.observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
             if (isArray(collected)) {
                 compactResources(game.collects.concat(collected));
             }
         });
 
         // We may use resources
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.USE, function (use) {
+        busInstance.observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
                 compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
@@ -127,14 +128,14 @@ GameController.prototype = {
         });
 
         // We may build
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.BUILD, function (building) {
+        busInstance.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
                 game.build(building);
             }
         });
 
         // And we may die :'(
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
+        busInstance.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
             game.people.out(person);
             // The last hope fade away
             if (game.people.length <= 0) {
@@ -144,19 +145,23 @@ GameController.prototype = {
         });
 
         // Keep track of running events
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
+        busInstance.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
             game.events.push(event.data.id, event);
         });
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
+        busInstance.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
             game.events.pop(event.data.id);
         });
 
         // Lock or unlock actions for all
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
+        busInstance.observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
             game.removeFromInitialActions(actions);
         });
-        MessageBus.getInstance().observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
+        busInstance.observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
             game.addToInitialActions(actions);
+        });
+
+        busInstance.observe(MessageBus.MSG_TYPES.WIN, function () {
+            this.flags.paused = true;
         });
 
         if (!window.isDev) {
@@ -164,7 +169,7 @@ GameController.prototype = {
             popup({
                 name: "Early access",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
-                "If you want to report a bug or any issue, go to " +
+                "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/>" +
                 "Thanks for playing !"
             }, function () {
@@ -494,8 +499,10 @@ GameController.prototype = {
         else {
             return false;
         }
-    },
-    debug: {
+    }
+};
+if (window.isDev) {
+    GameController.prototype.debug = {
         /**
          * Earn one of each resources
          * @returns {Game} Itself
@@ -504,7 +511,12 @@ GameController.prototype = {
             deepBrowse(DataManager.data.resources, function (resource) {
                 this.earn(1, resource);
             }.bind(this));
+
+            deepBrowse(DataManager.data.buildings, function (build) {
+                this.build(build);
+            }.bind(this));
+
             return this;
         }
-    }
-};
+    };
+}

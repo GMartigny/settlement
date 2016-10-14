@@ -13,7 +13,7 @@ function MessageBus () {
 MessageBus.prototype = {
     /**
      * Observe an event
-     * @param {Number} type - One or more event type to observe
+     * @param {Number|Array} type - One or more event type to observe
      * @param {Function} action - A function called when event is fired
      * @return {MessageBus} Itself
      */
@@ -69,6 +69,7 @@ MessageBus.MSG_TYPES = {
     LOOSE_RESOURCE: 38, // Loose some resources
     LOOSE_SOMEONE: 39, // Loose a person
     UNLOCK: 40, // Unlock an action
+    GAIN_PERK: 45, // People gain a perk
     LOCK: 50, // Lock an action
     BUILD: 60, // Build a building
     EVENT_START: 70, // An event start

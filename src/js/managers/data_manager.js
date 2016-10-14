@@ -634,7 +634,7 @@ var DataManager = (function () {
                         data.actions.look
                     ];
                 },
-                log: "@people gets up painfully.",
+                log: "@people.name gets up painfully.",
                 order: 0,
                 unique: true
             },
@@ -646,7 +646,7 @@ var DataManager = (function () {
                 give: function () {
                     var messageType = MessageBus.MSG_TYPES.LOGS.FLAVOR;
                     TimerManager.timeout(function () {
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter");
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
                     }, 1000);
                     return [,
                         [10, data.resources.gatherable.common.water],
@@ -659,7 +659,8 @@ var DataManager = (function () {
                         data.actions.settle
                     ];
                 },
-                log: "After some thinking, @people remembers the attack. @pronoun grabs @give laying around.",
+                log: "After some thinking, @people.name remembers the attack. " +
+                    "@people.nominative grabs @give laying around.",
                 order: 0,
                 unique: true
             },
@@ -677,7 +678,7 @@ var DataManager = (function () {
                 build: function () {
                     return data.buildings.special.forum;
                 },
-                log: "@people installs @build inside a ship-wreck with @give to sleep in.",
+                log: "@people.name installs @build inside a ship-wreck with @give to sleep in.",
                 order: 0,
                 unique: true
             },
@@ -694,7 +695,7 @@ var DataManager = (function () {
                 give: function () {
                     return randomizeMultiple(data.resources.gatherable, "3-6");
                 },
-                log: "@people comes back with @give.",
+                log: "@people.name comes back with @give.",
                 order: 0
             },
             roam: {
@@ -741,10 +742,11 @@ var DataManager = (function () {
                 log: function (effect) {
                     var log;
                     if (effect.location) {
-                        log = "Heading @direction, @people spots @location, so @pronoun brings back @give.";
+                        log = "Heading @direction, @people.name spots @location, " +
+                            "so @people.nominative brings back @give.";
                     }
                     else {
-                        log = "Despite nothing special found towards @direction, @people brings back @give.";
+                        log = "Despite nothing special found towards @direction, @people.name brings back @give.";
                     }
                     effect.direction = directions.random();
 
@@ -777,11 +779,11 @@ var DataManager = (function () {
                 log: function (effect) {
                     var log;
                     if (effect.location) {
-                        log = "@people knew @pronoun could find @location towards @direction, " +
-                            "so @pronoun comes back with @give.";
+                        log = "@people.name knew @people.nominative could find @location towards @direction, " +
+                            "so @people.nominative comes back with @give.";
                     }
                     else {
-                        log = "No special location towards @direction, but @people find @give.";
+                        log = "No special location towards @direction, but @people.name find @give.";
                     }
                     return log;
                 },
@@ -807,13 +809,8 @@ var DataManager = (function () {
                     return randomizeMultiple(location.give(), "5-9");
                 },
                 log: function (effect, action) {
-                    var log = action.location.log;
-                    if (isFunction(log)) {
-                        return log(effect, action);
-                    }
-                    else if (log) {
-                        return log;
-                    }
+                    var log = action.location.log || "";
+                    return isFunction(log) ? log(effect, action) : log;
                 },
                 order: 20
             },
@@ -843,7 +840,7 @@ var DataManager = (function () {
                 },
                 log: function (effect) {
                     if (effect.give) {
-                        return "@people succeeds to craft @give.";
+                        return "@people.name succeeds to craft @give.";
                     }
                     else {
                         effect.logType = MessageBus.MSG_TYPES.LOGS.WARN;
@@ -935,7 +932,7 @@ var DataManager = (function () {
                             [round(random(2, 6)), data.resources.gatherable.common.water]
                         ];
                     },
-                    log: "Coming back from the river, @people brings back @give.",
+                    log: "Coming back from the river, @people.name brings back @give.",
                     order: 60
                 },
                 well: {
@@ -956,7 +953,7 @@ var DataManager = (function () {
                             [round(draw), data.resources.gatherable.common.water]
                         ];
                     },
-                    log: "Using our well, @people get @give.",
+                    log: "Using our well, @people.name get @give.",
                     order: 60
                 }
             },
@@ -983,7 +980,7 @@ var DataManager = (function () {
             },
             sleep: {
                 name: "sleep",
-                desc: "Get some rest.",
+                desc: "Get some rest to restore energy.",
                 time: 9,
                 energy: 0,
                 give: function (action) {
@@ -995,7 +992,7 @@ var DataManager = (function () {
                         data.actions.heal
                     ];
                 },
-                log: "@people feels well rested now.",
+                log: "@people.name feels well rested now.",
                 order: 5
             },
             heal: {
@@ -1009,8 +1006,8 @@ var DataManager = (function () {
                     ];
                 },
                 give: function (action, effect) {
-                    var lifeChange = 100;
-                    if (!this.buildings.has(data.buildings.small.pharmacy.id) && random() < 1 / 3) {
+                    var lifeChange = 99;
+                    if (!this.buildings.has(data.buildings.small.pharmacy.id) && random() < 2 / 5) {
                         lifeChange = -15;
                         effect.wasBad = true;
                     }
@@ -1019,11 +1016,11 @@ var DataManager = (function () {
                 },
                 log: function (effect) {
                     if (effect.wasBad) {
-                        return "After feeling not so well, @people realise taking these pills" +
+                        return "After feeling not so well, @people.name realise taking these pills" +
                             "took a hit on his health.";
                     }
                     else {
-                        return "This time, it actually improuve @people's heatlth.";
+                        return "This time, it actually improve @people's health.";
                     }
                 },
                 order: 6
@@ -1073,7 +1070,7 @@ var DataManager = (function () {
                     }
                     return unlock;
                 },
-                log: "@people successfully made @give."
+                log: "@people.name successfully made @give."
             },
             exchange: {
                 name: "exchange",
@@ -1082,7 +1079,7 @@ var DataManager = (function () {
                 energy: 20,
                 consume: function () {
                     return [
-                        [1, data.resources.craftable.complex.jewelry]
+                        [2, data.resources.craftable.complex.jewelry]
                     ];
                 },
                 give: function () {
@@ -1102,8 +1099,9 @@ var DataManager = (function () {
                         [10, data.resources.gatherable.uncommon.oil]
                     ];
                 },
-                unlock: function () {
+                give: function () {
                     MessageBus.getInstance().notify(MessageBus.MSG_TYPES.WIN);
+                    return [];
                 }
             }
         },
@@ -1119,6 +1117,7 @@ var DataManager = (function () {
                             data.resources.craftable.basic.component
                         ];
                     },
+                    log: "",
                     dropRate: 80
                 },
                 desert: {
@@ -1130,6 +1129,7 @@ var DataManager = (function () {
                             data.resources.gatherable.uncommon.sand
                         ];
                     },
+                    log: "",
                     dropRate: 120
                 },
                 supermarket: {
@@ -1156,6 +1156,7 @@ var DataManager = (function () {
                             data.resources.craftable.basic.stone
                         ];
                     },
+                    log: "",
                     dropRate: 20
                 },
                 ruin: {
@@ -1167,6 +1168,7 @@ var DataManager = (function () {
                             data.resources.craftable.basic.tool
                         ];
                     },
+                    log: "",
                     dropRate: 100
                 }
             },
@@ -1180,6 +1182,7 @@ var DataManager = (function () {
                             data.resources.craftable.complex.circuit
                         ];
                     },
+                    log: "",
                     dropRate: 100
                 }
             }
@@ -1213,6 +1216,132 @@ var DataManager = (function () {
                     },
                     dropRate: 6,
                     log: "A harsh drought fall on us, water will be more important than ever."
+                }
+            }
+        },
+        /***** PERKS *****/
+        perks: {
+            dropRate: 0.1,
+            first: {
+                name: "first-one",
+                desc: "The very first one to install the settlement.",
+                actions: function () {
+                    return [
+                        data.actions.settle.id
+                    ];
+                },
+                iteration: 0
+            },
+            rookie: {
+                name: "rookie",
+                desc: "All group has a rookie, all @people.nominative want is to prove @people.nominative's efficient.",
+                condition: function () {
+                    return this.people.length > 2;
+                },
+                effect: function (action) {
+                    action.time = (isFunction(action.time) ? action.time() : action.time) * 0.95;
+                }
+            },
+            explorer: {
+                name: "gadabout",
+                desc: "",
+                actions: function () {
+                    return [
+                        data.actions.roam.id,
+                        data.actions.scour.id,
+                        data.actions.explore.id
+                    ];
+                },
+                iteration: 50,
+                effect: function (action) {
+                    var give = isFunction(action.give) && action.give();
+                    give.push(randomize(data.resources.gatherable, "1-2"));
+                }
+            },
+            tinkerer: {
+                name: "tinkerer",
+                desc: "",
+                actions: function () {
+                    return [
+                        data.actions.craft.id,
+                        data.actions.build.id,
+                        data.actions.make.id
+                    ];
+                },
+                iteration: 50,
+                effect: function (action) {
+                }
+            },
+            healer: {
+                name: "doctor",
+                desc: "Knowing enough about medecine make @people.accusative confident to heal others.",
+                actions: function () {
+                    return [
+                        data.actions.heal.id
+                    ];
+                },
+                condition: function () {
+                    return this.buildings.has(data.buildings.small.pharmacy.id);
+                },
+                iteration: 5,
+                effect: function (action) {
+                    var people = this.people;
+                    action.give = function () {
+                        var lowest = null;
+                        people.forEach(function (p) {
+                            if (!lowest || p.life < lowest.life) {
+                                lowest = p;
+                            }
+                        });
+                        lowest.updateLife(99);
+                        return [];
+                    };
+                }
+            },
+            harvester: {
+                name: "harvester",
+                desc: "",
+                actions: function () {
+                    return [
+                        data.actions.gather.id,
+                        data.actions.harvest.id,
+                        data.actions.drawFrom.river.id,
+                        data.actions.drawFrom.well.id
+                    ];
+                },
+                iteration: 70,
+                effect: function () {
+                }
+            },
+            lounger: {
+                name: "lounger",
+                desc: "",
+                actions: function () {
+                    return [
+                        data.actions.sleep
+                    ];
+                },
+                condition: function (person) {
+                    return person.stats.idle / time.week;
+                },
+                effect: function () {
+                }
+            },
+            merchant: {
+                name: "merchant",
+                desc: "",
+                action: function () {
+                    return [
+                        data.actions.exchange
+                    ];
+                },
+                iteration: 10,
+                effect: function (action) {
+                    action.consume = function () {
+                        return [
+                            [1, data.resources.craftable.complex.jewelry]
+                        ];
+                    };
                 }
             }
         }

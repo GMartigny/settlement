@@ -27,23 +27,27 @@ function ceil (x) {
 
 /**
  * Return a random number between marks
- * @param {Number} from
- * @param {Number} [to]
+ * @param {Number} [from=0]
+ * @param {Number} [to=1]
  * @return {*}
  */
-function random (from, to) {
-    from = +from || 0;
-    if (to === undefined) {
-        if (from === 0) {
-            to = 1;
+var random = (function () {
+    var RAND = Math.random;
+
+    return function (from, to) {
+        from = +from || 0;
+        if (to === undefined) {
+            if (from === 0) {
+                to = 1;
+            }
+            else {
+                to = from;
+            }
+            from = 0;
         }
         else {
-            to = from;
+            to = +to;
         }
-        from = 0;
-    }
-    else {
-        to = +to;
-    }
-    return Math.random() * (to - from) + from;
-}
+        return RAND() * (to - from) + from;
+    };
+})();

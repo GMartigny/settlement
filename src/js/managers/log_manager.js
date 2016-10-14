@@ -10,10 +10,10 @@ var LogManager = (function () {
 
     var self = {
         LOG_TYPES: {
-            INFO: 0,
-            WARN: 1,
-            FLAVOR: 2,
-            EVENT: 3
+            INFO: 0, // Result from an user action
+            WARN: 1, // Something's wrong
+            FLAVOR: 2, // Anything without in-game effect
+            EVENT: 3 // Something happening without user action
         },
         maxLog: 50,
         /**
@@ -34,15 +34,23 @@ var LogManager = (function () {
             });
 
             messageBusInstance.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-                self.log("We lost " + person.name + ".", self.LOG_TYPES.WARN);
+                var message = "We lost " + person.name + ".";
+                self.log(message, self.LOG_TYPES.WARN);
             });
 
             messageBusInstance.observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
-                self.log("We held up for " + survivalDuration + ", but now all is lost.", self.LOG_TYPES.FLAVOR);
+                var message = "We held up for " + survivalDuration + ", but all is lost now.";
+                self.log(message, self.LOG_TYPES.FLAVOR);
             });
 
             messageBusInstance.observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceName) {
-                self.log("We run out of " + resourceName + ", we need to do something.", self.LOG_TYPES.WARN);
+                var message = "We run out of " + resourceName + ", we need to do something.";
+                self.log(message, self.LOG_TYPES.WARN);
+            });
+
+            messageBusInstance.observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
+                var message = people.name + " is now known as the \"" + capitalize(people.perk.name) + "\".";
+                self.log(message, self.LOG_TYPES.EVENT);
             });
         },
         /**
@@ -59,6 +67,22 @@ var LogManager = (function () {
                     logs.last().remove();
                 }
             }
+        },
+        /**
+         * Replace generic key with data from an object
+         * @param {String} string - A string to use
+         * @param {Object} data - Data to put into the string
+         * @example personify("@people.name is waiting", {people: {name: "Someone"}});
+         * @return {String}
+         */
+        personify: function (string, data) {
+            return string.replace(/@([\w\.]+)(?=.)/gi, function (match, capture) {
+                var replace = "";
+                capture.split(".").forEach(function (part) {
+                    replace = data[part];
+                });
+                return replace || "";
+            });
         }
     };
 

@@ -189,7 +189,7 @@ function deepBrowse (tree, action) {
     for (var item in tree) {
         if (tree.hasOwnProperty(item)) {
             if (tree[item].name) {
-                action(tree[item]);
+                action(tree[item], tree);
             }
             else {
                 deepBrowse(tree[item], action);
