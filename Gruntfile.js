@@ -131,6 +131,7 @@ module.exports = function (grunt) {
     grunt.registerTask("css", ["less:dev"]);
 
     grunt.registerTask("build", ["icon", "js", "css"]);
+    grunt.registerTask("build:dev", ["build"]);
     grunt.registerTask("build:prod", ["icon", "uglify:prod", "less:prod"]);
 
     grunt.registerTask("default", ["build", "watch"]);
