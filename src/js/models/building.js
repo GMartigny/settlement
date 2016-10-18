@@ -50,4 +50,3 @@ Building.prototype = {
         return this;
     }
 };
-Building.LST_ID = "buildingsList";

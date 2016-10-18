@@ -1,7 +1,7 @@
 "use strict";
 /**
  * Factory for people
- * @param {Number} amount - Number of people to create
+ * @param {Number} [amount=1] - Number of people to create
  * @return {Promise}
  */
 function peopleFactory (amount) {
@@ -12,12 +12,11 @@ function peopleFactory (amount) {
         return Promise.resolve((new Array(amount)).fill(new People(code)));
     }
     else {
-        return People.randomName(amount).then(function (data) {
-            var results = JSON.parse(data.target.response).results;
+        return People.randomName(amount).then(function (response) {
             var people = [];
-            results.forEach(function (res) {
-                var name = capitalize(res.name.first)/* + " " + capitalize(res.name.last)*/;
-                var person = new People(name, res.gender);
+            response.results.forEach(function (data) {
+                var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
+                var person = new People(name, data.gender);
                 people.push(person);
             });
             return people;
@@ -28,7 +27,7 @@ function peopleFactory (amount) {
 /**
  * Class for people
  * @param {String} name - It's name
- * @param {"male"|"female"} gender - It's gender
+ * @param {"male"|"female"} [gender="other"] - It's gender
  * @constructor
  */
 function People (name, gender) {
@@ -164,7 +163,7 @@ People.prototype = {
             this.stats.actionsDone[this.busy.id] = 1;
         }
         this.rollForPerk(this.busy);
-        this.setBusy(false);
+        this.setBusy(null);
     },
     /**
      * Change energy
@@ -364,7 +363,13 @@ People.randomName = function (amount) {
 
         var xhr = new XMLHttpRequest();
         xhr.open("get", url);
-        xhr.onload = resolve;
+        xhr.responseType = "json";
+        /**
+         * Resolve with response
+         */
+        xhr.onload = function () {
+            resolve(this.response);
+        };
         xhr.onerror = reject;
         xhr.send();
     });

@@ -43,7 +43,7 @@ Resource.prototype = {
     toHTML: function (data) {
         var html = wrap("resource get-more");
 
-        this.counter = wrap("counter", 1);
+        this.counter = wrap("counter", "1");
         html.appendChild(this.counter);
 
         var icon = wrap("icon icon-" + data.icon);
@@ -55,7 +55,7 @@ Resource.prototype = {
     },
     /**
      * Loop function called every game tick
-     * @param {Array} resources - Game's resources
+     * @param {Array} [resources] - Game's resources
      * @return {Resource} Itself
      */
     refresh: function (resources) {
@@ -73,7 +73,7 @@ Resource.prototype = {
     update: function (amount) {
         this.set(this.count + amount);
 
-        var cb = false;
+        var cb;
         if (amount > 0 && !this.html.classList.contains("more")) {
             this.html.classList.add("more");
             cb = function () {

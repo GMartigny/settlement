@@ -14,7 +14,10 @@ module.exports = function (grunt) {
     var sourceDir = {
         js: "src/js/**/*.js",
         css: "src/css/**/*.less",
-        img: "src/img/**/*.png"
+        img: {
+            icons: "src/img/icons/**/*.png",
+            assets: "src/img/assets/**/*.png"
+        }
     };
     var versionStr = "window.VERSION='v<%= version %>';";
 
@@ -23,10 +26,15 @@ module.exports = function (grunt) {
 
 
         sprite: {
-            all: {
-                src: sourceDir.img,
+            icons: {
+                src: sourceDir.img.icons,
                 dest: "dist/img/icons.png",
                 destCss: "src/css/sprites.less"
+            },
+            assets: {
+                src: sourceDir.img.assets,
+                dest: "dist/img/assets.png",
+                destCss: "dist/js/assets.json"
             }
         },
 
@@ -58,8 +66,10 @@ module.exports = function (grunt) {
                     mangle: false,
                     beautify: true,
                     sourceMap: true,
-                    banner: versionStr + "\nwindow.isDev=true;",
+                    // banner: versionStr + "\nwindow.isDev=true;",
+                    footer: "\n" + versionStr + "\nwindow.isDev=true;",
                     compress: {
+                        sequences: false,
                         drop_debugger: false
                     }
                 },
@@ -80,9 +90,13 @@ module.exports = function (grunt) {
         },
 
         watch: {
-            sprite: {
-                files: [sourceDir.img],
-                tasks: ["icon"]
+            iconsCSS: {
+                files: [sourceDir.img.icons],
+                tasks: ["icons"]
+            },
+            assetsJSON: {
+                files: [sourceDir.img.assets],
+                tasks: ["assets"]
             },
             less2css: {
                 files: [sourceDir.css],
@@ -126,13 +140,15 @@ module.exports = function (grunt) {
     grunt.registerTask("check", ["jscs"/*, "lesslint"*/]); // need update from lesslint
 
     // Sources building
-    grunt.registerTask("icon", ["sprite:all"]);
+    grunt.registerTask("icons", ["sprite:icons"]);
+    grunt.registerTask("assets", ["sprite:assets"]);
+    grunt.registerTask("images", ["icons", "assets"]);
     grunt.registerTask("js", ["uglify:dev"]);
     grunt.registerTask("css", ["less:dev"]);
 
-    grunt.registerTask("build", ["icon", "js", "css"]);
-    grunt.registerTask("build:dev", ["build"]);
-    grunt.registerTask("build:prod", ["icon", "uglify:prod", "less:prod"]);
+    grunt.registerTask("build:dev", ["images", "js", "css"]);
+    grunt.registerTask("build:prod", ["images", "uglify:prod", "less:prod"]);
+    grunt.registerTask("build", ["build:dev"]); // (default)
 
     grunt.registerTask("default", ["build", "watch"]);
 

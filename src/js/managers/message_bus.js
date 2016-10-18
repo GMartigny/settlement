@@ -32,7 +32,7 @@ MessageBus.prototype = {
     /**
      * Fire an event
      * @param {Number} type - Type of event
-     * @param {*} message - Additional data attached
+     * @param {*} [message] - Additional data attached
      * @return {MessageBus} Itself
      */
     notify: function (type, message) {
@@ -72,6 +72,7 @@ MessageBus.MSG_TYPES = {
     GAIN_PERK: 45, // People gain a perk
     LOCK: 50, // Lock an action
     BUILD: 60, // Build a building
+    UNBUILD: 61, // Remove a building
     EVENT_START: 70, // An event start
     EVENT_CANCEL: 71, // Cancel an event
     EVENT_END: 72, // An event end

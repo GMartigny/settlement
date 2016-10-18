@@ -15,8 +15,9 @@ Luckily, human strength is to learn and act fast. So keep moving and you may liv
 
 ### [v0.2](https://github.com/GMartigny/settlement/releases/tag/v0.2.0) WIP
 
-Some tweak in data.
-Would be nice to have a save system.
+See your camp grow as you build it.
+
+All game data have been reviewed for balancing and greatly improve logs system.
 
 
 ### [v0.1](https://github.com/GMartigny/settlement/releases/tag/v0.1.0)

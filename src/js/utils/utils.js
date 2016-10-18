@@ -94,12 +94,18 @@ function pluralize (string, number) {
 /**
  * Start every sentence with a capital letter
  * @param {String} string
+ * @returns {String}
  */
 function capitalize (string) {
-    string = string.replace(/([\.!\?]) ([a-z])/g, function (match, punctuation, letter) {
-        return punctuation + " " + letter.toUpperCase();
-    });
-    return string[0].toUpperCase() + string.slice(1);
+    if (string) {
+        string = string.replace(/([\.!\?]) ([a-z])/g, function (match, punctuation, letter) {
+            return punctuation + " " + letter.toUpperCase();
+        });
+        return string[0].toUpperCase() + string.slice(1);
+    }
+    else {
+        return "";
+    }
 }
 
 /**
@@ -210,7 +216,7 @@ function clone (obj) {
 
 /**
  * Transform data function to their values
- * @param {Function} context - A context passed to each functions
+ * @param {Object} context - A context passed to each functions
  * @param {Object} object - A collection of functions
  * @param {Array} [fields] - The object's field to consolidate
  * @return {*}
@@ -360,23 +366,53 @@ Object.prototype.values = function () {
 
 /**
  * Load some image with a promise
- * @param {Array} images - An array of url string
+ * @param {Array} urls - An array of url string
  * @param {Function} action - A function called with each loading
  * @return {Promise}
  */
-function preloadImages (images, action) {
-    var loaded = 0;
-    return Promise.all(images.map(function (url) {
-        return (new Promise(function (resolve, reject) {
-            var img = new Image();
-            img.onload = resolve.bind(null, img);
-            img.onerror = reject;
-            img.src = url;
-        })).then(function (img) {
-            action(++loaded / images.length * 100, url);
-            return img;
+function loadAsync (urls, action) {
+    var loaded = {};
+    var loadCount = 0;
+    var toLoad = urls.length;
+    return Promise.all(urls.map(function (url) {
+        var promise;
+        switch (url.substr(url.lastIndexOf(".") + 1)) {
+            case "png":
+            case "jpg":
+            case "gif":
+                promise = new Promise(function (resolve, reject) {
+                    var img = new Image();
+                    img.onload = resolve.bind(null, img);
+                    img.onerror = reject;
+                    img.src = url;
+                });
+                break;
+            case "json":
+                promise = new Promise(function (resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("get", url);
+                    xhr.responseType = "json";
+                    /**
+                     * Resolve with response
+                     */
+                    xhr.onload = function () {
+                        resolve(this.response);
+                    };
+                    xhr.onerror = reject;
+                    xhr.send();
+                });
+                break;
+            default :
+                promise = Promise.resolve();
+        }
+        return promise.then(function (file) {
+            // Each step
+            loaded[sanitize(url)] = file;
+            action(++loadCount / toLoad * 100, url);
         }).catch(function () {
             console.log("Can't load " + url);
         });
-    }));
+    })).then(function () {
+        return loaded;
+    });
 }

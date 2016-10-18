@@ -335,7 +335,15 @@ var DataManager = (function () {
                         ];
                     },
                     log: "That's small and ugly, but someone can sleep safely in here.",
-                    dropRate: 100
+                    dropRate: 100,
+                    asset: {
+                        image: "tent",
+                        position: {
+                            color: "#909090",
+                            x: "60-100",
+                            y: "25-75"
+                        }
+                    }
                 },
                 furnace: {
                     name: "furnace",
@@ -431,6 +439,11 @@ var DataManager = (function () {
                             [10, data.resources.craftable.basic.stone],
                             [2, data.resources.craftable.basic.tool]
                         ];
+                    },
+                    unlock: function () {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD,
+                            data.buildings.small.well.furnace);
+                        return [];
                     },
                     log: "We can now work metal better and make more complex part.",
                     unique: true,
@@ -543,6 +556,7 @@ var DataManager = (function () {
                         ];
                     },
                     unlock: function () {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD, data.buildings.small.well.id);
                         return [data.actions.drawFrom.well];
                     },
                     collect: function () {
@@ -1117,8 +1131,8 @@ var DataManager = (function () {
                             data.resources.craftable.basic.component
                         ];
                     },
-                    log: "",
-                    dropRate: 80
+                    log: "That was hard to climb those mountains, but at least @people find @give.",
+                    dropRate: 90
                 },
                 desert: {
                     name: "desert",
@@ -1130,7 +1144,7 @@ var DataManager = (function () {
                         ];
                     },
                     log: "",
-                    dropRate: 120
+                    dropRate: 100
                 },
                 supermarket: {
                     name: "supermarket",
@@ -1140,7 +1154,9 @@ var DataManager = (function () {
                             data.resources.gatherable.rare.medication,
                             data.resources.craftable.basic.glass
                         ];
-                    }
+                    },
+                    log: "",
+                    dropRate: 80
                 }
             },
             far: {
@@ -1157,7 +1173,7 @@ var DataManager = (function () {
                         ];
                     },
                     log: "",
-                    dropRate: 20
+                    dropRate: 40
                 },
                 ruin: {
                     name: "old ruin",
@@ -1169,7 +1185,7 @@ var DataManager = (function () {
                         ];
                     },
                     log: "",
-                    dropRate: 100
+                    dropRate: 60
                 }
             },
             epic: {
@@ -1183,7 +1199,7 @@ var DataManager = (function () {
                         ];
                     },
                     log: "",
-                    dropRate: 100
+                    dropRate: 30
                 }
             }
         },

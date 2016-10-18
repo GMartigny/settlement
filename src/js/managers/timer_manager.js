@@ -70,6 +70,9 @@ var TimerManager = (function () {
     var _timers = null;
 
     return {
+        /**
+         * Initialize the manager
+         */
         start: function () {
             _timers = new Collection();
         },

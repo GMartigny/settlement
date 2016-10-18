@@ -1,18 +1,19 @@
 "use strict";
 
 console.groupCollapsed("Loading");
-/**
- * Global var for the game object
- */
-var G;
-preloadImages([
-    "dist/img/icons.png"
+loadAsync([
+    "dist/img/icons.png",
+    "dist/img/assets.png",
+    "dist/js/assets.json"
 ], function (percent, file) {
     console.log(file + " : " + percent + "%");
 }).then(function (media) {
     console.groupEnd();
     try {
-        G = new GameController(document.getElementById("main"), media);
+        var Game = new GameController(document.getElementById("main"), media);
+        if (window.isDev) {
+            window.G = Game;
+        }
     }
     catch (e) {
         console.warn("Fail to load game : " + e.message, e.stack);
@@ -83,9 +84,9 @@ GameController.prototype = {
         this.peopleList.id = People.LST_ID;
         this.holder.appendChild(this.peopleList);
 
-        this.buildingsList = wrap();
-        this.buildingsList.id = Building.LST_ID;
-        this.holder.appendChild(this.buildingsList);
+        this.visualPane = wrap();
+        this.visualPane.id = "visualPane";
+        this.holder.appendChild(this.visualPane);
 
         this.eventsList = wrap();
         this.eventsList.id = Event.LST_ID;
@@ -95,6 +96,7 @@ GameController.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
+        GraphicManager.start(this.visualPane, this.media);
         LogManager.start(this.logsList);
         TimerManager.start();
 
@@ -170,7 +172,7 @@ GameController.prototype = {
                 name: "Early access",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
                 "If you want to report a bug or anything to improve the game, go to " +
-                "<a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/>" +
+                "<a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/><br/>" +
                 "Thanks for playing !"
             }, function () {
                 this.flags.ready = true;
@@ -355,8 +357,8 @@ GameController.prototype = {
     },
     /**
      * Welcome people to the camp
-     * @param {Number} amount - Number of person that rejoin
-     * @param {Boolean} first - First person
+     * @param {Number} [amount=1] - Number of person that rejoin
+     * @param {Boolean} [first=false] - First person
      */
     welcome: function (amount, first) {
         peopleFactory(amount).then(function (persons) {
@@ -403,7 +405,6 @@ GameController.prototype = {
         else {
             var bld = new Building(building);
             this.buildings.push(id, bld);
-            this.buildingsList.appendChild(bld.html);
 
             if (isFunction(building.lock)) {
                 this.removeFromInitialActions(building.lock(bld));
