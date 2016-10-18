@@ -1,0 +1,25 @@
+{
+    "tent": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32,
+        "source_image": "src/img/assets/tent.png",
+        "image": "../img/assets.png",
+        "total_width": 32,
+        "total_height": 32,
+        "escaped_image": "../img/assets.png",
+        "offset_x": 0,
+        "offset_y": 0,
+        "px": {
+            "x": "0px",
+            "y": "0px",
+            "offset_x": "0px",
+            "offset_y": "0px",
+            "height": "32px",
+            "width": "32px",
+            "total_height": "32px",
+            "total_width": "32px"
+        }
+    }
+}
