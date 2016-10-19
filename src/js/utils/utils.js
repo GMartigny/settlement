@@ -93,7 +93,7 @@ function pluralize (string, number) {
 
 /**
  * Start every sentence with a capital letter
- * @param {String} string
+ * @param {String} string - Origin string
  * @returns {String}
  */
 function capitalize (string) {
@@ -288,6 +288,17 @@ function isUndefined (value) {
  */
 function sanitize (str) {
     return str.toLowerCase().replace(/(\W)+/g, "_");
+}
+
+/**
+ *
+ * @param str
+ * @return {string}
+ */
+function camelize (str) {
+    return str.toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
+        return capture && capture[0].toUpperCase() + capture.slice(1);
+    });
 }
 
 /**

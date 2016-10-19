@@ -1,35 +1,47 @@
 "use strict";
 
-console.groupCollapsed("Loading");
-loadAsync([
-    "dist/img/icons.png",
-    "dist/img/assets.png",
-    "dist/js/assets.json"
-], function (percent, file) {
-    console.log(file + " : " + percent + "%");
-}).then(function (media) {
-    console.groupEnd();
-    try {
-        var Game = new GameController(document.getElementById("main"), media);
-        if (window.isDev) {
-            window.G = Game;
+/**
+ * Loader
+ */
+(function () {
+    console.groupCollapsed("Loading");
+
+    var _assets = "dist/img/assets.png";
+    var _assetsData = "dist/js/assets.json";
+
+    loadAsync([
+        "dist/img/icons.png",
+        _assets,
+        _assetsData
+    ], function (percent, file) {
+        console.log(file + " : " + percent + "%");
+    }).then(function (media) {
+        console.groupEnd();
+        try {
+            var Game = new GameController(document.getElementById("main"), {
+                images: media[sanitize(_assets)],
+                data: media[sanitize(_assetsData)]
+            });
+            if (window.isDev) {
+                window.G = Game;
+            }
         }
-    }
-    catch (e) {
-        console.warn("Fail to load game : " + e.message, e.stack);
-    }
-});
+        catch (e) {
+            console.warn("Fail to load game : " + e.message, e.stack);
+        }
+    });
+})();
 
 /**
  * Main game controller
  * This is where all game logic is decided
  * @param {HTMLElement} holder - HTML element holding the game
- * @param {Object} media - All graphical resources
+ * @param {Object} assets - All graphical resources
  * @constructor
  */
-function GameController (holder, media) {
+function GameController (holder, assets) {
     this.holder = holder;
-    this.media = media;
+    this.assets = assets;
 
     this.resources = new Collection();
     this.buildings = new Collection();
@@ -61,6 +73,7 @@ GameController.prototype = {
      */
     _init: function () {
         console.log("Starting " + window.VERSION);
+        console.log("Stated in " + round(performance.now()) + "ms");
 
         var game = this;
         deepBrowse(DataManager.data, function (item) {
@@ -96,7 +109,7 @@ GameController.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
-        GraphicManager.start(this.visualPane, this.media);
+        GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
         LogManager.start(this.logsList);
         TimerManager.start();
 
@@ -256,13 +269,13 @@ GameController.prototype = {
         if (elapse > 0) {
             if (this.flags.settled) {
                 this.flags.survived += elapse * GameController.tickLength;
-                // We use some resources
+                // People consume resources to survive
                 // TODO : need refacto
-                var needs = DataManager.data.people.need();
-                needs.forEach(function (need) {
+                DataManager.data.people.need().forEach(function (need) {
                     var waterId = DataManager.data.resources.gatherable.common.water.id;
                     var state = need[1].id === waterId ? "thirsty" : "starving";
                     this.consume(need[0] * this.people.length, need[1], function (number) {
+                        // update people if lacking
                         this.people.forEach(function (person, index, list) {
                             person[state] = number / list.length;
                         });

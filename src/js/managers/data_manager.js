@@ -339,7 +339,6 @@ var DataManager = (function () {
                     asset: {
                         image: "tent",
                         position: {
-                            color: "#909090",
                             x: "60-100",
                             y: "25-75"
                         }
@@ -842,6 +841,7 @@ var DataManager = (function () {
                     if (possible.length) {
                         var pick = randomize(possible);
                         if (isFunction(pick.consume)) {
+                            // consume craftable requirement
                             MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
                         }
                         return [
