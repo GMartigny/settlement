@@ -1,2 +1,2492 @@
-window.VERSION='v0.1.5';!function(){"use strict";function a(a,b){this.holder=a,this.media=b,this.resources=new k,this.buildings=new k,this.events=new k,this.collects=[],this.people=[],this.initialActions=new k,this.knownLocations=new k,this.flags={ready:!1,paused:!1,settled:!1,survived:0,popup:!1,productivity:1},this.lastTick=performance.now(),this._init(),this.refresh()}function b(a,b){this.image=a,this.position={x:N.apply(null,(b.x+"").split("-")),y:N.apply(null,(b.y+"").split("-"))}}function c(){if(c.instance)throw new ReferenceError("An instance already exists.");this.observers={}}function d(a,b){this.locked=!0,this.running=!1,this.owner=a,this.repeated=0,this.data={},this.location=!1,this.html=this.toHTML(b),this._init(b)}function e(a){this.number=0,this._init(a),this.add(1)}function f(a){this.data={},this.timer=null,this.html=this.toHTML(),this._init(a)}function g(a){if(a=a||1,window.isDev){var b="Bot-"+N().toString(36).substr(-m(N(2,22)),3).toUpperCase();return Promise.resolve(new Array(a).fill(new h(b)))}return h.randomName(a).then(function(a){var b=[];return a.results.forEach(function(a){var c=u(a.name.first+""),d=new h(c,a.gender);b.push(d)}),b})}function h(a,b){this.name=a,this.gender=b||"other",this.setPronouns(),this.actions=new k,this.busy=!1,this.energy=100,this.starving=!1,this.life=100,this.thirsty=!1,this.stats={actionsDone:{},idle:0,age:0},this.perk=null,this.plan=null,this.project=null,this.html=this.toHTML()}function i(a,b){this.data={},this.html=this.toHTML(a),this._init(a),this.count=0,b&&this.update(+b),this.warnLack=!1}function j(a,b){var c=document.createElement("canvas");return c.width=a,c.height=b,{cnv:c,ctx:c.getContext("2d")}}function k(){this.items={},this.length=0}function l(a){return a<<0}function m(a){return l(a+.5)}function n(a,b,c){if(!B(b))throw new TypeError("Popup need a confirm function");var d=document.getElementById("main");c="popup"+(c?" "+c:"");var e=p(c);e.appendChild(p("title",u(a.name))),e.appendChild(p("description",a.desc));var f={remove:function(){e.remove(),d.classList.remove("backdrop")}},g=p("yes clickable",a.yes||"Ok");if(g.addEventListener("click",function(){b(),f.remove()}),e.appendChild(g),a.no){var h=p("no clickable",a.no);h.addEventListener("click",f.remove),e.appendChild(h)}return d.appendChild(e),d.classList.add("backdrop"),e.style.top=l((d.offsetHeight-e.offsetHeight)/2)+"px",f}function o(a,b){function c(a,b){var c=a+10;c+f>e&&(c=e-f),d.style.left=c+"px",d.style.top=b+10+"px"}var d=null,e=document.body.offsetWidth,f=305;a.classList.add("tooltiped"),a.addEventListener("mouseover",function(){document.body.appendChild(d)}),a.addEventListener("mouenter",function(){document.body.appendChild(d)}),a.addEventListener("mousemove",function(a){c(a.clientX,a.clientY)}),a.addEventListener("mouseout",function(){d.remove()});var g={},h={update:function(a){if(d=p("tooltip"),d.appendChild(p("title",u(a.name))),a.desc&&d.appendChild(p("description",a.desc)),a.time&&d.appendChild(p("time",q(a.time))),a.consume){var b,c=p("consumption");a.consume.forEach(function(a){b=p("resource not-enough",a[0]+" "+a[1].name),g[a[1].id]=b,c.appendChild(b)}),d.appendChild(c)}return h},refresh:function(a,c){if(b.consume){var d;c.forEach(function(b){d=b[1].id,a.has(d)&&a.get(d).has(b[0])?g[d].classList.remove("not-enough"):g[d].classList.add("not-enough")})}return h},remove:function(){return d.remove(),h}};return h.update(b),h}function p(a,b){var c=document.createElement("div");return a&&c.classList.add.apply(c.classList,a.split(" ")),b&&(c.innerHTML=b),c}function q(a){var b=["year","month","day","hour","minute"],c=[],d=I.time;return b.forEach(function(b){if(a>=d[b]){var e=l(a/d[b]);a%=d[b],c.push(e+" "+t(b,e))}}),s(c)}function r(a){var b=[];return a.forEach(function(a){var c=t(a[1].name,a[0]);a[1].icon&&(c+=" "+p("icon icon-"+a[1].icon).outerHTML),b.push(a[0]+" "+c)}),s(b)}function s(a,b){return b=b||"and",a.length>1?(a[a.length-2]+=" "+b+" "+a.pop(),a.join(", ")):a.length?a[0]:""}function t(a,b){return a+(b>1?"s":"")}function u(a){return a?(a=a.replace(/([\.!\?]) ([a-z])/g,function(a,b,c){return b+" "+c.toUpperCase()}),a[0].toUpperCase()+a.slice(1)):""}function v(a,b){if(!a.values().length)throw new TypeError("Can't pick from empty list");var c={},d=[],e=0;y(a,function(a){a.dropRate&&(e+=a.dropRate,d.push(e),c[e]=a)});var f=m(N(e));d.sort();for(var g=0,h=d.length;g<h;++g)if(d[g]>f){f=d[g];break}return b?[m(N.apply(null,(b+"").split("-"))),c[f]]:c[f]}function w(a,b){if(!b)throw new TypeError("Need an amount");for(var c=[],d=m(N.apply(null,(b+"").split("-"))),e=0;e+1<=d;){var f=m(N(1,d-e));c.push([f,v(a)]),e+=f}return c}function x(a){window.isDev&&console.log(a)}function y(a,b){for(var c in a)a.hasOwnProperty(c)&&(a[c].name?b(a[c],a):y(a[c],b));return a}function z(a){return Object.assign({},a)}function A(a,b,c){c=c||Object.keys(b);var d=z(b);return c.forEach(function(b){d[b]&&B(d[b])&&(d[b]=d[b](a))}),d}function B(a){return a instanceof Function}function C(a){return Array.isArray(a)}function D(a){return void 0===a}function E(a){return a.toLowerCase().replace(/(\W)+/g,"_")}function F(a){var b="aeiou".split("");return(b.includes(a[0])?"an":"a")+" "+a}function G(a){return a.reduce(function(a,b){var c=a.find(function(a){return a[1].id===b[1].id});return c?c[0]+=b[0]:b[0]>0&&a.push(b),a},[])}function H(a,b){var c={},d=0,e=a.length;return Promise.all(a.map(function(a){var f;switch(a.substr(a.lastIndexOf(".")+1)){case"png":case"jpg":case"gif":f=new Promise(function(b,c){var d=new Image;d.onload=b.bind(null,d),d.onerror=c,d.src=a});break;case"json":f=new Promise(function(b,c){var d=new XMLHttpRequest;d.open("get",a),d.responseType="json",d.onload=function(){b(this.response)},d.onerror=c,d.send()});break;default:f=Promise.resolve()}return f.then(function(f){c[E(a)]=f,b(++d/e*100,a)}).catch(function(){console.log("Can't load "+a)})})).then(function(){return c})}console.groupCollapsed("Loading"),H(["dist/img/icons.png","dist/img/assets.png","dist/js/assets.json"],function(a,b){console.log(b+" : "+a+"%")}).then(function(b){console.groupEnd();try{var c=new a(document.getElementById("main"),b);window.isDev&&(window.G=c)}catch(a){console.warn("Fail to load game : "+a.message,a.stack)}}),a.tickLength=2e3,a.prototype={_init:function(){console.log("Starting "+window.VERSION);var a=this;y(I.data,function(b){b.id=O();for(var c in b)b.hasOwnProperty(c)&&B(b[c])&&(b[c]=b[c].bind(a))}),this.initialActions.push(I.data.actions.wakeUp),K.attach(K.KEYS.SPACE,this.togglePause.bind(this)),this.resourcesList=p(),this.resourcesList.id=i.LST_ID,this.holder.appendChild(this.resourcesList),this.peopleList=p(),this.peopleList.id=h.LST_ID,this.holder.appendChild(this.peopleList),this.visualPane=p(),this.visualPane.id="visualPane",this.holder.appendChild(this.visualPane),this.eventsList=p(),this.eventsList.id=f.LST_ID,this.holder.appendChild(this.eventsList),this.logsList=p(),this.logsList.id="logs",this.holder.appendChild(this.logsList),J.start(this.visualPane,this.media),L.start(this.logsList),M.start(),M.timeout(this.welcome.bind(this,1,!0),500);var b=c.getInstance();b.observe(c.MSG_TYPES.GIVE,function(b){C(b)&&b.forEach(function(b){a.earn.apply(a,b)})}),b.observe(c.MSG_TYPES.COLLECT,function(b){C(b)&&G(a.collects.concat(b))}),b.observe(c.MSG_TYPES.USE,function(b){C(b)&&G(b).forEach(function(b){a.consume.apply(a,b)})}),b.observe(c.MSG_TYPES.BUILD,function(b){b&&a.build(b)}),b.observe(c.MSG_TYPES.LOOSE_SOMEONE,function(b){a.people.out(b),a.people.length<=0&&(c.getInstance().notify(c.MSG_TYPES.LOOSE,a.getSurvivalDuration()),a.flags.paused=!0)}),b.observe(c.MSG_TYPES.EVENT_START,function(b){a.events.push(b.data.id,b)}),b.observe(c.MSG_TYPES.EVENT_END,function(b){a.events.pop(b.data.id)}),b.observe(c.MSG_TYPES.LOCK,function(b){a.removeFromInitialActions(b)}),b.observe(c.MSG_TYPES.UNLOCK,function(b){a.addToInitialActions(b)}),b.observe(c.MSG_TYPES.WIN,function(){this.flags.paused=!0}),window.isDev||n({name:"Early access",desc:"You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>If you want to report a bug or anything to improve the game, go to <a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/><br/>Thanks for playing !"},function(){this.flags.ready=!0}.bind(this))},addToInitialActions:function(a){C(a)||(a=[a]),a.forEach(function(a){this.initialActions.push(a)}.bind(this)),this.people.forEach(function(b){b.addAction(a)})},removeFromInitialActions:function(a){C(a)||(a=[a]),a.forEach(function(a){this.initialActions.pop(a.id)}.bind(this)),this.people.forEach(function(b){b.lockAction(a)})},getSettledTime:function(){return this.flags.settled?this.flags.survived/a.tickLength:0},getSurvivalDuration:function(){return q(this.getSettledTime())},togglePause:function(){this.flags.paused=!this.flags.paused,this.holder.classList.toggle("paused",this.flags.paused),this.flags.paused?M.stopAll():M.restartAll()},refresh:function(){var b=performance.now(),c=l((b-this.lastTick)/a.tickLength);if(this.lastTick+=c*a.tickLength,this.flags.paused&&(c=0),setTimeout(this.refresh.bind(this),a.tickLength/3),c>0){if(this.flags.settled){this.flags.survived+=c*a.tickLength;var d=I.data.people.need();if(d.forEach(function(a){var b=I.data.resources.gatherable.common.water.id,c=a[1].id===b?"thirsty":"starving";this.consume(a[0]*this.people.length,a[1],function(a){this.people.forEach(function(b,d,e){b[c]=a/e.length})})}.bind(this)),this.canSomeoneArrive()&&this.welcome(),!this.flags.popup&&N()<I.data.events.dropRate){var e=this.getRandomEvent();if(e){var g=new f(e);this.flags.popup=g.start(function(a){a.data.time&&this.eventsList.appendChild(a.html),this.flags.popup=!1}.bind(this))}}}this.resources.forEach(function(a,b,c){a.refresh(c)}),this.people.forEach(function(a){a.refresh(this.resources,c,this.flags)}.bind(this))}},hasEnough:function(a,b){return this.resources.get(a).has(b)},consume:function(a,b,d){if(a){var e=this.resources.get(b.id);if(e&&e.has(a))e.update(-a),e.warnLack=!1;else if(B(d)){var f=a-e.get();e.set(0),d.call(this,f,b),e.warnLack||(e.warnLack=!0,c.getInstance().notify(c.MSG_TYPES.RUNS_OUT,b.name))}}},earn:function(a,b){var c=b.id;if(this.resources.has(c))this.resources.get(c).update(a);else{var d=new i(b,a);this.resources.push(c,d),this.resourcesList.appendChild(d.html)}},welcome:function(a,b){g(a).then(function(a){a.forEach(function(a){a.addAction(this.initialActions.values()),this.people.push(a),this.peopleList.appendChild(a.html),b?(a.life=0,a.energy=0,a.updateLife(0),a.updateEnergy(0)):(a.html.offsetHeight,c.getInstance().notify(c.MSG_TYPES.ARRIVAL,a.name),2===this.people.length&&M.timeout(function(){c.getInstance().notify(c.MSG_TYPES.LOGS.FLAVOR,a.name+" say that there's other desert-walkers ready to join you if there's room for them.")}.bind(this),2e3)),a.html.classList.add("arrived")}.bind(this))}.bind(this))},build:function(a){var b=a.id;if(this.buildings.has(b))this.buildings.get(b).add(1);else{var c=new e(a);this.buildings.push(b,c),B(a.lock)&&this.removeFromInitialActions(a.lock(c)),B(a.unlock)&&this.addToInitialActions(a.unlock(c))}},unlockedCraftables:function(){var a=[];return y(I.data.resources.craftable,function(b){(!b.condition||B(b.condition)&&b.condition())&&a.push(b)}),a},possibleCraftables:function(){var a=this.resources.items;return this.unlockedCraftables().filter(function(b){var c=!0;return B(b.consume)&&b.consume(b).forEach(function(b){c=c&&a[b[1].id]&&a[b[1].id].has(b[0])}),c})},possibleBuildings:function(){var a=[],b=this.buildings;return y(I.data.buildings,function(c){(!c.unique||c.unique&&!b.has(c.id))&&B(c.condition)&&c.condition()&&a.push(c)}),a},canSomeoneArrive:function(){return this.hasEnough(I.data.resources.room.id,this.people.length+1)&&N()<I.data.people.dropRate&&this.getSettledTime()/I.time.day>2},getRandomEvent:function(){var a=[],b=this.getSettledTime()/I.time.week;return b>1&&(a.push.apply(a,I.data.events.easy.values()),b>2&&(a.push.apply(a,I.data.events.medium.values()),b>5&&a.push.apply(a,I.data.events.hard.values()))),a=a.filter(function(a){return!this.events.has(a.id)&&(!a.condition||B(a.condition)&&a.condition(a))}.bind(this)),!!a.length&&v(a)}},window.isDev&&(a.prototype.debug={oneOfEach:function(){return y(I.data.resources,function(a){this.earn(1,a)}.bind(this)),y(I.data.buildings,function(a){this.build(a)}.bind(this)),this}});var I=function(){var a={minute:1/60,hour:1,day:24,week:168,month:720,year:8640},b=["north","south","east","west","north-east","north-west","south-east","south-west"],d={resources:{gatherable:{common:{water:{name:"water",desc:"Water is definitely important to survive in this harsh environment.",icon:"water-bottle",dropRate:140,order:10},food:{name:"food",desc:"Everyone need food to keep his strength.",icon:"foodcan",dropRate:140,order:20},rock:{name:"rock",desc:'"There\'s rocks everywhere ! Why would you bring this back ?"',icon:"rock",dropRate:100,order:30},scrap:{name:"scrap metal",desc:"An old rusty piece of metal.",icon:"scrap-metal",dropRate:100,order:40}},uncommon:{plastic:{name:"plastic",desc:"A sturdy piece of plastic.",icon:"",dropRate:70,order:50},sand:{name:"sand",desc:"It's pure fine sand.",icon:"sand-pile",dropRate:30,order:55},oil:{name:"fuel",desc:"About a liter of gas-oil.",icon:"jerrycan",dropRate:20,order:60}},rare:{medication:{name:"medication",desc:"An unlabeled medication, hope it's still good.",icon:"medication",dropRate:5,order:70},electronic:{name:"electronic",desc:"Basic micro-electronics components.",icon:"electronic-parts",dropRate:10,order:75}},special:{ruins:{name:"location",desc:"Directions to a point of interest we found earlier.",icon:"map",order:80,dropRate:.6},quartz:{name:"quartz cristal",desc:"",icon:"",dropRate:.1,order:77}}},craftable:{basic:{stone:{name:"smooth stone",desc:"A well polish and round stone.",icon:"stone",consume:function(){return[[3,d.resources.gatherable.common.rock]]},dropRate:100,order:90},glass:{name:"glass pane",desc:"",icon:"glass-pane",condition:function(){return this.buildings.has(d.buildings.small.furnace.id)},consume:function(){return[[4,d.resources.gatherable.uncommon.sand]]},dropRate:60,order:100},component:{name:"component",desc:"Some mechanical parts for others craftables.",icon:"pipe-large",consume:function(){return[[2,d.resources.gatherable.common.scrap],[2,d.resources.gatherable.uncommon.plastic]]},dropRate:120,order:110},tool:{name:"tool",desc:"The base of any tinkerer.",icon:"tool",consume:function(){return[[1,d.resources.craftable.basic.component],[2,d.resources.gatherable.common.rock]]},dropRate:90,order:111}},complex:{brick:{name:"brick",desc:"Bricks will give wall to larger constructions.",icon:"brick",condition:function(){return this.buildings.has(d.buildings.small.well.id)},consume:function(){return[[1,d.resources.craftable.basic.stone],[1,d.resources.craftable.basic.tool]]},dropRate:80,order:112},circuit:{name:"circuit",desc:"That's a little rough, but it's actually a functioning circuit board.",icon:"circuit-board",consume:function(){return[[1,d.resources.gatherable.common.scrap],[2,d.resources.craftable.basic.component],[3,d.resources.gatherable.rare.electronic]]},dropRate:60,order:114},metalPipe:{name:"metal pipe",desc:"Simple pipes that you forge from junk metal.",icon:"pipe-small",condition:function(){return this.buildings.has(d.buildings.medium.forge.id)},consume:function(){return[[4,d.resources.gatherable.common.scrap],[1,d.resources.craftable.basic.tool]]},dropRate:80,order:115},furniture:{name:"furniture",desc:"",icon:"",consume:function(){return[[2,d.resources.craftable.basic.glass],[2,d.resources.craftable.complex.metalPipe]]},dropRate:40,order:116},jewelry:{name:"jewelry",desc:"",icon:"",condition:function(){return this.buildings.has(d.buildings.small.furnace.id)},consume:function(){return[[4,d.resources.gatherable.rare.electronic],[3,d.resources.gatherable.special.quartz]]},dropRate:40,order:117}},advanced:{engine:{name:"engine",desc:"Amazing what you manage to do with all those scraps !",icon:"engine",condition:function(){return this.buildings.has(d.buildings.big.workshop.id)},consume:function(){return[[10,d.resources.gatherable.uncommon.oil],[5,d.resources.craftable.basic.tool],[5,d.resources.craftable.complex.metalPipe]]},dropRate:30,order:120},computer:{name:"computer",desc:"Well, Internet is down since 2136 but it can still be useful.",icon:"computer",condition:function(){return this.buildings.has(d.buildings.big.workshop.id)},consume:function(){return[[10,d.resources.craftable.basic.component],[7,d.resources.craftable.basic.tool],[3,d.resources.craftable.complex.circuit]]},dropRate:20,order:130}}},room:{name:"room",desc:"A place for someone in the camp.",icon:"person",order:0}},people:{name:"people",desc:"The workforce and the bane of you camp.",need:function(){return[[1.5/a.day,d.resources.gatherable.common.food],[1/a.day,d.resources.gatherable.common.water]]},dropRate:.005},buildings:{small:{tent:{name:"tent",desc:"Allow someone to rejoin your colony.",time:4,consume:function(){return[[7,d.resources.gatherable.common.scrap],[5,d.resources.gatherable.common.rock]]},give:function(){return[[1,d.resources.room]]},log:"That's small and ugly, but someone can sleep safely in here.",dropRate:100,asset:{image:"tent",position:{color:"#909090",x:"60-100",y:"25-75"}}},furnace:{name:"furnace",desc:"",time:7,consume:function(){return[[8,d.resources.gatherable.common.rock],[3,d.resources.gatherable.uncommon.oil]]},log:"A small furnace can smelt small things like sand or little electronic.",unique:!0,dropRate:90},plot:{name:"farm plot",desc:"A little arranged plot of earth to grow some food.",time:12,consume:function(){return[[5,d.resources.gatherable.common.food],[10,d.resources.gatherable.uncommon.sand]]},unlock:function(){return[d.actions.harvest]},log:"More crops required more care but that's going to help us keeping a constant stock of food.",dropRate:80},pharmacy:{name:"pharmacy",desc:"",time:6,consume:function(){return[[5,d.resources.gatherable.rare.medication],[4,d.resources.craftable.basic.component]]},log:"Sorting our medications should prevent further mistakes and bad reaction.",unique:!0,dropRate:70},well:{name:"well",desc:"Just a large hole into the ground.",time:16,energy:80,condition:function(){return!this.buildings.has(d.buildings.big.pump.id)},consume:function(){return[[10,d.resources.craftable.basic.stone],[3,d.resources.craftable.basic.tool]]},give:function(){return[[5,d.resources.gatherable.common.water]]},unlock:function(){return[d.actions.drawFrom.well]},lock:function(){return[d.actions.drawFrom.river]},log:"We find out that it's possible to draw some water from the ground and use it to make bricks.",unique:!0,dropRate:80}},medium:{forge:{name:"forge",desc:"A good upgrade to our little furnace.",time:10,condition:function(){this.buildings.has(d.buildings.small.furnace.id)},consume:function(){return[[5,d.resources.gatherable.uncommon.oil],[10,d.resources.craftable.basic.stone],[2,d.resources.craftable.basic.tool]]},unlock:function(){return c.getInstance().notify(c.MSG_TYPES.UNBUILD,d.buildings.small.well.furnace),[]},log:"We can now work metal better and make more complex part.",unique:!0,dropRate:60},house:{name:"house",desc:"",time:13,condition:function(){this.buildings.has(d.buildings.small.tent.id)},consume:function(){return[[7,d.resources.gatherable.common.rock],[1,d.resources.craftable.complex.furniture]]},give:function(){return[m(N(2,3)),d.resources.room]},log:"Better than a simple tent, it provide @give.",dropRate:50}},big:{barrack:{name:"barrack",desc:"Some place to sleep for a few people.",time:2*a.day,energy:110,condition:function(){return this.buildings.has(d.buildings.medium.house.id)&&!1},consume:function(){return[[5,d.resources.gatherable.uncommon.sand],[8,d.resources.craftable.complex.brick],[1,d.resources.craftable.complex.furniture]]},give:function(){return[m(N(3,4)),d.resources.room]},log:"That's a lots of space to welcome wanderers.",dropRate:0},workshop:{name:"workshop",desc:"Organizing your workforce make them more efficient at crafting.",time:3*a.day,energy:90,unique:!0,condition:function(){return this.buildings.has(d.buildings.small.furnace.id)},consume:function(){return[[6,d.resources.gatherable.common.scrap],[5,d.resources.craftable.basic.glass],[10,d.resources.craftable.basic.tool],[15,d.resources.craftable.complex.brick]]},give:function(){return[]},unlock:function(){return[d.actions.project]},log:"Good organisation allow you to prepare project and do much more complex crafting.",dropRate:30},radio:{name:"radio-station",desc:"",time:6,energy:60,unique:!0,condition:function(){return this.buildings.has(d.buildings.big.workshop.id)},consume:function(){return[[4,d.resources.craftable.complex.circuit],[1,d.resources.craftable.advanced.computer]]},log:'"Message received. We thought no one survive the crash. Unfortunately we can\'t risk being located, come to sent position."',dropRate:20},pump:{name:"water pump",desc:"A buried contraption that collect water from the earth moisture.",time:3*a.day,energy:120,unique:!0,condition:function(){return this.buildings.has(d.buildings.small.well.id)},consume:function(){return[[20,d.resources.craftable.basic.stone],[5,d.resources.craftable.complex.metalPipe],[1,d.resources.craftable.advanced.engine]]},unlock:function(){return c.getInstance().notify(c.MSG_TYPES.UNBUILD,d.buildings.small.well.id),[d.actions.drawFrom.well]},collect:function(){return[[2/a.day,d.resources.gatherable.common.water]]},log:"A big upgrade to your well ! Now we have a continuous flow of water soming.",dropRate:10},trading:{name:"trading post",desc:"",time:a.day,energy:70,unique:!0,condition:function(){return this.buildings.has(d.buildings.big.radio.id)},consume:function(){return[[2,d.resources.craftable.basic.glass],[10,d.resources.craftable.complex.brick],[2,d.resources.craftable.complex.furniture]]},unlock:function(){return[d.actions.exchange]},log:"Arranging some space allow us to trade with merchant caravan passing by.",dropRate:10},module:{name:"module",desc:"With that, we can finally go seek for help.",time:a.week,energy:100,unique:!0,condition:function(){return this.buildings.has(d.buildings.big.radio.id)},consume:function(){return[[15,d.resources.gatherable.uncommon.oil],[3,d.resources.craftable.complex.furniture],[1,d.resources.craftable.advanced.computer],[2,d.resources.craftable.advanced.engine]]},unlock:function(){return[d.actions.launch]},log:"What a journey, but there we are. We build so many things and explore lots of places.<br/>Now we can end this all !",dropRate:5}},special:{forum:{name:"forum",desc:"The center and start of our settlement.",unlock:function(){return[d.actions.sleep]},give:function(){return[[2,d.resources.room]]},unique:!0}}},actions:{wakeUp:{name:"wake up",energy:0,unlock:function(a){return a.owner.updateEnergy(100),a.owner.updateLife(100),[d.actions.look]},log:"@people.name gets up painfully.",order:0,unique:!0},look:{name:"look around",desc:"What am I doing here ?",time:2,energy:0,give:function(){c.MSG_TYPES.LOGS.FLAVOR;return M.timeout(function(){c.getInstance().notify(c.MSG_TYPES.LOGS.FLAVOR,"We need a shelter.")},1e3),[,[10,d.resources.gatherable.common.water],[8,d.resources.gatherable.common.food],[2,d.resources.craftable.basic.component]]},unlock:function(){return[d.actions.settle]},log:"After some thinking, @people.name remembers the attack. @people.nominative grabs @give laying around.",order:0,unique:!0},settle:{name:"settle here",desc:"Ok, let's settle right there !",time:3,energy:0,unlock:function(){return this.flags.settled=!0,[d.actions.gather]},build:function(){return d.buildings.special.forum},log:"@people.name installs @build inside a ship-wreck with @give to sleep in.",order:0,unique:!0},gather:{name:"gather resources",desc:"Go out to bring back resources, that's the best you can do.",time:3,isOut:1,unlock:function(){return[d.actions.roam]},give:function(){return w(d.resources.gatherable,"3-6")},log:"@people.name comes back with @give.",order:0},roam:{name:"roam",desc:"Explore the surroundings hoping to find something interesting.",time:7,isOut:1,consume:function(){return[[2,d.resources.gatherable.common.water]]},condition:function(a){return!a.owner.actions.has(d.actions.scour.id)},unlock:function(a){var b=[d.actions.explore,d.actions.craft];return a.repeated>10&&b.push(d.actions.scour),b},lock:function(a){return a.repeated>10?[a.data]:[]},give:function(a,b){var c=w(d.resources.gatherable,"1-3");if(N()<d.resources.gatherable.special.ruins.dropRate){c.push([1,d.resources.gatherable.special.ruins]);var e=v(Object.assign({},d.locations.near));this.knownLocations.push(e),b.location=F(e.name)}return c},log:function(a){var c;return c=a.location?"Heading @direction, @people.name spots @location, so @people.nominative brings back @give.":"Despite nothing special found towards @direction, @people.name brings back @give.",a.direction=b.random(),c},order:10},scour:{name:"scour",desc:"Knowledge of the area allows for better findings.",time:6,isOut:1,consume:function(){return[[2,d.resources.gatherable.common.water]]},give:function(a,b){var c=v(d.resources.gatherable,"2-4"),e=d.resources.gatherable.special.ruins.dropRate;if(N()<e+.5*(1-e)){c.push([1,d.resources.gatherable.special.ruins]);var f=v(d.locations);this.knownLocations.push(f),b.location=F(f.name)}return c},log:function(a){var b;return b=a.location?"@people.name knew @people.nominative could find @location towards @direction, so @people.nominative comes back with @give.":"No special location towards @direction, but @people.name find @give."},order:10},explore:{name:"explore a ruin",desc:"Remember that location we saw the other day ? Let's see what we can find.",time:2*a.day,energy:110,isOut:1,consume:function(){return[[4,d.resources.gatherable.common.water],[1,d.resources.gatherable.common.food],[1,d.resources.gatherable.special.ruins]]},give:function(a){var b=this.knownLocations.random();return a.location=b,w(b.give(),"5-9")},log:function(a,b){var c=b.location.log||"";return B(c)?c(a,b):c},order:20},craft:{name:"craft something",desc:"Use some resources to tinker something useful.",time:function(){return this.buildings.has(d.buildings.big.workshop.id)?4:5},unlock:function(){return[d.actions.plan]},give:function(){var a=this.possibleCraftables();if(a.length){var b=v(a);return B(b.consume)&&c.getInstance().notify(c.MSG_TYPES.USE,b.consume(this)),[[1,b]]}return[]},log:function(a){return a.give?"@people.name succeeds to craft @give.":(a.logType=c.MSG_TYPES.LOGS.WARN,"Nothing could be made with what you have right now.")},order:30},plan:{name:"plan a building",desc:"Prepare blueprint and space for a new building.",time:8,energy:20,consume:function(){return[[1,d.resources.gatherable.common.water],[1,d.resources.gatherable.common.food],[1,d.resources.craftable.basic.tool]]},give:function(a){return a.owner.planBuilding(v(this.possibleBuildings())),[]},unlock:function(){return[d.actions.build]},log:"Everything's ready to build @plan",order:40},build:{name:function(a){return"build "+F(a.owner.plan.name)},desc:function(a){return a.owner.plan.desc},time:function(a){return a.owner.plan.time},energy:function(a){return a.owner.plan.energy},consume:function(a){var b=[[2,d.resources.gatherable.common.water],[1,d.resources.gatherable.common.food]];return B(a.owner.plan.consume)&&b.push.apply(b,a.owner.plan.consume(a)),b},lock:function(a){var b=[a.data];return B(a.owner.plan.lock)&&b.push.apply(b,a.owner.plan.lock(a)),b},unlock:function(a){var b=[];return B(a.owner.plan.unlock)&&b.push.apply(b,a.owner.plan.unlock(a)),b},build:function(a){return a.owner.plan},log:function(a,b){var c=b.owner.plan.log;return B(c)?c(a,b):c},order:50},drawFrom:{river:{name:"draw water",desc:"Get some water from the river.",time:8,energy:50,isOut:1,condition:function(a){return!a.owner.actions.has(d.actions.drawFrom.well.id)},give:function(){return[[m(N(2,6)),d.resources.gatherable.common.water]]},log:"Coming back from the river, @people.name brings back @give.",order:60},well:{name:"draw water",desc:"Get some water from our well.",time:2,energy:15,give:function(){var a=0;return this.buildings.has(d.buildings.small.well.id)?a=N(1,3):this.buildings.has(d.buildings.big.pump.id)&&(a=N(5,7)),[[m(a),d.resources.gatherable.common.water]]},log:"Using our well, @people.name get @give.",order:60}},harvest:{name:"harvest crops",desc:"It's not the biggest vegetables, but it'll fill our stomachs.",time:function(){var a=this.buildings.get(d.buildings.small.plot.id).number;return 4+a},consume:function(){return[[1,d.resources.gatherable.common.water]]},give:function(){var a=this.buildings.get(d.buildings.small.plot.id).number;return[[m(N(1.5*a,2*a)),d.resources.gatherable.common.food]]},log:"Our crops produce @give.",order:70},sleep:{name:"sleep",desc:"Get some rest to restore energy.",time:9,energy:0,give:function(a){return a.owner.updateEnergy(100),[]},unlock:function(){return[d.actions.heal]},log:"@people.name feels well rested now.",order:5},heal:{name:"heal",desc:'"I really hope those pills are still good."',time:2,energy:1,consume:function(){return[[2,d.resources.gatherable.rare.medication]]},give:function(a,b){var c=99;return!this.buildings.has(d.buildings.small.pharmacy.id)&&N()<.4&&(c=-15,b.wasBad=!0),a.owner.updateLife(c),[]},log:function(a){return a.wasBad?"After feeling not so well, @people.name realise taking these pillstook a hit on his health.":"This time, it actually improve @people's health."},order:6},project:{name:"project",desc:"Prepare in order to craft an object.",time:2,energy:20,give:function(a){return a.owner.prepareProject(v(this.unlockedCraftables())),[]},unlock:function(){return[d.actions.make]}},make:{name:function(a){return"make "+F(a.owner.project.name)},desc:"Now that all is ready, craft what we need.",time:function(){var a=d.actions.craft.time;return B(a)?a():a},consume:function(a){var b=[];return B(a.owner.project.consume)&&b.push.apply(b,a.owner.project.consume(a)),b},lock:function(a){var b=[a.data];return B(a.owner.project.lock)&&b.push.apply(b,a.owner.project.lock(a)),b},unlock:function(a){var b=[];return B(a.owner.project.unlock)&&b.push.apply(b,a.owner.project.unlock(a)),b},log:"@people.name successfully made @give."},exchange:{name:"exchange",desc:"",time:7,energy:20,consume:function(){return[[2,d.resources.craftable.complex.jewelry]]},give:function(){var a=Object.assign({},d.resources.craftable.basic,d.resources.craftable.complex);return delete a.jewelry,w(a,"2-3")}},launch:{name:"launch",desc:"",time:12,energy:30,isOut:1,consume:function(){return[[10,d.resources.gatherable.uncommon.oil]]},give:function(){return c.getInstance().notify(c.MSG_TYPES.WIN),[]}}},locations:{near:{mountain:{name:"mountain",give:function(){return[d.resources.gatherable.common.rock,d.resources.gatherable.common.scrap,d.resources.craftable.basic.component]},log:"That was hard to climb those mountains, but at least @people find @give.",dropRate:90},desert:{name:"desert",give:function(){return[d.resources.gatherable.common.scrap,d.resources.gatherable.uncommon.oil,d.resources.gatherable.uncommon.sand]},log:"",dropRate:100},supermarket:{name:"supermarket",give:function(){return[d.resources.gatherable.common.food,d.resources.gatherable.rare.medication,d.resources.craftable.basic.glass]},log:"",dropRate:80}},far:{river:{name:"river",unlock:function(){return[d.actions.drawFrom.river]},give:function(){return[d.resources.gatherable.common.water,d.resources.gatherable.uncommon.plastic,d.resources.craftable.basic.stone]},log:"",dropRate:40},ruin:{name:"old ruin",give:function(){return[d.resources.gatherable.rare.electronic,d.resources.craftable.basic.component,d.resources.craftable.basic.tool]},log:"",dropRate:60}},epic:{building:{name:"abandoned building",give:function(){return[d.resources.gatherable.rare.medication,d.resources.craftable.basic.glass,d.resources.craftable.complex.circuit]},log:"",dropRate:30}}},events:{dropRate:.01,easy:{sandstorm:{name:"sandstorm",desc:"The wind is blowing hard, impossible to go out for now.",time:20,
-deltaTime:4,effect:function(a){this.flags.cantGoOut=a},dropRate:100,log:"A sandstorm has started and prevent anyone from leaving the camp."}},medium:{},hard:{drought:{name:"drought",desc:"The climate is so hot, we consume more water.",time:3*a.day,timeDelta:10,effect:function(a){this.flags.drought=a},dropRate:6,log:"A harsh drought fall on us, water will be more important than ever."}}},perks:{dropRate:.1,first:{name:"first-one",desc:"The very first one to install the settlement.",actions:function(){return[d.actions.settle.id]},iteration:0},rookie:{name:"rookie",desc:"All group has a rookie, all @people.nominative want is to prove @people.nominative's efficient.",condition:function(){return this.people.length>2},effect:function(a){a.time=.95*(B(a.time)?a.time():a.time)}},explorer:{name:"gadabout",desc:"",actions:function(){return[d.actions.roam.id,d.actions.scour.id,d.actions.explore.id]},iteration:50,effect:function(a){var b=B(a.give)&&a.give();b.push(v(d.resources.gatherable,"1-2"))}},tinkerer:{name:"tinkerer",desc:"",actions:function(){return[d.actions.craft.id,d.actions.build.id,d.actions.make.id]},iteration:50,effect:function(a){}},healer:{name:"doctor",desc:"Knowing enough about medecine make @people.accusative confident to heal others.",actions:function(){return[d.actions.heal.id]},condition:function(){return this.buildings.has(d.buildings.small.pharmacy.id)},iteration:5,effect:function(a){var b=this.people;a.give=function(){var a=null;return b.forEach(function(b){(!a||b.life<a.life)&&(a=b)}),a.updateLife(99),[]}}},harvester:{name:"harvester",desc:"",actions:function(){return[d.actions.gather.id,d.actions.harvest.id,d.actions.drawFrom.river.id,d.actions.drawFrom.well.id]},iteration:70,effect:function(){}},lounger:{name:"lounger",desc:"",actions:function(){return[d.actions.sleep]},condition:function(b){return b.stats.idle/a.week},effect:function(){}},merchant:{name:"merchant",desc:"",action:function(){return[d.actions.exchange]},iteration:10,effect:function(a){a.consume=function(){return[[1,d.resources.craftable.complex.jewelry]]}}}}};return{time:a,data:d}}(),J=function(){var a,d,e=[];return{start:function(f,g){d=g;var h=j(f.offsetWidth,f.offsetHeight);a=h.ctx,h.cnv.classList.add("layer"),f.appendChild(h.cnv);var i=c.getInstance();i.observe(c.MSG_TYPES.BUILD,function(a){a.asset&&e.push(new b(d[a.asset.image],a.asset.position))})},render:function(){a.clear(),e.sort(function(a,b){return a.position.y-b.position.y}),e.forEach(function(b){b.render(a)})}}}();b.prototype={render:function(a){a.drawImage(this.image,this.position.x,this.position.y)}};var K=function(){var a={};return window.addEventListener("keyup",function(b){x(b.keyCode);var c=a[b.keyCode];B(c)&&c()}),{KEYS:{SPACE:32,ENTER:13,ESCAPE:27,UP:38,RIGHT:39,DOWN:40,LEFT:37,CTRL:17,SHIFT:16,BACK:8,ONE:49,TWO:50,THREE:51,FOUR:52,FIVE:53,SIX:54,SEVEN:55,EIGHT:56,NINE:57,ZERO:48},attach:function(b,c){a[b]=c},detach:function(b){a[b]=null}}}(),L=function(){var a={0:"info",1:"warning",2:"flavor",3:"event"},b=null,d={LOG_TYPES:{INFO:0,WARN:1,FLAVOR:2,EVENT:3},maxLog:50,start:function(a){b=a;var e=c.getInstance();e.observe(d.LOG_TYPES.values(),function(a,b){d.log(a,b)}),e.observe(c.MSG_TYPES.ARRIVAL,function(a){d.log(a+" has arrived.",c.MSG_TYPES.LOGS.EVENT)}),e.observe(c.MSG_TYPES.LOOSE_SOMEONE,function(a){var b="We lost "+a.name+".";d.log(b,d.LOG_TYPES.WARN)}),e.observe(c.MSG_TYPES.LOOSE,function(a){var b="We held up for "+a+", but all is lost now.";d.log(b,d.LOG_TYPES.FLAVOR)}),e.observe(c.MSG_TYPES.RUNS_OUT,function(a){var b="We run out of "+a+", we need to do something.";d.log(b,d.LOG_TYPES.WARN)}),e.observe(c.MSG_TYPES.GAIN_PERK,function(a){var b=a.name+' is now known as the "'+u(a.perk.name)+'".';d.log(b,d.LOG_TYPES.EVENT)})},log:function(c,d){if(c.length){d=d||0,b.insertBefore(p("log "+a[d],c),b.firstChild);var e=Array.prototype.slice.call(b.children);e.length>L.maxLog&&e.last().remove()}},personify:function(a,b){return a.replace(/@([\w\.]+)(?=.)/gi,function(a,c){var d="";return c.split(".").forEach(function(a){d=b[a]}),d||""})}};return d}();c.prototype={observe:function(a,b){C(a)||(a=[a]);for(var c=0,d=a.length;c<d;++c)this.observers[a[c]]||(this.observers[a[c]]=[]),this.observers[a[c]].push(b);return this},notify:function(a,b){if(this.observers[a])for(var c=0,d=this.observers[a].length;c<d;++c)this.observers[a][c](b,a);return this}},c.instance=!1,c.getInstance=function(){return c.instance||(c.instance=new c),c.instance},c.MSG_TYPES={LOGS:L.LOG_TYPES,CLICK:10,REFRESH:20,GIVE:30,FIND_LOCATION:31,COLLECT:32,ARRIVAL:33,USE:35,RUNS_OUT:36,LOOSE_RESOURCE:38,LOOSE_SOMEONE:39,UNLOCK:40,GAIN_PERK:45,LOCK:50,BUILD:60,UNBUILD:61,EVENT_START:70,EVENT_CANCEL:71,EVENT_END:72,LOOSE:80,WIN:85};var M=function(){function a(a,b){this.startTime=performance.now(),this.action=a,this.time=b,this.isRunning=!0,this.timeout=this.setTimeout()}a.prototype={setTimeout:function(){return setTimeout(this.action,this.time)},getElapsed:function(){return performance.now()-this.startTime},getRemaining:function(){return this.time-this.getElapsed()},stop:function(){return!!this.isRunning&&(this.isRunning=!1,this.time=this.getRemaining(),clearTimeout(this.timeout),this.time)},restart:function(a){return!this.isRunning&&(this.isRunning=!0,this.startTime=a,this.timeout=this.setTimeout(),this.time)}};var b=null;return{start:function(){b=new k},timeout:function(c,d){var e,f=function(){b.pop(e),c()};return e=b.push(new a(f,d))},stop:function(a){return b.get(a).stop()},stopAll:function(){return b.forEach(function(a){a.stop()}),this},restart:function(a){return b.get(a).restart(performance.now())},restartAll:function(){var a=performance.now();return b.forEach(function(b){b.restart(a)}),this},clear:function(a){return b.pop(a).stop()},clearAll:function(){return b.forEach(function(a){a.clear()}),this},getRemaining:function(a){return getTimers().get(a).getRemaining()}}}();d.prototype={_init:function(a){return this.data=A(this,a,["name","desc","time","energy","consume"]),D(this.data.energy)&&(this.data.energy=5*this.data.time),this.html.textContent=u(this.data.name),this.tooltip?this.tooltip.remove().update(this.data):this.tooltip=o(this.html,this.data),this},toHTML:function(a){var b=p("action clickable disabled animated");return b.addEventListener("click",function(){this.locked||this.running||this.owner.busy||this.click.call(this)}.bind(this)),b.style.order=a.order,b},refresh:function(a,b){return this.locked=this.owner.isTired()&&this.data.energy>0||this.data.isOut&&b.cantGoOut,C(this.data.consume)&&(this.tooltip.refresh(a,this.data.consume),this.locked||this.data.consume.forEach(function(b){var c=b[1].id;a.has(c)&&a.get(c).has(b[0])||(this.locked=!0)}.bind(this))),this.locked?this.html.classList.add("disabled"):this.html.classList.remove("disabled"),this},click:function(){if(this.owner.busy||this.locked)return!1;C(this.data.consume)&&c.getInstance().notify(c.MSG_TYPES.USE,this.data.consume),++this.repeated,this.owner.setBusy(this.data);var b=(this.data.time||0)*a.tickLength;return this.data.deltaTime&&(b+=N(-this.data.deltaTime,this.data.deltaTime)),this.html.style.animationDuration=b+"ms",this.html.classList.add("cooldown"),this.timeout=M.timeout(this.end.bind(this),b),!0},end:function(){this.timeout=0,this.html.classList.remove("cooldown");var a={name:this.data.name,people:this.owner};if(B(this.data.build)){var b=this.data.build(this);a.build=F(b.name)}var d=[];B(this.data.give)&&(d=this.data.give(this,a)),b&&B(b.give)&&(d=d.concat(b.give(this))),d=G(d),d.length&&(c.getInstance().notify(c.MSG_TYPES.GIVE,d),a.give=r(d));var e=[];if(B(this.data.collect)&&(e=this.data.collect(this)),b&&B(b.collect)&&(e=e.concat(b.collect(this))),e=G(e),e.length&&(c.getInstance().notify(c.MSG_TYPES.COLLECT,e),a.collect=r(e)),B(this.data.unlock)){var f=this.data.unlock(this).filter(function(a){return!a.condition||a.condition&&a.condition(this)}.bind(this));this.data.unique?c.getInstance().notify(c.MSG_TYPES.UNLOCK,f):this.owner.addAction(f)}if(B(this.data.lock)){var g=this.data.lock(this);this.owner.lockAction(g)}this.data.unique&&c.getInstance().notify(c.MSG_TYPES.LOCK,this.data),b&&c.getInstance().notify(c.MSG_TYPES.BUILD,b);var h="";B(this.data.log)?h=this.data.log(a,this):this.data.log&&(h=this.data.log);var i=L.personify(h,a);c.getInstance().notify(a.logType||c.MSG_TYPES.LOGS.INFO,u(i)),this.owner.finishAction()},applyEffect:function(a){return B(a)&&(a(this.data),this._init(this.data)),this},lock:function(){return this.cancel(),this.html.remove(),this.tooltip.remove(),this},cancel:function(){return this.timeout&&(M.clear(this.timeout),this.owner.setBusy(!1),this.html.classList.remove("cooldown")),this}},e.prototype={_init:function(a){return this.data=A(this,a,["name","desc","time","consume"]),this.html=this.toHTML(),this.tooltip&&this.tooltip.remove(),o(this.html,this.data),this},toHTML:function(){this.counter=p("counter");var a=p("building",u(this.data.name));return a.appendChild(this.counter),a},add:function(a){return this.number+=a,this.counter.textContent=this.number,this}},f.prototype={_init:function(a){return this.data=A(this,a,["name","desc","time","consume"]),this.nameNode.textContent=this.data.name,this.tooltip&&this.tooltip.remove(),this.tooltip=o(this.html,this.data),this},toHTML:function(){var a=p("event");return this.nameNode=p("name"),a.appendChild(this.nameNode),this.progressBar=p("animated bar"),a.appendChild(this.progressBar),a},start:function(b){return n(this.data,function(){if(this.data.effect(!0),this.data.time){c.getInstance().notify(c.MSG_TYPES.EVENT_START,this);var d=this.data.time*a.tickLength;this.data.deltaTime&&(d+=N(-this.data.deltaTime,this.data.deltaTime)),this.progressBar.style.animationDuration=d+"ms",this.html.classList.add("ongoing"),this.timer=M.timeout(this.end.bind(this),d)}b&&b(this)}.bind(this),"event"),!!this.data.time},end:function(){this.data.effect(!1),this.timer=null,c.getInstance().notify(c.MSG_TYPES.EVENT_END,this),this.html.remove()}},f.LST_ID="eventList",h.prototype={toHTML:function(){var a=p("people"),b=p("name",this.name);return this.perkNode=p("perk"),b.appendChild(this.perkNode),a.appendChild(b),this.lifeBar=p("bar life"),o(this.lifeBar,{name:"Health",desc:"The first thing you want is a good health."}),a.appendChild(this.lifeBar),this.energyBar=p("bar energy"),o(this.energyBar,{name:"Energy",desc:"Drained faster when busy or hungry."}),a.appendChild(this.energyBar),this.actionList=p("actionList"),a.appendChild(this.actionList),a},refresh:function(a,b,c){if(this.actions.forEach(function(b){b.refresh(a,c)}),c.settled){this.stats.age+=b,this.stats.idle+=b;var d=.7;this.busy&&(d=(this.busy.energy||0)/this.busy.time),this.updateEnergy(-b*d-30*this.starving),this.thirsty?this.updateLife(-b*this.thirsty*30):this.energy>80&&!this.starving&&!this.thirsty&&this.updateLife(.5*b)}return this.starving=0,this.thirsty=0,this},setPronouns:function(){switch(this.gender){case"female":this.nominative="she",this.accusative="her",this.possessive="her",this.reflexive="herself";case"male":this.nominative="he",this.accusative="him",this.possessive="his",this.reflexive="hisself";default:this.nominative="it",this.accusative="it",this.possessive="it",this.reflexive="itself"}},setBusy:function(a){return a&&a.id!==I.data.actions.sleep.id&&(this.stats.idle=0),this.busy=!!a&&a,this.html.classList.toggle("busy",!!a),this},finishAction:function(){this.stats.actionsDone[this.busy.id]?++this.stats.actionsDone[this.busy.id]:this.stats.actionsDone[this.busy.id]=1,this.rollForPerk(this.busy),this.setBusy(null)},updateEnergy:function(a){return this.energy+=a,this.energy>100?this.energy=100:this.energy<0&&(this.updateLife(this.energy),this.energy=0),this.energyBar.style.width=this.energy+"%",this.energy},isTired:function(){return this.energy<=0},updateLife:function(a){return this.life+=a,this.life>100?this.life=100:this.life<0&&this.die(),this.lifeBar.style.width=this.life+"%",this.lifeBar.classList[this.life<25?"add":"remove"]("warning"),this.life},planBuilding:function(a){return this.plan=a,this},prepareProject:function(a){return this.project=a,this},addAction:function(a){if(C(a))for(var b=0,c=a.length;b<c;++b)this.addAction(a[b]);else if(this.actions.has(a.id))this.actions.get(a.id)._init(a);else{var e=new d(this,a);this.perk&&B(this.perk.effect)&&(this.perk.actions&&!this.perk.actions().includes(a.id)||e.applyEffect(this.perk.effect)),this.actions.push(a.id,e),this.actionList.appendChild(e.html)}return this},lockAction:function(a){if(C(a))for(var b=0,c=a.length;b<c;++b)this.lockAction(a[b]);else this.actions.pop(a.id).lock();return this},rollForPerk:function(a){if(!this.perk){var b=this,c=I.data.perks;y(c,function(d){var e=B(d.actions)&&d.actions();if((!e||e.includes(a.id))&&(!B(d.condition)||d.condition(a))){var f=0;f=e?e.reduce(function(a,c){return a+(b.stats.actionsDone[c]||0)},0)/(d.iteration||0):1/(d.iteration||0),f=f<1?0:f,f&&N()<c.dropRate*f&&b.gainPerk.call(b,d)}})}},gainPerk:function(a){if(a.desc=L.personify(a.desc,this),this.perk=a,this.perkNode.textContent='the "'+u(a.name)+'"',o(this.perkNode,a),c.getInstance().notify(c.MSG_TYPES.GAIN_PERK,this),B(a.effect)){var b=B(a.actions)&&a.actions();this.actions.filter(function(a){return!b||b.includes(a.data.id)}).forEach(function(b){b.applyEffect(a.effect)})}B(a.unlock)&&this.addAction(a.unlock()),B(a.lock)&&this.lockAction(a.lock())},die:function(){return this.html.classList.contains("arrived")&&(c.getInstance().notify(c.MSG_TYPES.LOOSE_SOMEONE,this),this.html.classList.remove("arrived"),this.actions.forEach(function(a){a.cancel(),a.tooltip.remove()}),M.timeout(function(){this.html.remove()}.bind(this),400)),this}},h.LST_ID="peopleList",h.randomName=function(a){return new Promise(function(b,c){var d="https://randomuser.me/api?inc=gender,name",e=["AU","BR","CA","CH","DE","DK","ES","FI","FR","GB","IE","NL","NZ","TR","US"],f=d+"&nat="+e.join(",")+"&noinfo&results="+a,g=new XMLHttpRequest;g.open("get",f),g.responseType="json",g.onload=function(){b(this.response)},g.onerror=c,g.send()})},i.prototype={_init:function(a){return this.data=A(this,a,["name","desc","consume"]),this.tooltip&&this.tooltip.remove(),this.tooltip=o(this.html,this.data),this},toHTML:function(a){var b=p("resource get-more");this.counter=p("counter","1"),b.appendChild(this.counter);var c=p("icon icon-"+a.icon);return b.appendChild(c),b.style.order=a.order,b},refresh:function(a){return this.counter.textContent=l(this.count),a&&C(this.data.consume)&&this.tooltip.refresh(a,this.data.consume),this},update:function(a){this.set(this.count+a);var b;return a>0&&!this.html.classList.contains("more")?(this.html.classList.add("more"),b=function(){this.html.classList.remove("more")}.bind(this)):a<0&&!this.html.classList.contains("less")&&(this.html.classList.add("less"),b=function(){this.html.classList.remove("less")}.bind(this)),B(b)&&M.timeout(b,700),this},get:function(){return 0|this.count},set:function(a){if(this.count=a,this.count<0)throw new RangeError("Resources count can't be negative");return this.refresh()},has:function(a){return this.count>=a}},i.LST_ID="resourceList",CanvasRenderingContext2D.prototype.clear=function(){this.clearRect(0,0,this.canvas.width,this.canvas.height)},k.prototype={push:function(a,b){return D(b)&&(b=a,a=b.id||this.length+1),!this.has(a)&&(this.items[a]=b,++this.length)},pop:function(a){var b=this.items[a];return!!b&&(delete this.items[a],--this.length,b)},has:function(a){return!!this.items[a]},get:function(a){if(!this.has(a))throw new RangeError("Unknown ID ("+a+") in Collection ("+this+")");return this.items[a]},set:function(a,b){if(!this.has(a))throw new RangeError("Unknown ID ("+a+") in Collection ("+this+")");return this.items[a]=b},forEach:function(a){if(this.length>0)for(var b in this.items)this.items.hasOwnProperty(b)&&a(this.items[b],b,this);return this},filter:function(a){var b=new k;return this.forEach(function(c,d,e){a(c,d,e)&&b.push(d,c)}),b},values:function(){return this.items.values()},keys:function(){return Object.keys(this.items)},random:function(){return this.values().random()},clear:function(){return this.items={},this.length=0,this},toString:function(){return"["+this.keys().join(", ")+"]"}};var N=function(){var a=Math.random;return function(b,c){return b=+b||0,void 0===c?(c=0===b?1:b,b=0):c=+c,a()*(c-b)+b}}(),O=(new Function,function(){var a=[];return function(){var b="------".replace(/-/g,function(){return m(N(36)).toString(36)});return a.includes(b)?O():(a.push(b),b)}}());Array.prototype.last=function(){return this[this.length-1]},Array.prototype.random=function(){return this[l(N(0,this.length))]},Array.prototype.out=function(a){return this.splice(this.indexOf(a),1),this.length},Object.prototype.values=function(){var a=[];for(var b in this)this.hasOwnProperty(b)&&a.push(this[b]);return a}}();
+"use strict";
+
+function GameController(holder, media) {
+    this.holder = holder;
+    this.media = media;
+    this.resources = new Collection();
+    this.buildings = new Collection();
+    this.events = new Collection();
+    this.collects = [];
+    this.people = [];
+    this.initialActions = new Collection();
+    this.knownLocations = new Collection();
+    this.flags = {
+        ready: !1,
+        paused: !1,
+        settled: !1,
+        survived: 0,
+        popup: !1,
+        productivity: 1
+    };
+    this.lastTick = performance.now();
+    this._init();
+    this.refresh();
+}
+
+function Asset(image, position) {
+    this.image = image;
+    this.position = {
+        x: random.apply(null, (position.x + "").split("-")),
+        y: random.apply(null, (position.y + "").split("-"))
+    };
+}
+
+function MessageBus() {
+    if (MessageBus.instance) throw new ReferenceError("An instance already exists.");
+    this.observers = {};
+}
+
+function Action(owner, data) {
+    this.locked = !0;
+    this.running = !1;
+    this.owner = owner;
+    this.repeated = 0;
+    this.data = {};
+    this.location = !1;
+    this.html = this.toHTML(data);
+    this._init(data);
+}
+
+function Building(data) {
+    this.number = 0;
+    this._init(data);
+    this.add(1);
+}
+
+function Event(data) {
+    this.data = {};
+    this.timer = null;
+    this.html = this.toHTML();
+    this._init(data);
+}
+
+function peopleFactory(amount) {
+    amount = amount || 1;
+    if (window.isDev) {
+        var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
+        return Promise.resolve(new Array(amount).fill(new People(code)));
+    }
+    return People.randomName(amount).then(function(response) {
+        var people = [];
+        response.results.forEach(function(data) {
+            var name = capitalize(data.name.first + ""), person = new People(name, data.gender);
+            people.push(person);
+        });
+        return people;
+    });
+}
+
+function People(name, gender) {
+    this.name = name;
+    this.gender = gender || "other";
+    this.setPronouns();
+    this.actions = new Collection();
+    this.busy = !1;
+    this.energy = 100;
+    this.starving = !1;
+    this.life = 100;
+    this.thirsty = !1;
+    this.stats = {
+        actionsDone: {},
+        idle: 0,
+        age: 0
+    };
+    this.perk = null;
+    this.plan = null;
+    this.project = null;
+    this.html = this.toHTML();
+}
+
+function Resource(data, count) {
+    this.data = {};
+    this.html = this.toHTML(data);
+    this._init(data);
+    this.count = 0;
+    count && this.update(+count);
+    this.warnLack = !1;
+}
+
+function prepareCanvas(width, height) {
+    var canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    return {
+        cnv: canvas,
+        ctx: canvas.getContext("2d")
+    };
+}
+
+function Collection() {
+    this.items = {};
+    this.length = 0;
+}
+
+function floor(x) {
+    return x << 0;
+}
+
+function round(x) {
+    return floor(x + .5);
+}
+
+function ceil(x) {
+    return floor(x + 1);
+}
+
+function popup(data, onYes, CSSClasses) {
+    if (!isFunction(onYes)) throw new TypeError("Popup need a confirm function");
+    var holder = document.getElementById("main");
+    CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
+    var box = wrap(CSSClasses);
+    box.appendChild(wrap("title", capitalize(data.name)));
+    box.appendChild(wrap("description", data.desc));
+    var api = {
+        remove: function() {
+            box.remove();
+            holder.classList.remove("backdrop");
+        }
+    }, yesButton = wrap("yes clickable", data.yes || "Ok");
+    yesButton.addEventListener("click", function() {
+        onYes();
+        api.remove();
+    });
+    box.appendChild(yesButton);
+    if (data.no) {
+        var noButton = wrap("no clickable", data.no);
+        noButton.addEventListener("click", api.remove);
+        box.appendChild(noButton);
+    }
+    holder.appendChild(box);
+    holder.classList.add("backdrop");
+    box.style.top = floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
+    return api;
+}
+
+function tooltip(html, data) {
+    function _position(x, y) {
+        var left = x + 10;
+        left + tooltipWidth > bodyWidth && (left = bodyWidth - tooltipWidth);
+        box.style.left = left + "px";
+        box.style.top = y + 10 + "px";
+    }
+    var box = null, bodyWidth = document.body.offsetWidth, tooltipWidth = 305;
+    html.classList.add("tooltiped");
+    html.addEventListener("mouseover", function() {
+        document.body.appendChild(box);
+    });
+    html.addEventListener("mouenter", function() {
+        document.body.appendChild(box);
+    });
+    html.addEventListener("mousemove", function(event) {
+        _position(event.clientX, event.clientY);
+    });
+    html.addEventListener("mouseout", function() {
+        box.remove();
+    });
+    var resourcesMapper = {}, api = {
+        update: function(data) {
+            box = wrap("tooltip");
+            box.appendChild(wrap("title", capitalize(data.name)));
+            data.desc && box.appendChild(wrap("description", data.desc));
+            data.time && box.appendChild(wrap("time", formatTime(data.time)));
+            if (data.consume) {
+                var item, resourcesContainer = wrap("consumption");
+                data.consume.forEach(function(r) {
+                    item = wrap("resource not-enough", r[0] + " " + r[1].name);
+                    resourcesMapper[r[1].id] = item;
+                    resourcesContainer.appendChild(item);
+                });
+                box.appendChild(resourcesContainer);
+            }
+            return api;
+        },
+        refresh: function(resources, consume) {
+            if (data.consume) {
+                var id;
+                consume.forEach(function(data) {
+                    id = data[1].id;
+                    resources.has(id) && resources.get(id).has(data[0]) ? resourcesMapper[id].classList.remove("not-enough") : resourcesMapper[id].classList.add("not-enough");
+                });
+            }
+            return api;
+        },
+        remove: function() {
+            box.remove();
+            return api;
+        }
+    };
+    api.update(data);
+    return api;
+}
+
+function wrap(CSSClasses, text) {
+    var html = document.createElement("div");
+    CSSClasses && html.classList.add.apply(html.classList, CSSClasses.split(" "));
+    text && (html.innerHTML = text);
+    return html;
+}
+
+function formatTime(time) {
+    var units = [ "year", "month", "day", "hour", "minute" ], res = [], timeMatch = DataManager.time;
+    units.forEach(function(unit) {
+        if (time >= timeMatch[unit]) {
+            var y = floor(time / timeMatch[unit]);
+            time %= timeMatch[unit];
+            res.push(y + " " + pluralize(unit, y));
+        }
+    });
+    return formatJoin(res);
+}
+
+function formatArray(array) {
+    var res = [];
+    array.forEach(function(item) {
+        var name = pluralize(item[1].name, item[0]);
+        item[1].icon && (name += " " + wrap("icon icon-" + item[1].icon).outerHTML);
+        res.push(item[0] + " " + name);
+    });
+    return formatJoin(res);
+}
+
+function formatJoin(array, final) {
+    final = final || "and";
+    if (array.length > 1) {
+        array[array.length - 2] += " " + final + " " + array.pop();
+        return array.join(", ");
+    }
+    return array.length ? array[0] : "";
+}
+
+function pluralize(string, number) {
+    return string + (number > 1 ? "s" : "");
+}
+
+function capitalize(string) {
+    if (string) {
+        string = string.replace(/([\.!\?]) ([a-z])/g, function(match, punctuation, letter) {
+            return punctuation + " " + letter.toUpperCase();
+        });
+        return string[0].toUpperCase() + string.slice(1);
+    }
+    return "";
+}
+
+function randomize(list, amount) {
+    if (!list.values().length) throw new TypeError("Can't pick from empty list");
+    var all = {}, dropRateScale = [], dropRateSum = 0;
+    deepBrowse(list, function(item) {
+        if (item.dropRate) {
+            dropRateSum += item.dropRate;
+            dropRateScale.push(dropRateSum);
+            all[dropRateSum] = item;
+        }
+    });
+    var pick = round(random(dropRateSum));
+    dropRateScale.sort();
+    for (var i = 0, l = dropRateScale.length; i < l; ++i) if (dropRateScale[i] > pick) {
+        pick = dropRateScale[i];
+        break;
+    }
+    return amount ? [ round(random.apply(null, (amount + "").split("-"))), all[pick] ] : all[pick];
+}
+
+function randomizeMultiple(list, amount) {
+    if (!amount) throw new TypeError("Need an amount");
+    for (var res = [], total = round(random.apply(null, (amount + "").split("-"))), sum = 0; sum + 1 <= total; ) {
+        var pick = round(random(1, total - sum));
+        res.push([ pick, randomize(list) ]);
+        sum += pick;
+    }
+    return res;
+}
+
+function log(message) {
+    window.isDev && console.log(message);
+}
+
+function deepBrowse(tree, action) {
+    for (var item in tree) tree.hasOwnProperty(item) && (tree[item].name ? action(tree[item], tree) : deepBrowse(tree[item], action));
+    return tree;
+}
+
+function clone(obj) {
+    return Object.assign({}, obj);
+}
+
+function consolidateData(context, object, fields) {
+    fields = fields || Object.keys(object);
+    var data = clone(object);
+    fields.forEach(function(field) {
+        data[field] && isFunction(data[field]) && (data[field] = data[field](context));
+    });
+    return data;
+}
+
+function isFunction(func) {
+    return func instanceof Function;
+}
+
+function isArray(array) {
+    return Array.isArray(array);
+}
+
+function isUndefined(value) {
+    return void 0 === value;
+}
+
+function sanitize(str) {
+    return str.toLowerCase().replace(/(\W)+/g, "_");
+}
+
+function an(word) {
+    var vowels = "aeiou".split("");
+    return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
+}
+
+function compactResources(resources) {
+    return resources.reduce(function(reduced, item) {
+        var known = reduced.find(function(entry) {
+            return entry[1].id === item[1].id;
+        });
+        known ? known[0] += item[0] : item[0] > 0 && reduced.push(item);
+        return reduced;
+    }, []);
+}
+
+function loadAsync(urls, action) {
+    var loaded = {}, loadCount = 0, toLoad = urls.length;
+    return Promise.all(urls.map(function(url) {
+        var promise;
+        switch (url.substr(url.lastIndexOf(".") + 1)) {
+          case "png":
+          case "jpg":
+          case "gif":
+            promise = new Promise(function(resolve, reject) {
+                var img = new Image();
+                img.onload = resolve.bind(null, img);
+                img.onerror = reject;
+                img.src = url;
+            });
+            break;
+
+          case "json":
+            promise = new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("get", url);
+                xhr.responseType = "json";
+                xhr.onload = function() {
+                    resolve(this.response);
+                };
+                xhr.onerror = reject;
+                xhr.send();
+            });
+            break;
+
+          default:
+            promise = Promise.resolve();
+        }
+        return promise.then(function(file) {
+            loaded[sanitize(url)] = file;
+            action(++loadCount / toLoad * 100, url);
+        }).catch(function() {
+            console.log("Can't load " + url);
+        });
+    })).then(function() {
+        return loaded;
+    });
+}
+
+console.groupCollapsed("Loading");
+
+loadAsync([ "dist/img/icons.png", "dist/img/assets.png", "dist/js/assets.json" ], function(percent, file) {
+    console.log(file + " : " + percent + "%");
+}).then(function(media) {
+    console.groupEnd();
+    try {
+        var Game = new GameController(document.getElementById("main"), media);
+        window.isDev && (window.G = Game);
+    } catch (e) {
+        console.warn("Fail to load game : " + e.message, e.stack);
+    }
+});
+
+GameController.tickLength = 2e3;
+
+GameController.prototype = {
+    _init: function() {
+        console.log("Starting " + window.VERSION);
+        var game = this;
+        deepBrowse(DataManager.data, function(item) {
+            item.id = pickID();
+            for (var attr in item) item.hasOwnProperty(attr) && isFunction(item[attr]) && (item[attr] = item[attr].bind(game));
+        });
+        this.initialActions.push(DataManager.data.actions.wakeUp);
+        KeyManager.attach(KeyManager.KEYS.SPACE, this.togglePause.bind(this));
+        this.resourcesList = wrap();
+        this.resourcesList.id = Resource.LST_ID;
+        this.holder.appendChild(this.resourcesList);
+        this.peopleList = wrap();
+        this.peopleList.id = People.LST_ID;
+        this.holder.appendChild(this.peopleList);
+        this.visualPane = wrap();
+        this.visualPane.id = "visualPane";
+        this.holder.appendChild(this.visualPane);
+        this.eventsList = wrap();
+        this.eventsList.id = Event.LST_ID;
+        this.holder.appendChild(this.eventsList);
+        this.logsList = wrap();
+        this.logsList.id = "logs";
+        this.holder.appendChild(this.logsList);
+        GraphicManager.start(this.visualPane, this.media);
+        LogManager.start(this.logsList);
+        TimerManager.start();
+        TimerManager.timeout(this.welcome.bind(this, 1, !0), 500);
+        var busInstance = MessageBus.getInstance();
+        busInstance.observe(MessageBus.MSG_TYPES.GIVE, function(given) {
+            isArray(given) && given.forEach(function(r) {
+                game.earn.apply(game, r);
+            });
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.COLLECT, function(collected) {
+            isArray(collected) && compactResources(game.collects.concat(collected));
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.USE, function(use) {
+            isArray(use) && compactResources(use).forEach(function(resource) {
+                game.consume.apply(game, resource);
+            });
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.BUILD, function(building) {
+            building && game.build(building);
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function(person) {
+            game.people.out(person);
+            if (game.people.length <= 0) {
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
+                game.flags.paused = !0;
+            }
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.EVENT_START, function(event) {
+            game.events.push(event.data.id, event);
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.EVENT_END, function(event) {
+            game.events.pop(event.data.id);
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.LOCK, function(actions) {
+            game.removeFromInitialActions(actions);
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.UNLOCK, function(actions) {
+            game.addToInitialActions(actions);
+        });
+        busInstance.observe(MessageBus.MSG_TYPES.WIN, function() {
+            this.flags.paused = !0;
+        });
+        window.isDev || popup({
+            name: "Early access",
+            desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>If you want to report a bug or anything to improve the game, go to <a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/><br/>Thanks for playing !"
+        }, function() {
+            this.flags.ready = !0;
+        }.bind(this));
+    },
+    addToInitialActions: function(actions) {
+        isArray(actions) || (actions = [ actions ]);
+        actions.forEach(function(action) {
+            this.initialActions.push(action);
+        }.bind(this));
+        this.people.forEach(function(people) {
+            people.addAction(actions);
+        });
+    },
+    removeFromInitialActions: function(actions) {
+        isArray(actions) || (actions = [ actions ]);
+        actions.forEach(function(action) {
+            this.initialActions.pop(action.id);
+        }.bind(this));
+        this.people.forEach(function(people) {
+            people.lockAction(actions);
+        });
+    },
+    getSettledTime: function() {
+        return this.flags.settled ? this.flags.survived / GameController.tickLength : 0;
+    },
+    getSurvivalDuration: function() {
+        return formatTime(this.getSettledTime());
+    },
+    togglePause: function() {
+        this.flags.paused = !this.flags.paused;
+        this.holder.classList.toggle("paused", this.flags.paused);
+        this.flags.paused ? TimerManager.stopAll() : TimerManager.restartAll();
+    },
+    refresh: function() {
+        var now = performance.now(), elapse = floor((now - this.lastTick) / GameController.tickLength);
+        this.lastTick += elapse * GameController.tickLength;
+        this.flags.paused && (elapse = 0);
+        setTimeout(this.refresh.bind(this), GameController.tickLength / 3);
+        if (elapse > 0) {
+            if (this.flags.settled) {
+                this.flags.survived += elapse * GameController.tickLength;
+                var needs = DataManager.data.people.need();
+                needs.forEach(function(need) {
+                    var waterId = DataManager.data.resources.gatherable.common.water.id, state = need[1].id === waterId ? "thirsty" : "starving";
+                    this.consume(need[0] * this.people.length, need[1], function(number) {
+                        this.people.forEach(function(person, index, list) {
+                            person[state] = number / list.length;
+                        });
+                    });
+                }.bind(this));
+                this.canSomeoneArrive() && this.welcome();
+                if (!this.flags.popup && random() < DataManager.data.events.dropRate) {
+                    var eventData = this.getRandomEvent();
+                    if (eventData) {
+                        var event = new Event(eventData);
+                        this.flags.popup = event.start(function(event) {
+                            event.data.time && this.eventsList.appendChild(event.html);
+                            this.flags.popup = !1;
+                        }.bind(this));
+                    }
+                }
+            }
+            this.resources.forEach(function(resource, id, list) {
+                resource.refresh(list);
+            });
+            this.people.forEach(function(people) {
+                people.refresh(this.resources, elapse, this.flags);
+            }.bind(this));
+        }
+    },
+    hasEnough: function(id, amount) {
+        return this.resources.get(id).has(amount);
+    },
+    consume: function(amount, resource, lack) {
+        if (amount) {
+            var instance = this.resources.get(resource.id);
+            if (instance && instance.has(amount)) {
+                instance.update(-amount);
+                instance.warnLack = !1;
+            } else if (isFunction(lack)) {
+                var diff = amount - instance.get();
+                instance.set(0);
+                lack.call(this, diff, resource);
+                if (!instance.warnLack) {
+                    instance.warnLack = !0;
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.RUNS_OUT, resource.name);
+                }
+            }
+        }
+    },
+    earn: function(amount, resource) {
+        var id = resource.id;
+        if (this.resources.has(id)) this.resources.get(id).update(amount); else {
+            var res = new Resource(resource, amount);
+            this.resources.push(id, res);
+            this.resourcesList.appendChild(res.html);
+        }
+    },
+    welcome: function(amount, first) {
+        peopleFactory(amount).then(function(persons) {
+            persons.forEach(function(person) {
+                person.addAction(this.initialActions.values());
+                this.people.push(person);
+                this.peopleList.appendChild(person.html);
+                if (first) {
+                    person.life = 0;
+                    person.energy = 0;
+                    person.updateLife(0);
+                    person.updateEnergy(0);
+                } else {
+                    person.html.offsetHeight;
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
+                    2 === this.people.length && TimerManager.timeout(function() {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, person.name + " say that there's other desert-walkers ready to join you if there's room for them.");
+                    }.bind(this), 2e3);
+                }
+                person.html.classList.add("arrived");
+            }.bind(this));
+        }.bind(this));
+    },
+    build: function(building) {
+        var id = building.id;
+        if (this.buildings.has(id)) this.buildings.get(id).add(1); else {
+            var bld = new Building(building);
+            this.buildings.push(id, bld);
+            isFunction(building.lock) && this.removeFromInitialActions(building.lock(bld));
+            isFunction(building.unlock) && this.addToInitialActions(building.unlock(bld));
+        }
+    },
+    unlockedCraftables: function() {
+        var craftables = [];
+        deepBrowse(DataManager.data.resources.craftable, function(craft) {
+            (!craft.condition || isFunction(craft.condition) && craft.condition()) && craftables.push(craft);
+        });
+        return craftables;
+    },
+    possibleCraftables: function() {
+        var resources = this.resources.items;
+        return this.unlockedCraftables().filter(function(craft) {
+            var keep = !0;
+            isFunction(craft.consume) && craft.consume(craft).forEach(function(res) {
+                keep = keep && resources[res[1].id] && resources[res[1].id].has(res[0]);
+            });
+            return keep;
+        });
+    },
+    possibleBuildings: function() {
+        var buildings = [], done = this.buildings;
+        deepBrowse(DataManager.data.buildings, function(build) {
+            (!build.unique || build.unique && !done.has(build.id)) && isFunction(build.condition) && build.condition() && buildings.push(build);
+        });
+        return buildings;
+    },
+    canSomeoneArrive: function() {
+        return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1) && random() < DataManager.data.people.dropRate && this.getSettledTime() / DataManager.time.day > 2;
+    },
+    getRandomEvent: function() {
+        var list = [], time = this.getSettledTime() / DataManager.time.week;
+        if (time > 1) {
+            list.push.apply(list, DataManager.data.events.easy.values());
+            if (time > 2) {
+                list.push.apply(list, DataManager.data.events.medium.values());
+                time > 5 && list.push.apply(list, DataManager.data.events.hard.values());
+            }
+        }
+        list = list.filter(function(event) {
+            return !this.events.has(event.id) && (!event.condition || isFunction(event.condition) && event.condition(event));
+        }.bind(this));
+        return !!list.length && randomize(list);
+    }
+};
+
+window.isDev && (GameController.prototype.debug = {
+    oneOfEach: function() {
+        deepBrowse(DataManager.data.resources, function(resource) {
+            this.earn(1, resource);
+        }.bind(this));
+        deepBrowse(DataManager.data.buildings, function(build) {
+            this.build(build);
+        }.bind(this));
+        return this;
+    }
+});
+
+var DataManager = function() {
+    var time = {
+        minute: 1 / 60,
+        hour: 1,
+        day: 24,
+        week: 168,
+        month: 720,
+        year: 8640
+    }, directions = [ "north", "south", "east", "west", "north-east", "north-west", "south-east", "south-west" ], data = {
+        resources: {
+            gatherable: {
+                common: {
+                    water: {
+                        name: "water",
+                        desc: "Water is definitely important to survive in this harsh environment.",
+                        icon: "water-bottle",
+                        dropRate: 140,
+                        order: 10
+                    },
+                    food: {
+                        name: "food",
+                        desc: "Everyone need food to keep his strength.",
+                        icon: "foodcan",
+                        dropRate: 140,
+                        order: 20
+                    },
+                    rock: {
+                        name: "rock",
+                        desc: '"There\'s rocks everywhere ! Why would you bring this back ?"',
+                        icon: "rock",
+                        dropRate: 100,
+                        order: 30
+                    },
+                    scrap: {
+                        name: "scrap metal",
+                        desc: "An old rusty piece of metal.",
+                        icon: "scrap-metal",
+                        dropRate: 100,
+                        order: 40
+                    }
+                },
+                uncommon: {
+                    plastic: {
+                        name: "plastic",
+                        desc: "A sturdy piece of plastic.",
+                        icon: "",
+                        dropRate: 70,
+                        order: 50
+                    },
+                    sand: {
+                        name: "sand",
+                        desc: "It's pure fine sand.",
+                        icon: "sand-pile",
+                        dropRate: 30,
+                        order: 55
+                    },
+                    oil: {
+                        name: "fuel",
+                        desc: "About a liter of gas-oil.",
+                        icon: "jerrycan",
+                        dropRate: 20,
+                        order: 60
+                    }
+                },
+                rare: {
+                    medication: {
+                        name: "medication",
+                        desc: "An unlabeled medication, hope it's still good.",
+                        icon: "medication",
+                        dropRate: 5,
+                        order: 70
+                    },
+                    electronic: {
+                        name: "electronic",
+                        desc: "Basic micro-electronics components.",
+                        icon: "electronic-parts",
+                        dropRate: 10,
+                        order: 75
+                    }
+                },
+                special: {
+                    ruins: {
+                        name: "location",
+                        desc: "Directions to a point of interest we found earlier.",
+                        icon: "map",
+                        order: 80,
+                        dropRate: .6
+                    },
+                    quartz: {
+                        name: "quartz cristal",
+                        desc: "",
+                        icon: "",
+                        dropRate: .1,
+                        order: 77
+                    }
+                }
+            },
+            craftable: {
+                basic: {
+                    stone: {
+                        name: "smooth stone",
+                        desc: "A well polish and round stone.",
+                        icon: "stone",
+                        consume: function() {
+                            return [ [ 3, data.resources.gatherable.common.rock ] ];
+                        },
+                        dropRate: 100,
+                        order: 90
+                    },
+                    glass: {
+                        name: "glass pane",
+                        desc: "",
+                        icon: "glass-pane",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.small.furnace.id);
+                        },
+                        consume: function() {
+                            return [ [ 4, data.resources.gatherable.uncommon.sand ] ];
+                        },
+                        dropRate: 60,
+                        order: 100
+                    },
+                    component: {
+                        name: "component",
+                        desc: "Some mechanical parts for others craftables.",
+                        icon: "pipe-large",
+                        consume: function() {
+                            return [ [ 2, data.resources.gatherable.common.scrap ], [ 2, data.resources.gatherable.uncommon.plastic ] ];
+                        },
+                        dropRate: 120,
+                        order: 110
+                    },
+                    tool: {
+                        name: "tool",
+                        desc: "The base of any tinkerer.",
+                        icon: "tool",
+                        consume: function() {
+                            return [ [ 1, data.resources.craftable.basic.component ], [ 2, data.resources.gatherable.common.rock ] ];
+                        },
+                        dropRate: 90,
+                        order: 111
+                    }
+                },
+                complex: {
+                    brick: {
+                        name: "brick",
+                        desc: "Bricks will give wall to larger constructions.",
+                        icon: "brick",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.small.well.id);
+                        },
+                        consume: function() {
+                            return [ [ 1, data.resources.craftable.basic.stone ], [ 1, data.resources.craftable.basic.tool ] ];
+                        },
+                        dropRate: 80,
+                        order: 112
+                    },
+                    circuit: {
+                        name: "circuit",
+                        desc: "That's a little rough, but it's actually a functioning circuit board.",
+                        icon: "circuit-board",
+                        consume: function() {
+                            return [ [ 1, data.resources.gatherable.common.scrap ], [ 2, data.resources.craftable.basic.component ], [ 3, data.resources.gatherable.rare.electronic ] ];
+                        },
+                        dropRate: 60,
+                        order: 114
+                    },
+                    metalPipe: {
+                        name: "metal pipe",
+                        desc: "Simple pipes that you forge from junk metal.",
+                        icon: "pipe-small",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.medium.forge.id);
+                        },
+                        consume: function() {
+                            return [ [ 4, data.resources.gatherable.common.scrap ], [ 1, data.resources.craftable.basic.tool ] ];
+                        },
+                        dropRate: 80,
+                        order: 115
+                    },
+                    furniture: {
+                        name: "furniture",
+                        desc: "",
+                        icon: "",
+                        consume: function() {
+                            return [ [ 2, data.resources.craftable.basic.glass ], [ 2, data.resources.craftable.complex.metalPipe ] ];
+                        },
+                        dropRate: 40,
+                        order: 116
+                    },
+                    jewelry: {
+                        name: "jewelry",
+                        desc: "",
+                        icon: "",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.small.furnace.id);
+                        },
+                        consume: function() {
+                            return [ [ 4, data.resources.gatherable.rare.electronic ], [ 3, data.resources.gatherable.special.quartz ] ];
+                        },
+                        dropRate: 40,
+                        order: 117
+                    }
+                },
+                advanced: {
+                    engine: {
+                        name: "engine",
+                        desc: "Amazing what you manage to do with all those scraps !",
+                        icon: "engine",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
+                        consume: function() {
+                            return [ [ 10, data.resources.gatherable.uncommon.oil ], [ 5, data.resources.craftable.basic.tool ], [ 5, data.resources.craftable.complex.metalPipe ] ];
+                        },
+                        dropRate: 30,
+                        order: 120
+                    },
+                    computer: {
+                        name: "computer",
+                        desc: "Well, Internet is down since 2136 but it can still be useful.",
+                        icon: "computer",
+                        condition: function() {
+                            return this.buildings.has(data.buildings.big.workshop.id);
+                        },
+                        consume: function() {
+                            return [ [ 10, data.resources.craftable.basic.component ], [ 7, data.resources.craftable.basic.tool ], [ 3, data.resources.craftable.complex.circuit ] ];
+                        },
+                        dropRate: 20,
+                        order: 130
+                    }
+                }
+            },
+            room: {
+                name: "room",
+                desc: "A place for someone in the camp.",
+                icon: "person",
+                order: 0
+            }
+        },
+        people: {
+            name: "people",
+            desc: "The workforce and the bane of you camp.",
+            need: function() {
+                return [ [ 1.5 / time.day, data.resources.gatherable.common.food ], [ 1 / time.day, data.resources.gatherable.common.water ] ];
+            },
+            dropRate: .005
+        },
+        buildings: {
+            small: {
+                tent: {
+                    name: "tent",
+                    desc: "Allow someone to rejoin your colony.",
+                    time: 4,
+                    consume: function() {
+                        return [ [ 7, data.resources.gatherable.common.scrap ], [ 5, data.resources.gatherable.common.rock ] ];
+                    },
+                    give: function() {
+                        return [ [ 1, data.resources.room ] ];
+                    },
+                    log: "That's small and ugly, but someone can sleep safely in here.",
+                    dropRate: 100,
+                    asset: {
+                        image: "tent",
+                        position: {
+                            color: "#909090",
+                            x: "60-100",
+                            y: "25-75"
+                        }
+                    }
+                },
+                furnace: {
+                    name: "furnace",
+                    desc: "",
+                    time: 7,
+                    consume: function() {
+                        return [ [ 8, data.resources.gatherable.common.rock ], [ 3, data.resources.gatherable.uncommon.oil ] ];
+                    },
+                    log: "A small furnace can smelt small things like sand or little electronic.",
+                    unique: !0,
+                    dropRate: 90
+                },
+                plot: {
+                    name: "farm plot",
+                    desc: "A little arranged plot of earth to grow some food.",
+                    time: 12,
+                    consume: function() {
+                        return [ [ 5, data.resources.gatherable.common.food ], [ 10, data.resources.gatherable.uncommon.sand ] ];
+                    },
+                    unlock: function() {
+                        return [ data.actions.harvest ];
+                    },
+                    log: "More crops required more care but that's going to help us keeping a constant stock of food.",
+                    dropRate: 80
+                },
+                pharmacy: {
+                    name: "pharmacy",
+                    desc: "",
+                    time: 6,
+                    consume: function() {
+                        return [ [ 5, data.resources.gatherable.rare.medication ], [ 4, data.resources.craftable.basic.component ] ];
+                    },
+                    log: "Sorting our medications should prevent further mistakes and bad reaction.",
+                    unique: !0,
+                    dropRate: 70
+                },
+                well: {
+                    name: "well",
+                    desc: "Just a large hole into the ground.",
+                    time: 16,
+                    energy: 80,
+                    condition: function() {
+                        return !this.buildings.has(data.buildings.big.pump.id);
+                    },
+                    consume: function() {
+                        return [ [ 10, data.resources.craftable.basic.stone ], [ 3, data.resources.craftable.basic.tool ] ];
+                    },
+                    give: function() {
+                        return [ [ 5, data.resources.gatherable.common.water ] ];
+                    },
+                    unlock: function() {
+                        return [ data.actions.drawFrom.well ];
+                    },
+                    lock: function() {
+                        return [ data.actions.drawFrom.river ];
+                    },
+                    log: "We find out that it's possible to draw some water from the ground and use it to make bricks.",
+                    unique: !0,
+                    dropRate: 80
+                }
+            },
+            medium: {
+                forge: {
+                    name: "forge",
+                    desc: "A good upgrade to our little furnace.",
+                    time: 10,
+                    condition: function() {
+                        this.buildings.has(data.buildings.small.furnace.id);
+                    },
+                    consume: function() {
+                        return [ [ 5, data.resources.gatherable.uncommon.oil ], [ 10, data.resources.craftable.basic.stone ], [ 2, data.resources.craftable.basic.tool ] ];
+                    },
+                    unlock: function() {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD, data.buildings.small.well.furnace);
+                        return [];
+                    },
+                    log: "We can now work metal better and make more complex part.",
+                    unique: !0,
+                    dropRate: 60
+                },
+                house: {
+                    name: "house",
+                    desc: "",
+                    time: 13,
+                    condition: function() {
+                        this.buildings.has(data.buildings.small.tent.id);
+                    },
+                    consume: function() {
+                        return [ [ 7, data.resources.gatherable.common.rock ], [ 1, data.resources.craftable.complex.furniture ] ];
+                    },
+                    give: function() {
+                        return [ round(random(2, 3)), data.resources.room ];
+                    },
+                    log: "Better than a simple tent, it provide @give.",
+                    dropRate: 50
+                }
+            },
+            big: {
+                barrack: {
+                    name: "barrack",
+                    desc: "Some place to sleep for a few people.",
+                    time: 2 * time.day,
+                    energy: 110,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.medium.house.id) && !1;
+                    },
+                    consume: function() {
+                        return [ [ 5, data.resources.gatherable.uncommon.sand ], [ 8, data.resources.craftable.complex.brick ], [ 1, data.resources.craftable.complex.furniture ] ];
+                    },
+                    give: function() {
+                        return [ round(random(3, 4)), data.resources.room ];
+                    },
+                    log: "That's a lots of space to welcome wanderers.",
+                    dropRate: 0
+                },
+                workshop: {
+                    name: "workshop",
+                    desc: "Organizing your workforce make them more efficient at crafting.",
+                    time: 3 * time.day,
+                    energy: 90,
+                    unique: !0,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.small.furnace.id);
+                    },
+                    consume: function() {
+                        return [ [ 6, data.resources.gatherable.common.scrap ], [ 5, data.resources.craftable.basic.glass ], [ 10, data.resources.craftable.basic.tool ], [ 15, data.resources.craftable.complex.brick ] ];
+                    },
+                    give: function() {
+                        return [];
+                    },
+                    unlock: function() {
+                        return [ data.actions.project ];
+                    },
+                    log: "Good organisation allow you to prepare project and do much more complex crafting.",
+                    dropRate: 30
+                },
+                radio: {
+                    name: "radio-station",
+                    desc: "",
+                    time: 6,
+                    energy: 60,
+                    unique: !0,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.big.workshop.id);
+                    },
+                    consume: function() {
+                        return [ [ 4, data.resources.craftable.complex.circuit ], [ 1, data.resources.craftable.advanced.computer ] ];
+                    },
+                    log: '"Message received. We thought no one survive the crash. Unfortunately we can\'t risk being located, come to sent position."',
+                    dropRate: 20
+                },
+                pump: {
+                    name: "water pump",
+                    desc: "A buried contraption that collect water from the earth moisture.",
+                    time: 3 * time.day,
+                    energy: 120,
+                    unique: !0,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.small.well.id);
+                    },
+                    consume: function() {
+                        return [ [ 20, data.resources.craftable.basic.stone ], [ 5, data.resources.craftable.complex.metalPipe ], [ 1, data.resources.craftable.advanced.engine ] ];
+                    },
+                    unlock: function() {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD, data.buildings.small.well.id);
+                        return [ data.actions.drawFrom.well ];
+                    },
+                    collect: function() {
+                        return [ [ 2 / time.day, data.resources.gatherable.common.water ] ];
+                    },
+                    log: "A big upgrade to your well ! Now we have a continuous flow of water soming.",
+                    dropRate: 10
+                },
+                trading: {
+                    name: "trading post",
+                    desc: "",
+                    time: time.day,
+                    energy: 70,
+                    unique: !0,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.big.radio.id);
+                    },
+                    consume: function() {
+                        return [ [ 2, data.resources.craftable.basic.glass ], [ 10, data.resources.craftable.complex.brick ], [ 2, data.resources.craftable.complex.furniture ] ];
+                    },
+                    unlock: function() {
+                        return [ data.actions.exchange ];
+                    },
+                    log: "Arranging some space allow us to trade with merchant caravan passing by.",
+                    dropRate: 10
+                },
+                module: {
+                    name: "module",
+                    desc: "With that, we can finally go seek for help.",
+                    time: time.week,
+                    energy: 100,
+                    unique: !0,
+                    condition: function() {
+                        return this.buildings.has(data.buildings.big.radio.id);
+                    },
+                    consume: function() {
+                        return [ [ 15, data.resources.gatherable.uncommon.oil ], [ 3, data.resources.craftable.complex.furniture ], [ 1, data.resources.craftable.advanced.computer ], [ 2, data.resources.craftable.advanced.engine ] ];
+                    },
+                    unlock: function() {
+                        return [ data.actions.launch ];
+                    },
+                    log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>Now we can end this all !",
+                    dropRate: 5
+                }
+            },
+            special: {
+                forum: {
+                    name: "forum",
+                    desc: "The center and start of our settlement.",
+                    unlock: function() {
+                        return [ data.actions.sleep ];
+                    },
+                    give: function() {
+                        return [ [ 2, data.resources.room ] ];
+                    },
+                    unique: !0
+                }
+            }
+        },
+        actions: {
+            wakeUp: {
+                name: "wake up",
+                energy: 0,
+                unlock: function(action) {
+                    action.owner.updateEnergy(100);
+                    action.owner.updateLife(100);
+                    return [ data.actions.look ];
+                },
+                log: "@people.name gets up painfully.",
+                order: 0,
+                unique: !0
+            },
+            look: {
+                name: "look around",
+                desc: "What am I doing here ?",
+                time: 2,
+                energy: 0,
+                give: function() {
+                    MessageBus.MSG_TYPES.LOGS.FLAVOR;
+                    TimerManager.timeout(function() {
+                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
+                    }, 1e3);
+                    return [ , [ 10, data.resources.gatherable.common.water ], [ 8, data.resources.gatherable.common.food ], [ 2, data.resources.craftable.basic.component ] ];
+                },
+                unlock: function() {
+                    return [ data.actions.settle ];
+                },
+                log: "After some thinking, @people.name remembers the attack. @people.nominative grabs @give laying around.",
+                order: 0,
+                unique: !0
+            },
+            settle: {
+                name: "settle here",
+                desc: "Ok, let's settle right there !",
+                time: 3,
+                energy: 0,
+                unlock: function() {
+                    this.flags.settled = !0;
+                    return [ data.actions.gather ];
+                },
+                build: function() {
+                    return data.buildings.special.forum;
+                },
+                log: "@people.name installs @build inside a ship-wreck with @give to sleep in.",
+                order: 0,
+                unique: !0
+            },
+            gather: {
+                name: "gather resources",
+                desc: "Go out to bring back resources, that's the best you can do.",
+                time: 3,
+                isOut: 1,
+                unlock: function() {
+                    return [ data.actions.roam ];
+                },
+                give: function() {
+                    return randomizeMultiple(data.resources.gatherable, "3-6");
+                },
+                log: "@people.name comes back with @give.",
+                order: 0
+            },
+            roam: {
+                name: "roam",
+                desc: "Explore the surroundings hoping to find something interesting.",
+                time: 7,
+                isOut: 1,
+                consume: function() {
+                    return [ [ 2, data.resources.gatherable.common.water ] ];
+                },
+                condition: function(action) {
+                    return !action.owner.actions.has(data.actions.scour.id);
+                },
+                unlock: function(action) {
+                    var unlock = [ data.actions.explore, data.actions.craft ];
+                    action.repeated > 10 && unlock.push(data.actions.scour);
+                    return unlock;
+                },
+                lock: function(action) {
+                    return action.repeated > 10 ? [ action.data ] : [];
+                },
+                give: function(action, effet) {
+                    var give = randomizeMultiple(data.resources.gatherable, "1-3");
+                    if (random() < data.resources.gatherable.special.ruins.dropRate) {
+                        give.push([ 1, data.resources.gatherable.special.ruins ]);
+                        var location = randomize(Object.assign({}, data.locations.near));
+                        this.knownLocations.push(location);
+                        effet.location = an(location.name);
+                    }
+                    return give;
+                },
+                log: function(effect) {
+                    var log;
+                    log = effect.location ? "Heading @direction, @people.name spots @location, so @people.nominative brings back @give." : "Despite nothing special found towards @direction, @people.name brings back @give.";
+                    effect.direction = directions.random();
+                    return log;
+                },
+                order: 10
+            },
+            scour: {
+                name: "scour",
+                desc: "Knowledge of the area allows for better findings.",
+                time: 6,
+                isOut: 1,
+                consume: function() {
+                    return [ [ 2, data.resources.gatherable.common.water ] ];
+                },
+                give: function(action, effect) {
+                    var give = randomize(data.resources.gatherable, "2-4"), baseDropRate = data.resources.gatherable.special.ruins.dropRate;
+                    if (random() < baseDropRate + .5 * (1 - baseDropRate)) {
+                        give.push([ 1, data.resources.gatherable.special.ruins ]);
+                        var location = randomize(data.locations);
+                        this.knownLocations.push(location);
+                        effect.location = an(location.name);
+                    }
+                    return give;
+                },
+                log: function(effect) {
+                    var log;
+                    log = effect.location ? "@people.name knew @people.nominative could find @location towards @direction, so @people.nominative comes back with @give." : "No special location towards @direction, but @people.name find @give.";
+                    return log;
+                },
+                order: 10
+            },
+            explore: {
+                name: "explore a ruin",
+                desc: "Remember that location we saw the other day ? Let's see what we can find.",
+                time: 2 * time.day,
+                energy: 110,
+                isOut: 1,
+                consume: function() {
+                    return [ [ 4, data.resources.gatherable.common.water ], [ 1, data.resources.gatherable.common.food ], [ 1, data.resources.gatherable.special.ruins ] ];
+                },
+                give: function(action) {
+                    var location = this.knownLocations.random();
+                    action.location = location;
+                    return randomizeMultiple(location.give(), "5-9");
+                },
+                log: function(effect, action) {
+                    var log = action.location.log || "";
+                    return isFunction(log) ? log(effect, action) : log;
+                },
+                order: 20
+            },
+            craft: {
+                name: "craft something",
+                desc: "Use some resources to tinker something useful.",
+                time: function() {
+                    return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 5;
+                },
+                unlock: function() {
+                    return [ data.actions.plan ];
+                },
+                give: function() {
+                    var possible = this.possibleCraftables();
+                    if (possible.length) {
+                        var pick = randomize(possible);
+                        isFunction(pick.consume) && MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
+                        return [ [ 1, pick ] ];
+                    }
+                    return [];
+                },
+                log: function(effect) {
+                    if (effect.give) return "@people.name succeeds to craft @give.";
+                    effect.logType = MessageBus.MSG_TYPES.LOGS.WARN;
+                    return "Nothing could be made with what you have right now.";
+                },
+                order: 30
+            },
+            plan: {
+                name: "plan a building",
+                desc: "Prepare blueprint and space for a new building.",
+                time: 8,
+                energy: 20,
+                consume: function() {
+                    return [ [ 1, data.resources.gatherable.common.water ], [ 1, data.resources.gatherable.common.food ], [ 1, data.resources.craftable.basic.tool ] ];
+                },
+                give: function(action) {
+                    action.owner.planBuilding(randomize(this.possibleBuildings()));
+                    return [];
+                },
+                unlock: function() {
+                    return [ data.actions.build ];
+                },
+                log: "Everything's ready to build @plan",
+                order: 40
+            },
+            build: {
+                name: function(action) {
+                    return "build " + an(action.owner.plan.name);
+                },
+                desc: function(action) {
+                    return action.owner.plan.desc;
+                },
+                time: function(action) {
+                    return action.owner.plan.time;
+                },
+                energy: function(action) {
+                    return action.owner.plan.energy;
+                },
+                consume: function(action) {
+                    var consume = [ [ 2, data.resources.gatherable.common.water ], [ 1, data.resources.gatherable.common.food ] ];
+                    isFunction(action.owner.plan.consume) && consume.push.apply(consume, action.owner.plan.consume(action));
+                    return consume;
+                },
+                lock: function(action) {
+                    var lock = [ action.data ];
+                    isFunction(action.owner.plan.lock) && lock.push.apply(lock, action.owner.plan.lock(action));
+                    return lock;
+                },
+                unlock: function(action) {
+                    var unlock = [];
+                    isFunction(action.owner.plan.unlock) && unlock.push.apply(unlock, action.owner.plan.unlock(action));
+                    return unlock;
+                },
+                build: function(action) {
+                    return action.owner.plan;
+                },
+                log: function(effect, action) {
+                    var log = action.owner.plan.log;
+                    return isFunction(log) ? log(effect, action) : log;
+                },
+                order: 50
+            },
+            drawFrom: {
+                river: {
+                    name: "draw water",
+                    desc: "Get some water from the river.",
+                    time: 8,
+                    energy: 50,
+                    isOut: 1,
+                    condition: function(action) {
+                        return !action.owner.actions.has(data.actions.drawFrom.well.id);
+                    },
+                    give: function() {
+                        return [ [ round(random(2, 6)), data.resources.gatherable.common.water ] ];
+                    },
+                    log: "Coming back from the river, @people.name brings back @give.",
+                    order: 60
+                },
+                well: {
+                    name: "draw water",
+                    desc: "Get some water from our well.",
+                    time: 2,
+                    energy: 15,
+                    give: function() {
+                        var draw = 0;
+                        this.buildings.has(data.buildings.small.well.id) ? draw = random(1, 3) : this.buildings.has(data.buildings.big.pump.id) && (draw = random(5, 7));
+                        return [ [ round(draw), data.resources.gatherable.common.water ] ];
+                    },
+                    log: "Using our well, @people.name get @give.",
+                    order: 60
+                }
+            },
+            harvest: {
+                name: "harvest crops",
+                desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
+                time: function() {
+                    var nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
+                    return 4 + nbCrops;
+                },
+                consume: function() {
+                    return [ [ 1, data.resources.gatherable.common.water ] ];
+                },
+                give: function() {
+                    var nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
+                    return [ [ round(random(1.5 * nbCrops, 2 * nbCrops)), data.resources.gatherable.common.food ] ];
+                },
+                log: "Our crops produce @give.",
+                order: 70
+            },
+            sleep: {
+                name: "sleep",
+                desc: "Get some rest to restore energy.",
+                time: 9,
+                energy: 0,
+                give: function(action) {
+                    action.owner.updateEnergy(100);
+                    return [];
+                },
+                unlock: function() {
+                    return [ data.actions.heal ];
+                },
+                log: "@people.name feels well rested now.",
+                order: 5
+            },
+            heal: {
+                name: "heal",
+                desc: '"I really hope those pills are still good."',
+                time: 2,
+                energy: 1,
+                consume: function() {
+                    return [ [ 2, data.resources.gatherable.rare.medication ] ];
+                },
+                give: function(action, effect) {
+                    var lifeChange = 99;
+                    if (!this.buildings.has(data.buildings.small.pharmacy.id) && random() < .4) {
+                        lifeChange = -15;
+                        effect.wasBad = !0;
+                    }
+                    action.owner.updateLife(lifeChange);
+                    return [];
+                },
+                log: function(effect) {
+                    return effect.wasBad ? "After feeling not so well, @people.name realise taking these pillstook a hit on his health." : "This time, it actually improve @people's health.";
+                },
+                order: 6
+            },
+            project: {
+                name: "project",
+                desc: "Prepare in order to craft an object.",
+                time: 2,
+                energy: 20,
+                give: function(action) {
+                    action.owner.prepareProject(randomize(this.unlockedCraftables()));
+                    return [];
+                },
+                unlock: function() {
+                    return [ data.actions.make ];
+                }
+            },
+            make: {
+                name: function(action) {
+                    return "make " + an(action.owner.project.name);
+                },
+                desc: "Now that all is ready, craft what we need.",
+                time: function() {
+                    var time = data.actions.craft.time;
+                    return isFunction(time) ? time() : time;
+                },
+                consume: function(action) {
+                    var consume = [];
+                    isFunction(action.owner.project.consume) && consume.push.apply(consume, action.owner.project.consume(action));
+                    return consume;
+                },
+                lock: function(action) {
+                    var lock = [ action.data ];
+                    isFunction(action.owner.project.lock) && lock.push.apply(lock, action.owner.project.lock(action));
+                    return lock;
+                },
+                unlock: function(action) {
+                    var unlock = [];
+                    isFunction(action.owner.project.unlock) && unlock.push.apply(unlock, action.owner.project.unlock(action));
+                    return unlock;
+                },
+                log: "@people.name successfully made @give."
+            },
+            exchange: {
+                name: "exchange",
+                desc: "",
+                time: 7,
+                energy: 20,
+                consume: function() {
+                    return [ [ 2, data.resources.craftable.complex.jewelry ] ];
+                },
+                give: function() {
+                    var possible = Object.assign({}, data.resources.craftable.basic, data.resources.craftable.complex);
+                    delete possible.jewelry;
+                    return randomizeMultiple(possible, "2-3");
+                }
+            },
+            launch: {
+                name: "launch",
+                desc: "",
+                time: 12,
+                energy: 30,
+                isOut: 1,
+                consume: function() {
+                    return [ [ 10, data.resources.gatherable.uncommon.oil ] ];
+                },
+                give: function() {
+                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.WIN);
+                    return [];
+                }
+            }
+        },
+        locations: {
+            near: {
+                mountain: {
+                    name: "mountain",
+                    give: function() {
+                        return [ data.resources.gatherable.common.rock, data.resources.gatherable.common.scrap, data.resources.craftable.basic.component ];
+                    },
+                    log: "That was hard to climb those mountains, but at least @people find @give.",
+                    dropRate: 90
+                },
+                desert: {
+                    name: "desert",
+                    give: function() {
+                        return [ data.resources.gatherable.common.scrap, data.resources.gatherable.uncommon.oil, data.resources.gatherable.uncommon.sand ];
+                    },
+                    log: "",
+                    dropRate: 100
+                },
+                supermarket: {
+                    name: "supermarket",
+                    give: function() {
+                        return [ data.resources.gatherable.common.food, data.resources.gatherable.rare.medication, data.resources.craftable.basic.glass ];
+                    },
+                    log: "",
+                    dropRate: 80
+                }
+            },
+            far: {
+                river: {
+                    name: "river",
+                    unlock: function() {
+                        return [ data.actions.drawFrom.river ];
+                    },
+                    give: function() {
+                        return [ data.resources.gatherable.common.water, data.resources.gatherable.uncommon.plastic, data.resources.craftable.basic.stone ];
+                    },
+                    log: "",
+                    dropRate: 40
+                },
+                ruin: {
+                    name: "old ruin",
+                    give: function() {
+                        return [ data.resources.gatherable.rare.electronic, data.resources.craftable.basic.component, data.resources.craftable.basic.tool ];
+                    },
+                    log: "",
+                    dropRate: 60
+                }
+            },
+            epic: {
+                building: {
+                    name: "abandoned building",
+                    give: function() {
+                        return [ data.resources.gatherable.rare.medication, data.resources.craftable.basic.glass, data.resources.craftable.complex.circuit ];
+                    },
+                    log: "",
+                    dropRate: 30
+                }
+            }
+        },
+        events: {
+            dropRate: .01,
+            easy: {
+                sandstorm: {
+                    name: "sandstorm",
+                    desc: "The wind is blowing hard, impossible to go out for now.",
+                    time: 20,
+                    deltaTime: 4,
+                    effect: function(isOn) {
+                        this.flags.cantGoOut = isOn;
+                    },
+                    dropRate: 100,
+                    log: "A sandstorm has started and prevent anyone from leaving the camp."
+                }
+            },
+            medium: {},
+            hard: {
+                drought: {
+                    name: "drought",
+                    desc: "The climate is so hot, we consume more water.",
+                    time: 3 * time.day,
+                    timeDelta: 10,
+                    effect: function(isOn) {
+                        this.flags.drought = isOn;
+                    },
+                    dropRate: 6,
+                    log: "A harsh drought fall on us, water will be more important than ever."
+                }
+            }
+        },
+        perks: {
+            dropRate: .1,
+            first: {
+                name: "first-one",
+                desc: "The very first one to install the settlement.",
+                actions: function() {
+                    return [ data.actions.settle.id ];
+                },
+                iteration: 0
+            },
+            rookie: {
+                name: "rookie",
+                desc: "All group has a rookie, all @people.nominative want is to prove @people.nominative's efficient.",
+                condition: function() {
+                    return this.people.length > 2;
+                },
+                effect: function(action) {
+                    action.time = .95 * (isFunction(action.time) ? action.time() : action.time);
+                }
+            },
+            explorer: {
+                name: "gadabout",
+                desc: "",
+                actions: function() {
+                    return [ data.actions.roam.id, data.actions.scour.id, data.actions.explore.id ];
+                },
+                iteration: 50,
+                effect: function(action) {
+                    var give = isFunction(action.give) && action.give();
+                    give.push(randomize(data.resources.gatherable, "1-2"));
+                }
+            },
+            tinkerer: {
+                name: "tinkerer",
+                desc: "",
+                actions: function() {
+                    return [ data.actions.craft.id, data.actions.build.id, data.actions.make.id ];
+                },
+                iteration: 50,
+                effect: function(action) {}
+            },
+            healer: {
+                name: "doctor",
+                desc: "Knowing enough about medecine make @people.accusative confident to heal others.",
+                actions: function() {
+                    return [ data.actions.heal.id ];
+                },
+                condition: function() {
+                    return this.buildings.has(data.buildings.small.pharmacy.id);
+                },
+                iteration: 5,
+                effect: function(action) {
+                    var people = this.people;
+                    action.give = function() {
+                        var lowest = null;
+                        people.forEach(function(p) {
+                            (!lowest || p.life < lowest.life) && (lowest = p);
+                        });
+                        lowest.updateLife(99);
+                        return [];
+                    };
+                }
+            },
+            harvester: {
+                name: "harvester",
+                desc: "",
+                actions: function() {
+                    return [ data.actions.gather.id, data.actions.harvest.id, data.actions.drawFrom.river.id, data.actions.drawFrom.well.id ];
+                },
+                iteration: 70,
+                effect: function() {}
+            },
+            lounger: {
+                name: "lounger",
+                desc: "",
+                actions: function() {
+                    return [ data.actions.sleep ];
+                },
+                condition: function(person) {
+                    return person.stats.idle / time.week;
+                },
+                effect: function() {}
+            },
+            merchant: {
+                name: "merchant",
+                desc: "",
+                action: function() {
+                    return [ data.actions.exchange ];
+                },
+                iteration: 10,
+                effect: function(action) {
+                    action.consume = function() {
+                        return [ [ 1, data.resources.craftable.complex.jewelry ] ];
+                    };
+                }
+            }
+        }
+    };
+    return {
+        time: time,
+        data: data
+    };
+}(), GraphicManager = function() {
+    var context, images, assets = [];
+    return {
+        start: function(wrapper, media) {
+            images = media;
+            var prep = prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
+            context = prep.ctx;
+            prep.cnv.classList.add("layer");
+            wrapper.appendChild(prep.cnv);
+            var busInstance = MessageBus.getInstance();
+            busInstance.observe(MessageBus.MSG_TYPES.BUILD, function(building) {
+                building.asset && assets.push(new Asset(images[building.asset.image], building.asset.position));
+            });
+        },
+        render: function() {
+            context.clear();
+            assets.sort(function(a, b) {
+                return a.position.y - b.position.y;
+            });
+            assets.forEach(function(asset) {
+                asset.render(context);
+            });
+        }
+    };
+}();
+
+Asset.prototype = {
+    render: function(context) {
+        context.drawImage(this.image, this.position.x, this.position.y);
+    }
+};
+
+var KeyManager = function() {
+    var _attachedMap = {};
+    window.addEventListener("keyup", function(event) {
+        log(event.keyCode);
+        var action = _attachedMap[event.keyCode];
+        isFunction(action) && action();
+    });
+    return {
+        KEYS: {
+            SPACE: 32,
+            ENTER: 13,
+            ESCAPE: 27,
+            UP: 38,
+            RIGHT: 39,
+            DOWN: 40,
+            LEFT: 37,
+            CTRL: 17,
+            SHIFT: 16,
+            BACK: 8,
+            ONE: 49,
+            TWO: 50,
+            THREE: 51,
+            FOUR: 52,
+            FIVE: 53,
+            SIX: 54,
+            SEVEN: 55,
+            EIGHT: 56,
+            NINE: 57,
+            ZERO: 48
+        },
+        attach: function(keyCode, action) {
+            _attachedMap[keyCode] = action;
+        },
+        detach: function(keyCode) {
+            _attachedMap[keyCode] = null;
+        }
+    };
+}(), LogManager = function() {
+    var logTypes = {
+        0: "info",
+        1: "warning",
+        2: "flavor",
+        3: "event"
+    }, wrapper = null, self = {
+        LOG_TYPES: {
+            INFO: 0,
+            WARN: 1,
+            FLAVOR: 2,
+            EVENT: 3
+        },
+        maxLog: 50,
+        start: function(logWrapper) {
+            wrapper = logWrapper;
+            var messageBusInstance = MessageBus.getInstance();
+            messageBusInstance.observe(self.LOG_TYPES.values(), function(message, type) {
+                self.log(message, type);
+            });
+            messageBusInstance.observe(MessageBus.MSG_TYPES.ARRIVAL, function(name) {
+                self.log(name + " has arrived.", MessageBus.MSG_TYPES.LOGS.EVENT);
+            });
+            messageBusInstance.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function(person) {
+                var message = "We lost " + person.name + ".";
+                self.log(message, self.LOG_TYPES.WARN);
+            });
+            messageBusInstance.observe(MessageBus.MSG_TYPES.LOOSE, function(survivalDuration) {
+                var message = "We held up for " + survivalDuration + ", but all is lost now.";
+                self.log(message, self.LOG_TYPES.FLAVOR);
+            });
+            messageBusInstance.observe(MessageBus.MSG_TYPES.RUNS_OUT, function(resourceName) {
+                var message = "We run out of " + resourceName + ", we need to do something.";
+                self.log(message, self.LOG_TYPES.WARN);
+            });
+            messageBusInstance.observe(MessageBus.MSG_TYPES.GAIN_PERK, function(people) {
+                var message = people.name + ' is now known as the "' + capitalize(people.perk.name) + '".';
+                self.log(message, self.LOG_TYPES.EVENT);
+            });
+        },
+        log: function(message, type) {
+            if (message.length) {
+                type = type || 0;
+                wrapper.insertBefore(wrap("log " + logTypes[type], message), wrapper.firstChild);
+                var logs = Array.prototype.slice.call(wrapper.children);
+                logs.length > LogManager.maxLog && logs.last().remove();
+            }
+        },
+        personify: function(string, data) {
+            return string.replace(/@([\w\.]+)(?=.)/gi, function(match, capture) {
+                var replace = "";
+                capture.split(".").forEach(function(part) {
+                    replace = data[part];
+                });
+                return replace || "";
+            });
+        }
+    };
+    return self;
+}();
+
+MessageBus.prototype = {
+    observe: function(type, action) {
+        isArray(type) || (type = [ type ]);
+        for (var i = 0, l = type.length; i < l; ++i) {
+            this.observers[type[i]] || (this.observers[type[i]] = []);
+            this.observers[type[i]].push(action);
+        }
+        return this;
+    },
+    notify: function(type, message) {
+        if (this.observers[type]) for (var i = 0, l = this.observers[type].length; i < l; ++i) this.observers[type][i](message, type);
+        return this;
+    }
+};
+
+MessageBus.instance = !1;
+
+MessageBus.getInstance = function() {
+    MessageBus.instance || (MessageBus.instance = new MessageBus());
+    return MessageBus.instance;
+};
+
+MessageBus.MSG_TYPES = {
+    LOGS: LogManager.LOG_TYPES,
+    CLICK: 10,
+    REFRESH: 20,
+    GIVE: 30,
+    FIND_LOCATION: 31,
+    COLLECT: 32,
+    ARRIVAL: 33,
+    USE: 35,
+    RUNS_OUT: 36,
+    LOOSE_RESOURCE: 38,
+    LOOSE_SOMEONE: 39,
+    UNLOCK: 40,
+    GAIN_PERK: 45,
+    LOCK: 50,
+    BUILD: 60,
+    UNBUILD: 61,
+    EVENT_START: 70,
+    EVENT_CANCEL: 71,
+    EVENT_END: 72,
+    LOOSE: 80,
+    WIN: 85
+};
+
+var TimerManager = function() {
+    function Timer(action, time) {
+        this.startTime = performance.now();
+        this.action = action;
+        this.time = time;
+        this.isRunning = !0;
+        this.timeout = this.setTimeout();
+    }
+    Timer.prototype = {
+        setTimeout: function() {
+            return setTimeout(this.action, this.time);
+        },
+        getElapsed: function() {
+            return performance.now() - this.startTime;
+        },
+        getRemaining: function() {
+            return this.time - this.getElapsed();
+        },
+        stop: function() {
+            if (this.isRunning) {
+                this.isRunning = !1;
+                this.time = this.getRemaining();
+                clearTimeout(this.timeout);
+                return this.time;
+            }
+            return !1;
+        },
+        restart: function(now) {
+            if (this.isRunning) return !1;
+            this.isRunning = !0;
+            this.startTime = now;
+            this.timeout = this.setTimeout();
+            return this.time;
+        }
+    };
+    var _timers = null;
+    return {
+        start: function() {
+            _timers = new Collection();
+        },
+        timeout: function(action, time) {
+            var timerId, func = function() {
+                _timers.pop(timerId);
+                action();
+            };
+            timerId = _timers.push(new Timer(func, time));
+            return timerId;
+        },
+        stop: function(timerId) {
+            return _timers.get(timerId).stop();
+        },
+        stopAll: function() {
+            _timers.forEach(function(timer) {
+                timer.stop();
+            });
+            return this;
+        },
+        restart: function(timerId) {
+            return _timers.get(timerId).restart(performance.now());
+        },
+        restartAll: function() {
+            var now = performance.now();
+            _timers.forEach(function(timer) {
+                timer.restart(now);
+            });
+            return this;
+        },
+        clear: function(timerId) {
+            return _timers.pop(timerId).stop();
+        },
+        clearAll: function() {
+            _timers.forEach(function(timer) {
+                timer.clear();
+            });
+            return this;
+        },
+        getRemaining: function(timerId) {
+            return getTimers().get(timerId).getRemaining();
+        }
+    };
+}();
+
+Action.prototype = {
+    _init: function(data) {
+        this.data = consolidateData(this, data, [ "name", "desc", "time", "energy", "consume" ]);
+        isUndefined(this.data.energy) && (this.data.energy = 5 * this.data.time);
+        this.html.textContent = capitalize(this.data.name);
+        this.tooltip ? this.tooltip.remove().update(this.data) : this.tooltip = tooltip(this.html, this.data);
+        return this;
+    },
+    toHTML: function(data) {
+        var html = wrap("action clickable disabled animated");
+        html.addEventListener("click", function() {
+            this.locked || this.running || this.owner.busy || this.click.call(this);
+        }.bind(this));
+        html.style.order = data.order;
+        return html;
+    },
+    refresh: function(resources, flags) {
+        this.locked = this.owner.isTired() && this.data.energy > 0 || this.data.isOut && flags.cantGoOut;
+        if (isArray(this.data.consume)) {
+            this.tooltip.refresh(resources, this.data.consume);
+            this.locked || this.data.consume.forEach(function(r) {
+                var id = r[1].id;
+                resources.has(id) && resources.get(id).has(r[0]) || (this.locked = !0);
+            }.bind(this));
+        }
+        this.locked ? this.html.classList.add("disabled") : this.html.classList.remove("disabled");
+        return this;
+    },
+    click: function() {
+        if (this.owner.busy || this.locked) return !1;
+        isArray(this.data.consume) && MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, this.data.consume);
+        ++this.repeated;
+        this.owner.setBusy(this.data);
+        var duration = (this.data.time || 0) * GameController.tickLength;
+        this.data.deltaTime && (duration += random(-this.data.deltaTime, this.data.deltaTime));
+        this.html.style.animationDuration = duration + "ms";
+        this.html.classList.add("cooldown");
+        this.timeout = TimerManager.timeout(this.end.bind(this), duration);
+        return !0;
+    },
+    end: function() {
+        this.timeout = 0;
+        this.html.classList.remove("cooldown");
+        var effect = {
+            name: this.data.name,
+            people: this.owner
+        };
+        if (isFunction(this.data.build)) {
+            var build = this.data.build(this);
+            effect.build = an(build.name);
+        }
+        var give = [];
+        isFunction(this.data.give) && (give = this.data.give(this, effect));
+        build && isFunction(build.give) && (give = give.concat(build.give(this)));
+        give = compactResources(give);
+        if (give.length) {
+            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, give);
+            effect.give = formatArray(give);
+        }
+        var collect = [];
+        isFunction(this.data.collect) && (collect = this.data.collect(this));
+        build && isFunction(build.collect) && (collect = collect.concat(build.collect(this)));
+        collect = compactResources(collect);
+        if (collect.length) {
+            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.COLLECT, collect);
+            effect.collect = formatArray(collect);
+        }
+        if (isFunction(this.data.unlock)) {
+            var unlock = this.data.unlock(this).filter(function(action) {
+                return !action.condition || action.condition && action.condition(this);
+            }.bind(this));
+            this.data.unique ? MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock) : this.owner.addAction(unlock);
+        }
+        if (isFunction(this.data.lock)) {
+            var lock = this.data.lock(this);
+            this.owner.lockAction(lock);
+        }
+        this.data.unique && MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, this.data);
+        build && MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
+        var rawLog = "";
+        isFunction(this.data.log) ? rawLog = this.data.log(effect, this) : this.data.log && (rawLog = this.data.log);
+        var log = LogManager.personify(rawLog, effect);
+        MessageBus.getInstance().notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
+        this.owner.finishAction();
+    },
+    applyEffect: function(effect) {
+        if (isFunction(effect)) {
+            effect(this.data);
+            this._init(this.data);
+        }
+        return this;
+    },
+    lock: function() {
+        this.cancel();
+        this.html.remove();
+        this.tooltip.remove();
+        return this;
+    },
+    cancel: function() {
+        if (this.timeout) {
+            TimerManager.clear(this.timeout);
+            this.owner.setBusy(!1);
+            this.html.classList.remove("cooldown");
+        }
+        return this;
+    }
+};
+
+Building.prototype = {
+    _init: function(data) {
+        this.data = consolidateData(this, data, [ "name", "desc", "time", "consume" ]);
+        this.html = this.toHTML();
+        this.tooltip && this.tooltip.remove();
+        tooltip(this.html, this.data);
+        return this;
+    },
+    toHTML: function() {
+        this.counter = wrap("counter");
+        var html = wrap("building", capitalize(this.data.name));
+        html.appendChild(this.counter);
+        return html;
+    },
+    add: function(number) {
+        this.number += number;
+        this.counter.textContent = this.number;
+        return this;
+    }
+};
+
+Event.prototype = {
+    _init: function(data) {
+        this.data = consolidateData(this, data, [ "name", "desc", "time", "consume" ]);
+        this.nameNode.textContent = this.data.name;
+        this.tooltip && this.tooltip.remove();
+        this.tooltip = tooltip(this.html, this.data);
+        return this;
+    },
+    toHTML: function() {
+        var html = wrap("event");
+        this.nameNode = wrap("name");
+        html.appendChild(this.nameNode);
+        this.progressBar = wrap("animated bar");
+        html.appendChild(this.progressBar);
+        return html;
+    },
+    start: function(callback) {
+        popup(this.data, function() {
+            this.data.effect(!0);
+            if (this.data.time) {
+                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
+                var duration = this.data.time * GameController.tickLength;
+                this.data.deltaTime && (duration += random(-this.data.deltaTime, this.data.deltaTime));
+                this.progressBar.style.animationDuration = duration + "ms";
+                this.html.classList.add("ongoing");
+                this.timer = TimerManager.timeout(this.end.bind(this), duration);
+            }
+            callback && callback(this);
+        }.bind(this), "event");
+        return !!this.data.time;
+    },
+    end: function() {
+        this.data.effect(!1);
+        this.timer = null;
+        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
+        this.html.remove();
+    }
+};
+
+Event.LST_ID = "eventList";
+
+People.prototype = {
+    toHTML: function() {
+        var html = wrap("people"), nameNode = wrap("name", this.name);
+        this.perkNode = wrap("perk");
+        nameNode.appendChild(this.perkNode);
+        html.appendChild(nameNode);
+        this.lifeBar = wrap("bar life");
+        tooltip(this.lifeBar, {
+            name: "Health",
+            desc: "The first thing you want is a good health."
+        });
+        html.appendChild(this.lifeBar);
+        this.energyBar = wrap("bar energy");
+        tooltip(this.energyBar, {
+            name: "Energy",
+            desc: "Drained faster when busy or hungry."
+        });
+        html.appendChild(this.energyBar);
+        this.actionList = wrap("actionList");
+        html.appendChild(this.actionList);
+        return html;
+    },
+    refresh: function(resources, elapse, flags) {
+        this.actions.forEach(function(action) {
+            action.refresh(resources, flags);
+        });
+        if (flags.settled) {
+            this.stats.age += elapse;
+            this.stats.idle += elapse;
+            var ratio = .7;
+            this.busy && (ratio = (this.busy.energy || 0) / this.busy.time);
+            this.updateEnergy(-elapse * ratio - 30 * this.starving);
+            this.thirsty ? this.updateLife(-elapse * this.thirsty * 30) : this.energy > 80 && !this.starving && !this.thirsty && this.updateLife(.5 * elapse);
+        }
+        this.starving = 0;
+        this.thirsty = 0;
+        return this;
+    },
+    setPronouns: function() {
+        switch (this.gender) {
+          case "female":
+            this.nominative = "she";
+            this.accusative = "her";
+            this.possessive = "her";
+            this.reflexive = "herself";
+
+          case "male":
+            this.nominative = "he";
+            this.accusative = "him";
+            this.possessive = "his";
+            this.reflexive = "hisself";
+
+          default:
+            this.nominative = "it";
+            this.accusative = "it";
+            this.possessive = "it";
+            this.reflexive = "itself";
+        }
+    },
+    setBusy: function(action) {
+        action && action.id !== DataManager.data.actions.sleep.id && (this.stats.idle = 0);
+        this.busy = !!action && action;
+        this.html.classList.toggle("busy", !!action);
+        return this;
+    },
+    finishAction: function() {
+        this.stats.actionsDone[this.busy.id] ? ++this.stats.actionsDone[this.busy.id] : this.stats.actionsDone[this.busy.id] = 1;
+        this.rollForPerk(this.busy);
+        this.setBusy(null);
+    },
+    updateEnergy: function(amount) {
+        this.energy += amount;
+        if (this.energy > 100) this.energy = 100; else if (this.energy < 0) {
+            this.updateLife(this.energy);
+            this.energy = 0;
+        }
+        this.energyBar.style.width = this.energy + "%";
+        return this.energy;
+    },
+    isTired: function() {
+        return this.energy <= 0;
+    },
+    updateLife: function(amount) {
+        this.life += amount;
+        this.life > 100 ? this.life = 100 : this.life < 0 && this.die();
+        this.lifeBar.style.width = this.life + "%";
+        this.lifeBar.classList[this.life < 25 ? "add" : "remove"]("warning");
+        return this.life;
+    },
+    planBuilding: function(building) {
+        this.plan = building;
+        return this;
+    },
+    prepareProject: function(craftable) {
+        this.project = craftable;
+        return this;
+    },
+    addAction: function(actions) {
+        if (isArray(actions)) for (var i = 0, l = actions.length; i < l; ++i) this.addAction(actions[i]); else if (this.actions.has(actions.id)) this.actions.get(actions.id)._init(actions); else {
+            var action = new Action(this, actions);
+            this.perk && isFunction(this.perk.effect) && (this.perk.actions && !this.perk.actions().includes(actions.id) || action.applyEffect(this.perk.effect));
+            this.actions.push(actions.id, action);
+            this.actionList.appendChild(action.html);
+        }
+        return this;
+    },
+    lockAction: function(actions) {
+        if (isArray(actions)) for (var i = 0, l = actions.length; i < l; ++i) this.lockAction(actions[i]); else this.actions.pop(actions.id).lock();
+        return this;
+    },
+    rollForPerk: function(action) {
+        if (!this.perk) {
+            var self = this, perksList = DataManager.data.perks;
+            deepBrowse(perksList, function(perk) {
+                var actionsIds = isFunction(perk.actions) && perk.actions();
+                if ((!actionsIds || actionsIds.includes(action.id)) && (!isFunction(perk.condition) || perk.condition(action))) {
+                    var done = 0;
+                    done = actionsIds ? actionsIds.reduce(function(sum, id) {
+                        return sum + (self.stats.actionsDone[id] || 0);
+                    }, 0) / (perk.iteration || 0) : 1 / (perk.iteration || 0);
+                    done = done < 1 ? 0 : done;
+                    done && random() < perksList.dropRate * done && self.gainPerk.call(self, perk);
+                }
+            });
+        }
+    },
+    gainPerk: function(perk) {
+        perk.desc = LogManager.personify(perk.desc, this);
+        this.perk = perk;
+        this.perkNode.textContent = 'the "' + capitalize(perk.name) + '"';
+        tooltip(this.perkNode, perk);
+        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
+        if (isFunction(perk.effect)) {
+            var actionsIds = isFunction(perk.actions) && perk.actions();
+            this.actions.filter(function(action) {
+                return !actionsIds || actionsIds.includes(action.data.id);
+            }).forEach(function(action) {
+                action.applyEffect(perk.effect);
+            });
+        }
+        isFunction(perk.unlock) && this.addAction(perk.unlock());
+        isFunction(perk.lock) && this.lockAction(perk.lock());
+    },
+    die: function() {
+        if (this.html.classList.contains("arrived")) {
+            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+            this.html.classList.remove("arrived");
+            this.actions.forEach(function(action) {
+                action.cancel();
+                action.tooltip.remove();
+            });
+            TimerManager.timeout(function() {
+                this.html.remove();
+            }.bind(this), 400);
+        }
+        return this;
+    }
+};
+
+People.LST_ID = "peopleList";
+
+People.randomName = function(amount) {
+    return new Promise(function(resolve, reject) {
+        var baseUrl = "https://randomuser.me/api?inc=gender,name", countries = [ "AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US" ], url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + amount, xhr = new XMLHttpRequest();
+        xhr.open("get", url);
+        xhr.responseType = "json";
+        xhr.onload = function() {
+            resolve(this.response);
+        };
+        xhr.onerror = reject;
+        xhr.send();
+    });
+};
+
+Resource.prototype = {
+    _init: function(data) {
+        this.data = consolidateData(this, data, [ "name", "desc", "consume" ]);
+        this.tooltip && this.tooltip.remove();
+        this.tooltip = tooltip(this.html, this.data);
+        return this;
+    },
+    toHTML: function(data) {
+        var html = wrap("resource get-more");
+        this.counter = wrap("counter", "1");
+        html.appendChild(this.counter);
+        var icon = wrap("icon icon-" + data.icon);
+        html.appendChild(icon);
+        html.style.order = data.order;
+        return html;
+    },
+    refresh: function(resources) {
+        this.counter.textContent = floor(this.count);
+        resources && isArray(this.data.consume) && this.tooltip.refresh(resources, this.data.consume);
+        return this;
+    },
+    update: function(amount) {
+        this.set(this.count + amount);
+        var cb;
+        if (amount > 0 && !this.html.classList.contains("more")) {
+            this.html.classList.add("more");
+            cb = function() {
+                this.html.classList.remove("more");
+            }.bind(this);
+        } else if (amount < 0 && !this.html.classList.contains("less")) {
+            this.html.classList.add("less");
+            cb = function() {
+                this.html.classList.remove("less");
+            }.bind(this);
+        }
+        isFunction(cb) && TimerManager.timeout(cb, 700);
+        return this;
+    },
+    get: function() {
+        return 0 | this.count;
+    },
+    set: function(value) {
+        this.count = value;
+        if (this.count < 0) throw new RangeError("Resources count can't be negative");
+        return this.refresh();
+    },
+    has: function(amount) {
+        return this.count >= amount;
+    }
+};
+
+Resource.LST_ID = "resourceList";
+
+CanvasRenderingContext2D.prototype.clear = function() {
+    this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+};
+
+Collection.prototype = {
+    push: function(id, item) {
+        if (isUndefined(item)) {
+            item = id;
+            id = item.id || this.length + 1;
+        }
+        if (this.has(id)) return !1;
+        this.items[id] = item;
+        return ++this.length;
+    },
+    pop: function(id) {
+        var item = this.items[id];
+        if (item) {
+            delete this.items[id];
+            --this.length;
+            return item;
+        }
+        return !1;
+    },
+    has: function(id) {
+        return !!this.items[id];
+    },
+    get: function(id) {
+        if (!this.has(id)) throw new RangeError("Unknown ID (" + id + ") in Collection (" + this + ")");
+        return this.items[id];
+    },
+    set: function(id, value) {
+        if (!this.has(id)) throw new RangeError("Unknown ID (" + id + ") in Collection (" + this + ")");
+        return this.items[id] = value;
+    },
+    forEach: function(action) {
+        if (this.length > 0) for (var id in this.items) this.items.hasOwnProperty(id) && action(this.items[id], id, this);
+        return this;
+    },
+    filter: function(action) {
+        var kept = new Collection();
+        this.forEach(function(item, id, collection) {
+            action(item, id, collection) && kept.push(id, item);
+        });
+        return kept;
+    },
+    values: function() {
+        return this.items.values();
+    },
+    keys: function() {
+        return Object.keys(this.items);
+    },
+    random: function() {
+        return this.values().random();
+    },
+    clear: function() {
+        this.items = {};
+        this.length = 0;
+        return this;
+    },
+    toString: function() {
+        return "[" + this.keys().join(", ") + "]";
+    }
+};
+
+var random = function() {
+    var RAND = Math.random;
+    return function(from, to) {
+        from = +from || 0;
+        if (void 0 === to) {
+            to = 0 === from ? 1 : from;
+            from = 0;
+        } else to = +to;
+        return RAND() * (to - from) + from;
+    };
+}(), str = "", noop = new Function(), pickID = function() {
+    var IDS = [];
+    return function() {
+        var ID = "------".replace(/-/g, function() {
+            return round(random(36)).toString(36);
+        });
+        if (IDS.includes(ID)) return pickID();
+        IDS.push(ID);
+        return ID;
+    };
+}();
+
+Array.prototype.last = function() {
+    return this[this.length - 1];
+};
+
+Array.prototype.random = function() {
+    return this[floor(random(0, this.length))];
+};
+
+Array.prototype.out = function(item) {
+    this.splice(this.indexOf(item), 1);
+    return this.length;
+};
+
+Object.prototype.values = function() {
+    var values = [];
+    for (var key in this) this.hasOwnProperty(key) && values.push(this[key]);
+    return values;
+};
+//# sourceMappingURL=script.js.map
+window.VERSION='v0.1.5';
+window.isDev=true;
