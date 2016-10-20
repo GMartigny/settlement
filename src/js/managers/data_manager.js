@@ -341,7 +341,8 @@ var DataManager = (function () {
                         position: {
                             x: "60-100",
                             y: "25-75"
-                        }
+                        },
+                        animationSteps: 2
                     }
                 },
                 furnace: {

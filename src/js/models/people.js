@@ -7,7 +7,7 @@
 function peopleFactory (amount) {
     amount = amount || 1;
     // We don't want to spam the webservice when in dev
-    if (window.isDev) {
+    if (IS_DEV) {
         var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
         return Promise.resolve((new Array(amount)).fill(new People(code)));
     }

@@ -19,7 +19,7 @@ module.exports = function (grunt) {
             assets: "src/img/assets/**/*.png"
         }
     };
-    var versionStr = "window.VERSION='v<%= version %>';";
+    var VERSION = "v<%= version %>";
 
     grunt.initConfig({
         version: grunt.file.readJSON('package.json').version,
@@ -36,10 +36,6 @@ module.exports = function (grunt) {
                 dest: "dist/img/assets.png",
                 destCss: "dist/js/assets.json"
             }
-        },
-
-        imagemin: {
-            // TODO
         },
 
         less: {
@@ -66,11 +62,13 @@ module.exports = function (grunt) {
                     mangle: false,
                     beautify: true,
                     sourceMap: true,
-                    // banner: versionStr + "\nwindow.isDev=true;",
-                    footer: "\n" + versionStr + "\nwindow.isDev=true;",
                     compress: {
                         sequences: false,
-                        drop_debugger: false
+                        drop_debugger: false,
+                        global_defs: {
+                            IS_DEV: true,
+                            VERSION: VERSION
+                        }
                     }
                 },
                 files: {
@@ -80,7 +78,12 @@ module.exports = function (grunt) {
             prod: {
                 options: {
                     preserveComments: false,
-                    banner: versionStr,
+                    compress: {
+                        global_defs: {
+                            IS_DEV: false,
+                            VERSION: VERSION
+                        }
+                    },
                     enclose: {}
                 },
                 files: {

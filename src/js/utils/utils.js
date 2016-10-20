@@ -180,7 +180,7 @@ function randomizeMultiple (list, amount) {
  * @param {String} message - Any message
  */
 function log (message) {
-    if (window.isDev) {
+    if (IS_DEV) {
         console.log(message);
     }
 }
@@ -386,31 +386,30 @@ function loadAsync (urls, action) {
     var loadCount = 0;
     var toLoad = urls.length;
     return Promise.all(urls.map(function (url) {
+        var request = fetch(url).then(function (response) {
+            if (response.ok) {
+                return response;
+            }
+            else {
+                throw URIError("[" + response.status + "] " + url + " " + response.statusText);
+            }
+        });
         var promise;
         switch (url.substr(url.lastIndexOf(".") + 1)) {
             case "png":
             case "jpg":
             case "gif":
-                promise = new Promise(function (resolve, reject) {
+                promise = request.then(function (response) {
                     var img = new Image();
-                    img.onload = resolve.bind(null, img);
-                    img.onerror = reject;
-                    img.src = url;
+                    return response.blob().then(function (blob) {
+                        img.src = URL.createObjectURL(blob);
+                        return img;
+                    });
                 });
                 break;
             case "json":
-                promise = new Promise(function (resolve, reject) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("get", url);
-                    xhr.responseType = "json";
-                    /**
-                     * Resolve with response
-                     */
-                    xhr.onload = function () {
-                        resolve(this.response);
-                    };
-                    xhr.onerror = reject;
-                    xhr.send();
+                promise = request.then(function (response) {
+                    return response.json();
                 });
                 break;
             default :
@@ -420,8 +419,6 @@ function loadAsync (urls, action) {
             // Each step
             loaded[sanitize(url)] = file;
             action(++loadCount / toLoad * 100, url);
-        }).catch(function () {
-            console.log("Can't load " + url);
         });
     })).then(function () {
         return loaded;

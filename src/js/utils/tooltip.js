@@ -57,7 +57,7 @@ function tooltip (html, data) {
             if (data.time) {
                 box.appendChild(wrap("time", formatTime(data.time)));
             }
-            if (data.consume) {
+            if (isArray(data.consume)) {
                 var resourcesContainer = wrap("consumption");
                 var item;
                 data.consume.forEach(function (r) {

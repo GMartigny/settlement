@@ -1,4 +1,5 @@
 "use strict";
+/* global VERSION, IS_DEV */
 
 /**
  * Loader
@@ -14,7 +15,7 @@
         _assets,
         _assetsData
     ], function (percent, file) {
-        console.log(file + " : " + percent + "%");
+        console.log(file + " : " + percent.toFixed(2) + "%");
     }).then(function (media) {
         console.groupEnd();
         try {
@@ -22,13 +23,15 @@
                 images: media[sanitize(_assets)],
                 data: media[sanitize(_assetsData)]
             });
-            if (window.isDev) {
+            if (IS_DEV) {
                 window.G = Game;
             }
         }
         catch (e) {
             console.warn("Fail to load game : " + e.message, e.stack);
         }
+    }).catch(function (error) {
+        console.warn(error.message);
     });
 })();
 
@@ -72,7 +75,7 @@ GameController.prototype = {
      * @private
      */
     _init: function () {
-        console.log("Starting " + window.VERSION);
+        console.log("Starting " + VERSION);
         console.log("Stated in " + round(performance.now()) + "ms");
 
         var game = this;
@@ -179,7 +182,7 @@ GameController.prototype = {
             this.flags.paused = true;
         });
 
-        if (!window.isDev) {
+        if (!IS_DEV) {
             // early access warning
             popup({
                 name: "Early access",
@@ -515,22 +518,20 @@ GameController.prototype = {
         }
     }
 };
-if (window.isDev) {
-    GameController.prototype.debug = {
-        /**
-         * Earn one of each resources
-         * @returns {Game} Itself
-         */
-        oneOfEach: function () {
-            deepBrowse(DataManager.data.resources, function (resource) {
-                this.earn(1, resource);
-            }.bind(this));
+if (IS_DEV) {
+    /**
+     * Earn one of each resources
+     * @returns {GameController} Itself
+     */
+    GameController.prototype.oneOfEach = function () {
+        deepBrowse(DataManager.data.resources, function (resource) {
+            this.earn(1, resource);
+        }.bind(this));
 
-            deepBrowse(DataManager.data.buildings, function (build) {
-                this.build(build);
-            }.bind(this));
+        deepBrowse(DataManager.data.buildings, function (build) {
+            this.build(build);
+        }.bind(this));
 
-            return this;
-        }
+        return this;
     };
 }
