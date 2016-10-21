@@ -197,6 +197,13 @@ Action.prototype = {
             MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
         }
 
+        if (this.owner.plan) {
+            effect.plan = an(this.owner.plan.name);
+        }
+        if (this.owner.project) {
+            effect.project = an(this.owner.project.name);
+        }
+
         // Log
         var rawLog = "";
         if (isFunction(this.data.log)) {

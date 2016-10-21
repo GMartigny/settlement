@@ -377,7 +377,7 @@ GameController.prototype = {
      * @param {Boolean} [first=false] - First person
      */
     welcome: function (amount, first) {
-        peopleFactory(amount).then(function (persons) {
+        peopleFactory(amount || 1).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(this.initialActions.values());
 
@@ -495,6 +495,7 @@ GameController.prototype = {
     getRandomEvent: function () {
         var list = [],
             time = this.getSettledTime() / DataManager.time.week;
+        // TODO : find better definition
         if (time > 1) {
             list.push.apply(list, DataManager.data.events.easy.values());
             if (time > 2) {
@@ -504,7 +505,7 @@ GameController.prototype = {
                 }
             }
         }
-        // filter events already running or unmatched conditions
+        // filter events already running or with unmatched conditions
         list = list.filter(function (event) {
             return !this.events.has(event.id) &&
                 (!event.condition || (isFunction(event.condition) && event.condition(event)));

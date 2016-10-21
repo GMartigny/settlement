@@ -1,26 +1,27 @@
 "use strict";
 /**
  * Factory for people
- * @param {Number} [amount=1] - Number of people to create
+ * @param {Number} amount - Number of people to create
  * @return {Promise}
  */
 function peopleFactory (amount) {
-    amount = amount || 1;
     // We don't want to spam the webservice when in dev
-    if (IS_DEV) {
-        var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
-        return Promise.resolve((new Array(amount)).fill(new People(code)));
-    }
-    else {
-        return People.randomName(amount).then(function (response) {
-            var people = [];
-            response.results.forEach(function (data) {
-                var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
-                var person = new People(name, data.gender);
-                people.push(person);
+    if (amount) {
+        if (IS_DEV) {
+            var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
+            return Promise.resolve((new Array(amount)).fill(new People(code)));
+        }
+        else {
+            return People.randomName(amount).then(function (response) {
+                var people = [];
+                response.results.forEach(function (data) {
+                    var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
+                    var person = new People(name, data.gender);
+                    people.push(person);
+                });
+                return people;
             });
-            return people;
-        });
+        }
     }
 }
 
@@ -127,11 +128,13 @@ People.prototype = {
                 this.accusative = "her";
                 this.possessive = "her";
                 this.reflexive = "herself";
+                break;
             case "male":
                 this.nominative = "he";
                 this.accusative = "him";
                 this.possessive = "his";
                 this.reflexive = "hisself";
+                break;
             default:
                 this.nominative = "it";
                 this.accusative = "it";
