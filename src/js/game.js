@@ -529,9 +529,9 @@ if (IS_DEV) {
             this.earn(1, resource);
         }.bind(this));
 
-        deepBrowse(DataManager.data.buildings, function (build) {
-            this.build(build);
-        }.bind(this));
+//        deepBrowse(DataManager.data.buildings, function (build) {
+//            this.build(build);
+//        }.bind(this));
 
         return this;
     };

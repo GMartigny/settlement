@@ -105,6 +105,9 @@ People.prototype = {
             if (this.busy) {
                 ratio = (this.busy.energy || 0) / this.busy.time;
             }
+            else if (this.perk && this.perk.id === DataManager.data.perks.lounger.id) {
+                ratio = 0;
+            }
             this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
             if (this.thirsty) { // drying
                 this.updateLife(-elapse * this.thirsty * 30);
@@ -269,7 +272,7 @@ People.prototype = {
                 this.lockAction(actions[i]);
             }
         }
-        else {
+        else if (this.actions.has(actions.id)) {
             this.actions.pop(actions.id).lock();
         }
         return this;

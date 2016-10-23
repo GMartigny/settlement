@@ -10,9 +10,17 @@
 }
 
 .icon(@sprite) {
-    .sprite-position(@sprite);
-    .sprite-width(@sprite);
-    .sprite-height(@sprite);
+    @size: extract(@sprite, 7);
+    background-size: @size * 2;
+
+    @sprite-offset-x: extract(@sprite, 3);
+    @sprite-offset-y: extract(@sprite, 4);
+    background-position: (@sprite-offset-x * 2) (@sprite-offset-y * 2);
+
+    @width: extract(@sprite, 5);
+    @height: extract(@sprite, 6);
+    width: @width * 2;
+    height: @height * 2;
 }
 
 .icons(@sprites, @i: 1) when (@i <= length(@sprites)) {

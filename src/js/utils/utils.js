@@ -111,9 +111,10 @@ function capitalize (string) {
 /**
  * Pick a random item from nested object
  * @param {Object} list - A potentially nested object
- * @param {String} [amount=1] - Interval for random "-" separated (0 can be omitted)
+ * @param {String|Array} [amount=1] - Interval for random "-" separated or array
  * @example
  * randomize(data, "2-5") // between 2 and 5
+ * randomize(data, [2, 5]) // between 2 and 5
  * randomize(data, "5") // between 0 and 5
  * randomize(data) // 1 result
  * @returns {Array|Object} An array of Object or one Object if no amount requested
@@ -143,7 +144,10 @@ function randomize (list, amount) {
     }
 
     if (amount) {
-        return [round(random.apply(null, (amount + "").split("-"))), all[pick]];
+        if (isString(amount)) {
+            amount = amount.split("-");
+        }
+        return [round(random.apply(null, amount)), all[pick]];
     }
     else {
         return all[pick];
@@ -153,7 +157,7 @@ function randomize (list, amount) {
 /**
  * Return a random amount of random items
  * @param {Object} list - A list draw from
- * @param {String} amount - Interval for randomness separated by "-"
+ * @param {String|Array} amount - Interval for randomness separated by "-" or array
  * @see randomize
  * @return {Array}
  */
@@ -163,7 +167,10 @@ function randomizeMultiple (list, amount) {
     }
     var res = [];
 
-    var total = round(random.apply(null, (amount + "").split("-")));
+    if (isString(amount)) {
+        amount = amount.split("-");
+    }
+    var total = round(random.apply(null, amount));
     var sum = 0;
 
     while (sum + 1 <= total) { // can't add 1
@@ -270,6 +277,10 @@ function isFunction (func) {
  */
 function isArray (array) {
     return Array.isArray(array);
+}
+
+function isString (string) {
+    return typeof string === "string";
 }
 
 /**

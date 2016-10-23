@@ -76,10 +76,10 @@ var LogManager = (function () {
          * @return {String}
          */
         personify: function (string, data) {
-            return string.replace(/@([\w\.]+)(?=.)/gi, function (match, capture) {
-                var replace = "";
+            return string.replace(/@([\w\.]+)\b/gi, function (match, capture) {
+                var replace = data;
                 capture.split(".").forEach(function (part) {
-                    replace = data[part];
+                    replace = replace[part];
                 });
                 return replace || "";
             });
