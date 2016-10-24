@@ -132,7 +132,7 @@ module.exports = function (grunt) {
             }
         },
         "gh-pages": {
-            src: ["index.html", "dist/**/*"],
+            src: ["index.html", "favicon.png", "dist/**/*"],
             options: {
                 message: "Auto-commit: push to prod."
             }
