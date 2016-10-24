@@ -188,7 +188,7 @@ GameController.prototype = {
                 name: "Early access",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
                 "If you want to report a bug or anything to improve the game, go to " +
-                "<a href='https://github.com/GMartigny/settlement'>the repo</a>.<br/><br/>" +
+                "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
                 "Thanks for playing !"
             }, function () {
                 this.flags.ready = true;
@@ -377,7 +377,7 @@ GameController.prototype = {
      * @param {Boolean} [first=false] - First person
      */
     welcome: function (amount, first) {
-        peopleFactory(amount || 1).then(function (persons) {
+        peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(this.initialActions.values());
 
@@ -471,9 +471,12 @@ GameController.prototype = {
             done = this.buildings;
 
         deepBrowse(DataManager.data.buildings, function (build) {
-            if ((!build.unique || build.unique && !done.has(build.id)) &&
-                (isFunction(build.condition) && build.condition())) {
-                buildings.push(build);
+            // not unique and done
+            if (!build.unique || build.unique && !done.has(build.id)) {
+                // no condition or condition meet
+                if (!isFunction(build.condition) || build.condition()) {
+                    buildings.push(build);
+                }
             }
         });
 
@@ -486,7 +489,7 @@ GameController.prototype = {
     canSomeoneArrive: function () {
         return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1) &&
             random() < DataManager.data.people.dropRate &&
-            this.getSettledTime() / DataManager.time.day > 2;
+            this.getSettledTime() / DataManager.time.day > 5;
     },
     /**
      * Return an event that can happened
@@ -521,7 +524,7 @@ GameController.prototype = {
 };
 if (IS_DEV) {
     /**
-     * Earn one of each resources
+     * Earn one of each resources and buildings
      * @returns {GameController} Itself
      */
     GameController.prototype.oneOfEach = function () {
@@ -529,9 +532,9 @@ if (IS_DEV) {
             this.earn(1, resource);
         }.bind(this));
 
-//        deepBrowse(DataManager.data.buildings, function (build) {
-//            this.build(build);
-//        }.bind(this));
+        // deepBrowse(DataManager.data.buildings, function (build) {
+        //     this.build(build);
+        // }.bind(this));
 
         return this;
     };

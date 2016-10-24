@@ -71,23 +71,26 @@ Resource.prototype = {
      * @return {Resource} Itself
      */
     update: function (amount) {
+        var prevAmount = this.count;
         this.set(this.count + amount);
 
-        var cb;
-        if (amount > 0 && !this.html.classList.contains("more")) {
-            this.html.classList.add("more");
-            cb = function () {
-                this.html.classList.remove("more");
-            }.bind(this);
-        }
-        else if (amount < 0 && !this.html.classList.contains("less")) {
-            this.html.classList.add("less");
-            cb = function () {
-                this.html.classList.remove("less");
-            }.bind(this);
-        }
-        if (isFunction(cb)) {
-            TimerManager.timeout(cb, 700);
+        if (floor(prevAmount) !== floor(this.count)) {
+            var cb;
+            if (amount > 0 && !this.html.classList.contains("more")) {
+                this.html.classList.add("more");
+                cb = function () {
+                    this.html.classList.remove("more");
+                }.bind(this);
+            }
+            else if (amount < 0 && !this.html.classList.contains("less")) {
+                this.html.classList.add("less");
+                cb = function () {
+                    this.html.classList.remove("less");
+                }.bind(this);
+            }
+            if (isFunction(cb)) {
+                TimerManager.timeout(cb, 700);
+            }
         }
         return this;
     },

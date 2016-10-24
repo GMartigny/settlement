@@ -1,27 +1,25 @@
 "use strict";
 /**
  * Factory for people
- * @param {Number} amount - Number of people to create
+ * @param {Number} [amount=1] - Number of people to create
  * @return {Promise}
  */
 function peopleFactory (amount) {
     // We don't want to spam the webservice when in dev
-    if (amount) {
-        if (IS_DEV) {
-            var code = "Bot-" + random().toString(36).substr(-round(random(2, 22)), 3).toUpperCase();
-            return Promise.resolve((new Array(amount)).fill(new People(code)));
-        }
-        else {
-            return People.randomName(amount).then(function (response) {
-                var people = [];
-                response.results.forEach(function (data) {
-                    var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
-                    var person = new People(name, data.gender);
-                    people.push(person);
-                });
-                return people;
+    if (IS_DEV) {
+        var code = "Bot-" + random().toString(36).substr(-round(random(3, 24)), 3).toUpperCase();
+        return Promise.resolve((new Array(amount || 1)).fill(new People(code)));
+    }
+    else {
+        return People.randomName(amount).then(function (response) {
+            var people = [];
+            response.results.forEach(function (data) {
+                var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
+                var person = new People(name, data.gender);
+                people.push(person);
             });
-        }
+            return people;
+        });
     }
 }
 
@@ -136,7 +134,7 @@ People.prototype = {
                 this.nominative = "he";
                 this.accusative = "him";
                 this.possessive = "his";
-                this.reflexive = "hisself";
+                this.reflexive = "himself";
                 break;
             default:
                 this.nominative = "it";
@@ -147,7 +145,7 @@ People.prototype = {
     },
     /**
      * Set busy with an action
-     * @param {Action} action - Current action
+     * @param {Object} action - Current action's data
      * @returns {People} Itself
      */
     setBusy: function (action) {
@@ -227,7 +225,7 @@ People.prototype = {
     /**
      * Prepare a project
      * @param {Object} craftable - Craftable tto prepare's data
-     * @return {People} Itself
+     * @returns {People} Itself
      */
     prepareProject: function (craftable) {
         this.project = craftable;
@@ -279,40 +277,49 @@ People.prototype = {
     },
     /**
      * Try to obtains a perk
+     * @param {Object} action - Action's data
+     * @returns {Boolean} true if got perk
      */
     rollForPerk: function (action) {
+        var gotPerk = false;
         if (!this.perk) {
             var self = this;
             var perksList = DataManager.data.perks;
             // browse all perks
             deepBrowse(perksList, function (perk) {
-                // perk is compatible
-                var actionsIds = isFunction(perk.actions) && perk.actions();
-                if (!actionsIds || actionsIds.includes(action.id)) {
-                    if (!isFunction(perk.condition) || perk.condition(action)) {
-                        var done = 0;
-                        if (!actionsIds) {
-                            done = 1 / (perk.iteration || 0);
-                        }
-                        else {
-                            done = actionsIds.reduce(function (sum, id) {
-                                    return sum + (self.stats.actionsDone[id] || 0);
-                                }, 0) / (perk.iteration || 0);
-                        }
-                        done = done < 1 ? 0 : done;
-                        // perk dice roll
-                        if (done && random() < perksList.dropRate * done) {
-                            // perk is unlocked
-                            self.gainPerk.call(self, perk);
+                // perk not used
+                if (!People.usedPerks.includes(perk.id)) {
+                    // perk is compatible
+                    var actionsIds = isFunction(perk.actions) && perk.actions();
+                    if (!actionsIds || actionsIds.includes(action.id)) {
+                        if (!isFunction(perk.condition) || perk.condition(action)) {
+                            var done = 0;
+                            if (!actionsIds) {
+                                done = 1 / (perk.iteration || 0);
+                            }
+                            else {
+                                done = actionsIds.reduce(function (sum, id) {
+                                        return sum + (self.stats.actionsDone[id] || 0);
+                                    }, 0) / (perk.iteration || 0);
+                            }
+                            done = done < 1 ? 0 : done;
+                            // perk dice roll
+                            if (done && random() < perksList.dropRate * done) {
+                                // perk is unlocked
+                                self.gainPerk.call(self, perk);
+                                gotPerk = true;
+                            }
                         }
                     }
                 }
             });
         }
+        return gotPerk;
     },
     /**
      * Add a perk
      * @param {Object} perk - The perk data
+     * @returns {People} Itself
      */
     gainPerk: function (perk) {
         perk.desc = LogManager.personify(perk.desc, this);
@@ -335,6 +342,8 @@ People.prototype = {
         if (isFunction(perk.lock)) {
             this.lockAction(perk.lock());
         }
+        People.usedPerks.push(perk.id);
+        return this;
     },
     /**
      * Kill this
@@ -356,27 +365,25 @@ People.prototype = {
     }
 };
 People.LST_ID = "peopleList";
+People.usedPerks = [];
 /**
  * Return a promise for a random name
- * @param {Number} amount - Number of name to get
- * @return {Promise}
+ * @param {Number} [amount=1] - Number of name to get
+ * @returns {Promise}
  */
 People.randomName = function (amount) {
     return new Promise(function (resolve, reject) {
         var baseUrl = "https://randomuser.me/api?inc=gender,name";
         var countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
-        var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + amount;
+        var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + (amount || 1);
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("get", url);
-        xhr.responseType = "json";
-        /**
-         * Resolve with response
-         */
-        xhr.onload = function () {
-            resolve(this.response);
-        };
-        xhr.onerror = reject;
-        xhr.send();
+        fetch(url).then(function (response) {
+            if (response.ok) {
+                return response.json().then(resolve);
+            }
+            else {
+                reject(URIError("[" + response.status + "] " + url + " " + response.statusText));
+            }
+        });
     });
 };

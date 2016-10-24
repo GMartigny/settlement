@@ -53,7 +53,7 @@ function formatArray (array) {
     array.forEach(function (item) {
         var name = pluralize(item[1].name, item[0]);
         if (item[1].icon) {
-            name += " " + wrap("icon icon-" + item[1].icon).outerHTML;
+            name += " " + wrap("icon icon-small-" + item[1].icon).outerHTML;
         }
         res.push(item[0] + " " + name);
     });
@@ -88,7 +88,7 @@ function formatJoin (array, final) {
  * @returns {string}
  */
 function pluralize (string, number) {
-    return string + (number > 1 ? "s" : "");
+    return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
 }
 
 /**
@@ -279,6 +279,11 @@ function isArray (array) {
     return Array.isArray(array);
 }
 
+/**
+ * Test if is a string
+ * @param {*} string - Anything to test
+ * @return {Boolean}
+ */
 function isString (string) {
     return typeof string === "string";
 }

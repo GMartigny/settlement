@@ -23,11 +23,21 @@
     height: @height * 2;
 }
 
+.icon-small(@sprite) {
+    background-size: auto;
+    .sprite-position(@sprite);
+    .sprite-width(@sprite);
+    .sprite-height(@sprite);
+}
+
 .icons(@sprites, @i: 1) when (@i <= length(@sprites)) {
     @sprite: extract(@sprites, @i);
     @sprite-name: e(extract(@sprite, 10));
     .icon-@{sprite-name} {
         .icon(@sprite);
+    }
+    .icon-small-@{sprite-name} {
+        .icon-small(@sprite);
     }
     .icons(@sprites, @i + 1);
 }

@@ -311,7 +311,7 @@ var DataManager = (function () {
             desc: "The workforce and the bane of you camp.",
             need: function () {
                 return [
-                    [1.5 / time.day, data.resources.gatherable.common.food],
+                    [1 / time.day, data.resources.gatherable.common.food],
                     [1 / time.day, data.resources.gatherable.common.water]
                 ];
             },
@@ -336,15 +336,7 @@ var DataManager = (function () {
                         ];
                     },
                     log: "That's small and ugly, but give @give for someone to sleep safely.",
-                    dropRate: 100,
-                    asset: {
-                        image: "tent",
-                        position: {
-                            x: "60-100",
-                            y: "25-75"
-                        },
-                        animationSteps: 2
-                    }
+                    dropRate: 100
                 },
                 furnace: {
                     name: "furnace",
@@ -918,7 +910,7 @@ var DataManager = (function () {
                     if (isFunction(action.owner.plan.consume)) {
                         consume.push.apply(consume, action.owner.plan.consume(action));
                     }
-                    return consume;
+                    return compactResources(consume);
                 },
                 lock: function (action) {
                     var lock = [action.data];
@@ -990,7 +982,10 @@ var DataManager = (function () {
                 name: "harvest crops",
                 desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
                 time: function () {
-                    var nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
+                    var nbCrops = 0;
+                    if (this.buildings.has(data.buildings.small.plot.id)) {
+                        nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
+                    }
                     return 4 + nbCrops;
                 },
                 consume: function () {
