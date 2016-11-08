@@ -55,6 +55,7 @@ Collection.prototype = {
      * Return an item from the collection
      * @param {String} id - ID of the item
      * @return {*} The corresponding item
+     * @throws RangeError
      */
     get: function (id) {
         if (!this.has(id)) {

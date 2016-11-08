@@ -1,5 +1,5 @@
 "use strict";
-/* global VERSION, IS_DEV */
+/* global VERSION, IS_DEV, performance */
 
 /**
  * Loader
@@ -43,6 +43,9 @@
  * @constructor
  */
 function GameController (holder, assets) {
+    console.log("Loaded in " + round(performance.now()) + "ms");
+    console.log("Starting " + VERSION);
+
     this.holder = holder;
     this.assets = assets;
 
@@ -64,9 +67,11 @@ function GameController (holder, assets) {
     };
 
     this.lastTick = performance.now();
-    this._init();
 
+    this._init();
     this.refresh();
+
+    console.log("Started in " + round(performance.now()) + "ms");
 }
 GameController.tickLength = 2000;
 GameController.prototype = {
@@ -75,9 +80,6 @@ GameController.prototype = {
      * @private
      */
     _init: function () {
-        console.log("Starting " + VERSION);
-        console.log("Stated in " + round(performance.now()) + "ms");
-
         var game = this;
         deepBrowse(DataManager.data, function (item) {
             item.id = pickID();
@@ -112,6 +114,7 @@ GameController.prototype = {
         this.logsList.id = "logs";
         this.holder.appendChild(this.logsList);
 
+        // Start managers
         GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
         LogManager.start(this.logsList);
         TimerManager.start();
@@ -119,9 +122,8 @@ GameController.prototype = {
         // First person arrives
         TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 
-        var busInstance = MessageBus.getInstance();
         // We may find resources
-        busInstance.observe(MessageBus.MSG_TYPES.GIVE, function (given) {
+        MessageBus.observe(MessageBus.MSG_TYPES.GIVE, function (given) {
             if (isArray(given)) {
                 given.forEach(function (r) {
                     game.earn.apply(game, r);
@@ -130,14 +132,14 @@ GameController.prototype = {
         });
 
         // We may have a resource collector
-        busInstance.observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
+        MessageBus.observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
             if (isArray(collected)) {
                 compactResources(game.collects.concat(collected));
             }
         });
 
         // We may use resources
-        busInstance.observe(MessageBus.MSG_TYPES.USE, function (use) {
+        MessageBus.observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
                 compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
@@ -146,39 +148,39 @@ GameController.prototype = {
         });
 
         // We may build
-        busInstance.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
+        MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
                 game.build(building);
             }
         });
 
         // And we may die :'(
-        busInstance.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
+        MessageBus.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
             game.people.out(person);
             // The last hope fade away
             if (game.people.length <= 0) {
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
+                MessageBus.notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
                 game.flags.paused = true;
             }
         });
 
         // Keep track of running events
-        busInstance.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
+        MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
             game.events.push(event.data.id, event);
         });
-        busInstance.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
+        MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
             game.events.pop(event.data.id);
         });
 
         // Lock or unlock actions for all
-        busInstance.observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
+        MessageBus.observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
             game.removeFromInitialActions(actions);
         });
-        busInstance.observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
+        MessageBus.observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
             game.addToInitialActions(actions);
         });
 
-        busInstance.observe(MessageBus.MSG_TYPES.WIN, function () {
+        MessageBus.observe(MessageBus.MSG_TYPES.WIN, function () {
             this.flags.paused = true;
         });
 
@@ -194,7 +196,6 @@ GameController.prototype = {
                 this.flags.ready = true;
             }.bind(this));
         }
-
     },
     /**
      * Add actions to initial actions list
@@ -273,16 +274,29 @@ GameController.prototype = {
             if (this.flags.settled) {
                 this.flags.survived += elapse * GameController.tickLength;
                 // People consume resources to survive
-                // TODO : need refacto
-                DataManager.data.people.need().forEach(function (need) {
-                    var waterId = DataManager.data.resources.gatherable.common.water.id;
-                    var state = need[1].id === waterId ? "thirsty" : "starving";
-                    this.consume(need[0] * this.people.length, need[1], function (number) {
-                        // update people if lacking
-                        this.people.forEach(function (person, index, list) {
-                            person[state] = number / list.length;
-                        });
-                    });
+                var peopleConsumption = DataManager.data.people.needs(this.flags);
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, peopleConsumption);
+                peopleConsumption.forEach(function (need) {
+                    var resource = need[0];
+                    var amount = need[1];
+                    var lacking = need[2];
+
+                    var instance = this.resources.has(resource.id) && this.resources.get(resource.id);
+                    if (!instance) {
+                        instance = new Resource(resource);
+                        this.resources.push(instance);
+                    }
+                    if (instance.count < amount) {
+                        if (!instance.warnLack) {
+                            MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resource);
+                            instance.warnLack = true;
+                        }
+                        this.flags[lacking] += amount - instance.count;
+                    }
+                    else {
+                        instance.warnLack = false;
+                        this.flags[lacking] = 0;
+                    }
                 }.bind(this));
 
                 if (this.canSomeoneArrive()) {
@@ -350,7 +364,7 @@ GameController.prototype = {
 
                 if (!instance.warnLack) {
                     instance.warnLack = true;
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.RUNS_OUT, resource.name);
+                    MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resource.name);
                 }
             }
         }
@@ -393,11 +407,11 @@ GameController.prototype = {
                 else {
                     //noinspection BadExpressionStatementJS - force redraw
                     person.html.offsetHeight;
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
+                    MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
 
                     if (this.people.length === 2) {
                         TimerManager.timeout(function () {
-                            MessageBus.getInstance().notify(
+                            MessageBus.notify(
                                 MessageBus.MSG_TYPES.LOGS.FLAVOR,
                                 person.name + " say that there's other desert-walkers " +
                                     "ready to join you if there's room for them.");

@@ -4,7 +4,7 @@ var GraphicManager = (function () {
     var _imageData;
 
     var _buildingsLayer;
-    var _buildingsList = [];
+    var _buildingsList;
     var _eventsLayer;
     var _eventsList;
 
@@ -30,32 +30,58 @@ var GraphicManager = (function () {
             layer.cnv.classList.add("layer");
             wrapper.appendChild(layer.cnv);
 
-            var busInstance = MessageBus.getInstance();
             // watch for new buildings
-            busInstance.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
+            _buildingsList = [];
+            MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building.asset) {
-                    _buildingsList.push(new Asset(_imageData[building.asset.image], building.asset));
-                    _buildingsList.sort(function (a, b) {
+                    if (!_buildingsList[building.id]) {
+                        _buildingsList[building.id] = [];
+                    }
+                    _buildingsList[building.id].push(new Asset(_imageData[building.asset.image], building.asset));
+                    _buildingsList[building.id].sort(function (a, b) {
                         return a.compare(b);
                     });
                 }
             }.bind(this));
+            // watch for upgrade of buildings
+            MessageBus.observe(MessageBus.MSG_TYPES.UPGRADE, function (upgrade) {
+                var target;
+                // select an asset to upgrade
+                if (_buildingsList[upgrade.from.id] && _buildingsList[upgrade.from.id].length) {
+                    var randomIndex = random(_buildingsList[upgrade.from.id].length - 1);
+                    target = _buildingsList[upgrade.from.id].splice(randomIndex, 1)[0];
+                }
+                if (upgrade.to.asset) {
+                    var assetData = upgrade.to.asset;
+                    if (target) {
+                        target.defineData(assetData, {
+                            position: target.destination
+                        });
+                    }
+                    else {
+                        _buildingsList[upgrade.to.id].push(new Asset(_imageData[assetData.image], assetData));
+                        _buildingsList[upgrade.to.id].sort(function (a, b) {
+                            return a.compare(b);
+                        });
+                    }
+                }
+            });
 
             // watch for new events
             _eventsList = new Collection();
-            busInstance.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
+            MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
                 if (event.asset) {
                     _eventsList.push(event.id, new Asset(_imageData[event.asset.image], event.asset));
                 }
             });
-            busInstance.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
+            MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
                 if (_eventsList.has(event.id)) {
                     _eventsList.pop(event.id);
                 }
             });
 
             // watch for food and water level
-            busInstance.observe([MessageBus.MSG_TYPES.USE, MessageBus.MSG_TYPES.REFRESH], function (resource) {
+            MessageBus.observe([MessageBus.MSG_TYPES.USE, MessageBus.MSG_TYPES.GIVE], function (resource) {
                 switch (resource.id) {
                     case DataManager.data.resources.gatherable.common.water:
                         break;
@@ -64,6 +90,7 @@ var GraphicManager = (function () {
                 }
             });
 
+            // start loopdy loop
             this.render();
         },
         /**
@@ -74,8 +101,10 @@ var GraphicManager = (function () {
 
             if (_buildingsList.length) {
                 _buildingsLayer.clear();
-                _buildingsList.forEach(function (asset) {
-                    asset.render(_combinedImage, _buildingsLayer);
+                _buildingsList.forEach(function (assetType) {
+                    assetType.forEach(function (asset) {
+                        asset.render(_combinedImage, _buildingsLayer);
+                    });
                 });
             }
 
@@ -97,44 +126,47 @@ var GraphicManager = (function () {
  */
 function Asset (sourceData, destData) {
     this.animationState = 0;
-    this.animationSteps = destData.animationSteps || 1;
-    this.size = {
-        width: sourceData.width / this.animationSteps,
-        height: sourceData.height
-    };
-    this.origin = {
-        x: sourceData.x,
-        y: sourceData.y,
-        width: sourceData.width / this.animationSteps,
-        height: sourceData.height
-    };
 
-    this.destination = {
-        width: this.origin.width * Asset.ENLARGE,
-        height: this.origin.height * Asset.ENLARGE
-    };
-    if (destData.position) {
-        if (destData.position.x.includes("-")) {
-            this.destination.x = random.apply(null, (destData.position.x + "").split("-"));
-        }
-        else {
-            this.destination.x = +destData.position.x;
-        }
-        if (destData.position.y.includes("-")) {
-            this.destination.y = random.apply(null, (destData.position.y + "").split("-"));
-        }
-        else {
-            this.destination.y = +destData.position.y;
-        }
-    }
-    else {
-        this.destination.x = 50;
-        this.destination.y = 50;
-    }
+    this.defineData(sourceData, destData);
 }
 Asset.ANIMATION_INC = 2 / 60; // 2 animations per seconds at 60fps
-Asset.ENLARGE = 4; // 4 times bigger
+Asset.ENLARGE = 4; // 4 times bigger !!§!
 Asset.prototype = {
+    /**
+     * Define data for asset
+     * @param sourceData
+     * @param destData
+     */
+    defineData: function (sourceData, destData) {
+        this.animationSteps = destData.animationSteps || 1;
+        this.origin = {
+            x: sourceData.x,
+            y: sourceData.y,
+            width: floor(sourceData.width / this.animationSteps),
+            height: sourceData.height
+        };
+
+        this.destination = {
+            width: this.origin.width * Asset.ENLARGE,
+            height: this.origin.height * Asset.ENLARGE,
+            x: 50,
+            y: 50
+        };
+        if (destData.position) {
+            if (destData.position.x.includes("-")) {
+                this.destination.x = random.apply(null, (destData.position.x + "").split("-"));
+            }
+            else {
+                this.destination.x = +destData.position.x;
+            }
+            if (destData.position.y.includes("-")) {
+                this.destination.y = random.apply(null, (destData.position.y + "").split("-"));
+            }
+            else {
+                this.destination.y = +destData.position.y;
+            }
+        }
+    },
     /**
      * Draw this asset into a context
      * @param {HTMLImageElement} image - A combined image
@@ -142,7 +174,7 @@ Asset.prototype = {
      */
     render: function (image, layer) {
         this.animationState = (this.animationState + Asset.ANIMATION_INC) % this.animationSteps;
-        var animationShift = floor(floor(this.animationState) * this.size.width);
+        var animationShift = floor(floor(this.animationState) * this.origin.width);
         var posX = floor(layer.canvas.width * (this.destination.x / 100) - (this.destination.width / 2));
         var posY = floor(layer.canvas.height * (this.destination.y / 100) - (this.destination.height / 2));
         layer.drawImage(image,

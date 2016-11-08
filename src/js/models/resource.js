@@ -120,6 +120,25 @@ Resource.prototype = {
      */
     has: function (amount) {
         return this.count >= amount;
+    },
+    /**
+     * Format to string
+     * @return {string}
+     */
+    toString: function () {
+        var str = this.count + " " + pluralize(this.data.name, this.count);
+        if (this.data.icon) {
+            str += " " + Resource.iconAsString(this.data.icon);
+        }
+        return str;
     }
+};
+/**
+ * Give the HTML string for an icon name
+ * @param {String} iconName - An icon name
+ * @return {String}
+ */
+Resource.iconAsString = function (iconName) {
+    return wrap("icon icon-small-" + iconName).outerHTML;
 };
 Resource.LST_ID = "resourceList";

@@ -1,4 +1,5 @@
 "use strict";
+/* global IS_DEV */
 
 var str = "",
     noop = new Function();
@@ -53,7 +54,7 @@ function formatArray (array) {
     array.forEach(function (item) {
         var name = pluralize(item[1].name, item[0]);
         if (item[1].icon) {
-            name += " " + wrap("icon icon-small-" + item[1].icon).outerHTML;
+            name += " " + Resource.iconAsString(item[1].icon);
         }
         res.push(item[0] + " " + name);
     });
@@ -68,9 +69,8 @@ function formatArray (array) {
  * @return {String}
  */
 function formatJoin (array, final) {
-    final = final || "and";
     if (array.length > 1) {
-        array[array.length - 2] += " " + final + " " + array.pop();
+        array[array.length - 2] += " " + (final || "and") + " " + array.pop();
         return array.join(", ");
     }
     else if (array.length) {

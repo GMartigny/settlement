@@ -55,7 +55,7 @@ Event.prototype = {
             this.data.effect(true);
 
             if (this.data.time) {
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_START, this);
+                MessageBus.notify(MessageBus.MSG_TYPES.EVENT_START, this);
                 var duration = this.data.time * GameController.tickLength;
 
                 if (this.data.deltaTime) {
@@ -77,7 +77,7 @@ Event.prototype = {
     end: function () {
         this.data.effect(false);
         this.timer = null;
-        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.EVENT_END, this);
+        MessageBus.notify(MessageBus.MSG_TYPES.EVENT_END, this);
 
         this.html.remove();
     }

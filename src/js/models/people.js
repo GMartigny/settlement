@@ -1,4 +1,6 @@
 "use strict";
+/* global IS_DEV */
+
 /**
  * Factory for people
  * @param {Number} [amount=1] - Number of people to create
@@ -120,7 +122,6 @@ People.prototype = {
     },
     /**
      * Define people pronouns
-     * @param {String} gender - The people's gender
      */
     setPronouns: function () {
         switch (this.gender) {
@@ -327,7 +328,7 @@ People.prototype = {
         this.perkNode.textContent = "the \"" + capitalize(perk.name) + "\"";
         tooltip(this.perkNode, perk);
 
-        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
+        MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
         if (isFunction(perk.effect)) {
             var actionsIds = isFunction(perk.actions) && perk.actions();
             this.actions.filter(function (action) {
@@ -351,7 +352,7 @@ People.prototype = {
      */
     die: function () {
         if (this.html.classList.contains("arrived")) {
-            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+            MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
             this.actions.forEach(function (action) {
                 action.cancel();

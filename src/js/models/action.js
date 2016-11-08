@@ -100,7 +100,7 @@ Action.prototype = {
         if (!this.owner.busy && !this.locked) {
             // Use
             if (isArray(this.data.consume)) {
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, this.data.consume);
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, this.data.consume);
             }
 
             ++this.repeated;
@@ -151,7 +151,7 @@ Action.prototype = {
         }
         give = compactResources(give);
         if (give.length) {
-            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.GIVE, give);
+            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, give);
             effect.give = formatArray(give);
         }
 
@@ -166,7 +166,7 @@ Action.prototype = {
         }
         collect = compactResources(collect);
         if (collect.length) {
-            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.COLLECT, collect);
+            MessageBus.notify(MessageBus.MSG_TYPES.COLLECT, collect);
             effect.collect = formatArray(collect);
         }
 
@@ -177,7 +177,7 @@ Action.prototype = {
             }.bind(this));
             if (this.data.unique) {
                 // add to all
-                MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
+                MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
             }
             else {
                 // add to owner
@@ -190,11 +190,19 @@ Action.prototype = {
             this.owner.lockAction(lock);
         }
         if (this.data.unique) {
-            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOCK, this.data);
+            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data);
         }
 
         if (build) {
-            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.BUILD, build);
+            if (isFunction(build.upgrade)) {
+                MessageBus.notify(MessageBus.MSG_TYPES.UPGRADE, {
+                    from: build.upgrade(),
+                    to: build
+                });
+            }
+            else {
+                MessageBus.notify(MessageBus.MSG_TYPES.BUILD, build);
+            }
         }
 
         if (this.owner.plan) {
@@ -213,7 +221,7 @@ Action.prototype = {
             rawLog = this.data.log;
         }
         var log = LogManager.personify(rawLog, effect);
-        MessageBus.getInstance().notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
+        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
         this.owner.finishAction();
     },
     /**

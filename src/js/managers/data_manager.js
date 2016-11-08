@@ -309,10 +309,15 @@ var DataManager = (function () {
         people: {
             name: "people",
             desc: "The workforce and the bane of you camp.",
-            need: function () {
+            consumption: {
+                water: 1 / time.day,
+                food: 1 / time.day
+            },
+            needs: function (flags) {
+                var waterNeed = data.people.consumption.water * (flags.drought ? 2 : 1);
                 return [
-                    [1 / time.day, data.resources.gatherable.common.food],
-                    [1 / time.day, data.resources.gatherable.common.water]
+                    [waterNeed, data.resources.gatherable.common.water, "thirsty"],
+                    [data.people.consumption.food, data.resources.gatherable.common.food, "starving"]
                 ];
             },
             dropRate: 0.005
@@ -334,6 +339,13 @@ var DataManager = (function () {
                         return [
                             [1, data.resources.room]
                         ];
+                    },
+                    asset: {
+                        image: "",
+                        position: {
+                            x: "60-100",
+                            y: "30-60"
+                        }
                     },
                     log: "That's small and ugly, but give @give for someone to sleep safely.",
                     dropRate: 100
@@ -433,10 +445,8 @@ var DataManager = (function () {
                             [2, data.resources.craftable.basic.tool]
                         ];
                     },
-                    unlock: function () {
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD,
-                            data.buildings.small.well.furnace);
-                        return [];
+                    upgrade: function () {
+                        return data.buildings.small.furnace.id;
                     },
                     log: "We can now work metal better and make more complex part.",
                     unique: true,
@@ -455,8 +465,10 @@ var DataManager = (function () {
                             [1, data.resources.craftable.complex.furniture]
                         ];
                     },
+                    upgrade: function () {
+                        return data.buildings.small.tent;
+                    },
                     give: function () {
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD, data.buildings.small.tent);
                         return [round(random(2, 3)), data.resources.room];
                     },
                     log: "Better than a simple tent, it provide @give.",
@@ -549,8 +561,10 @@ var DataManager = (function () {
                             [1, data.resources.craftable.advanced.engine]
                         ];
                     },
+                    upgrade: function () {
+                        return data.buildings.small.well.id;
+                    },
                     unlock: function () {
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.UNBUILD, data.buildings.small.well.id);
                         return [data.actions.drawFrom.well];
                     },
                     collect: function () {
@@ -614,6 +628,9 @@ var DataManager = (function () {
                 }
             },
             special: {
+                wreckage: {
+                    name: "wreckage"
+                },
                 forum: {
                     name: "forum",
                     desc: "The center and start of our settlement.",
@@ -621,6 +638,9 @@ var DataManager = (function () {
                         return [
                             data.actions.sleep
                         ];
+                    },
+                    upgrade: function () {
+                        return data.buildings.special.wreckage.id;
                     },
                     give: function () {
                         return [
@@ -654,7 +674,7 @@ var DataManager = (function () {
                 energy: 0,
                 give: function () {
                     TimerManager.timeout(function () {
-                        MessageBus.getInstance().notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
+                        MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
                     }, 1000);
                     return [,
                         [10, data.resources.gatherable.common.water],
@@ -739,13 +759,13 @@ var DataManager = (function () {
                     }
                 },
                 giveSpan: [1, 3],
-                give: function (action, effet) {
+                give: function (action, effect) {
                     var give = randomizeMultiple(data.resources.gatherable, action.data.giveSpan);
                     if (random() < data.resources.gatherable.special.ruins.dropRate) {
                         give.push([1, data.resources.gatherable.special.ruins]);
                         var location = randomize(data.locations.near);
                         this.knownLocations.push(location);
-                        effet.location = an(location.name);
+                        effect.location = an(location.name);
                     }
                     return give;
                 },
@@ -844,7 +864,7 @@ var DataManager = (function () {
                         var pick = randomize(possible);
                         if (isFunction(pick.consume)) {
                             // consume craftable requirement
-                            MessageBus.getInstance().notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
+                            MessageBus.notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
                         }
                         return [
                             [1, pick]
@@ -1130,7 +1150,7 @@ var DataManager = (function () {
                     ];
                 },
                 give: function () {
-                    MessageBus.getInstance().notify(MessageBus.MSG_TYPES.WIN);
+                    MessageBus.notify(MessageBus.MSG_TYPES.WIN);
                     return [];
                 },
                 log: function () {
@@ -1206,7 +1226,7 @@ var DataManager = (function () {
                             data.resources.craftable.basic.tool
                         ];
                     },
-                    log: "Amazing noone get lost in those caves to get @give.",
+                    log: "Amazing no-one get lost in those caves to get @give.",
                     dropRate: 60
                 }
             },
@@ -1220,7 +1240,7 @@ var DataManager = (function () {
                             data.resources.craftable.complex.circuit
                         ];
                     },
-                    log: "Noone could guess what that building was, but it sure was interesting. " +
+                    log: "No-one could guess what that building was, but it sure was interesting. " +
                         "@people.name find @give.",
                     dropRate: 30
                 },
@@ -1306,7 +1326,7 @@ var DataManager = (function () {
                 },
                 iteration: 30,
                 effect: function (action) {
-                    // Allways find epic locations
+                    // Always find epic locations
                     // And get an extras when exploring
                     if (action.id === data.actions.explore.id) {
                         action.giveSpan += 2;
@@ -1331,7 +1351,7 @@ var DataManager = (function () {
             },
             healer: {
                 name: "doctor",
-                desc: "Knowing enough about medecine make @people.accusative confident to heal others.",
+                desc: "Knowing enough about medicine make @people.accusative confident to heal others.",
                 actions: function () {
                     return [
                         data.actions.heal.id

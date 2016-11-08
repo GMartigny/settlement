@@ -1,3 +1,5 @@
+/* global performance */
+
 var TimerManager = (function () {
     /**
      * Class for timers
@@ -150,12 +152,13 @@ var TimerManager = (function () {
             return this;
         },
         /**
-         * Return
-         * @param timerId
-         * @return {*|number}
+         * Return remaining time on a timer
+         * @param {Number} timerId - Id of a running timer
+         * @return {Number} Remaining time in ms
+         * @throws RangeError
          */
         getRemaining: function (timerId) {
-            return getTimers().get(timerId).getRemaining();
+            return _timers.get(timerId).getRemaining();
         }
     };
 })();
