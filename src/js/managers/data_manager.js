@@ -341,10 +341,10 @@ var DataManager = (function () {
                         ];
                     },
                     asset: {
-                        image: "",
+                        image: "tent",
                         position: {
-                            x: "60-100",
-                            y: "30-60"
+                            x: "62-100",
+                            y: "25-75"
                         }
                     },
                     log: "That's small and ugly, but give @give for someone to sleep safely.",
@@ -359,6 +359,13 @@ var DataManager = (function () {
                             [8, data.resources.gatherable.common.rock],
                             [3, data.resources.gatherable.uncommon.oil]
                         ];
+                    },
+                    asset: {
+                        image: "furnace",
+                        position: {
+                            x: "44",
+                            y: "13"
+                        }
                     },
                     log: "A small furnace can smelt small things like sand or little electronic.",
                     unique: true,
@@ -379,6 +386,13 @@ var DataManager = (function () {
                             data.actions.harvest
                         ];
                     },
+                    asset: {
+                        image: "farm-plot",
+                        position: {
+                            x: "0-37",
+                            y: "0-75"
+                        }
+                    },
                     log: "More crops required more care but that's going to help us keeping a constant stock of food.",
                     dropRate: 80
                 },
@@ -386,14 +400,21 @@ var DataManager = (function () {
                     name: "pharmacy",
                     desc: "\"Maybe we should avoid letting medications rot in plain sunlight ?!\"",
                     time: 6,
+                    unique: true,
                     consume: function () {
                         return [
                             [5, data.resources.gatherable.rare.medication],
                             [4, data.resources.craftable.basic.component]
                         ];
                     },
+                    asset: {
+                        image: "pharmacy",
+                        position: {
+                            x: "42",
+                            y: "42"
+                        }
+                    },
                     log: "Sorting our medications should prevent further mistakes and bad reaction.",
-                    unique: true,
                     dropRate: 70
                 },
                 well: {
@@ -401,6 +422,7 @@ var DataManager = (function () {
                     desc: "Just a large hole into the ground.",
                     time: 16,
                     energy: 80,
+                    unique: true,
                     condition: function () {
                         return !this.buildings.has(data.buildings.big.pump.id);
                     },
@@ -425,8 +447,14 @@ var DataManager = (function () {
                             data.actions.drawFrom.river
                         ];
                     },
+                    asset: {
+                        image: "well",
+                        position: {
+                            x: "57",
+                            y: "60"
+                        }
+                    },
                     log: "Drawing water from the ground should allow to further polish stone into bricks.",
-                    unique: true,
                     dropRate: 80
                 }
             },
@@ -435,6 +463,7 @@ var DataManager = (function () {
                     name: "forge",
                     desc: "A good upgrade to the furnace.",
                     time: 10,
+                    unique: true,
                     condition: function () {
                         this.buildings.has(data.buildings.small.furnace.id);
                     },
@@ -448,8 +477,10 @@ var DataManager = (function () {
                     upgrade: function () {
                         return data.buildings.small.furnace.id;
                     },
+                    asset: {
+                        image: "forge"
+                    },
                     log: "We can now work metal better and make more complex part.",
-                    unique: true,
                     dropRate: 60
                 },
                 house: {
@@ -470,6 +501,9 @@ var DataManager = (function () {
                     },
                     give: function () {
                         return [round(random(2, 3)), data.resources.room];
+                    },
+                    asset: {
+                        image: "house"
                     },
                     log: "Better than a simple tent, it provide @give.",
                     dropRate: 50
@@ -523,6 +557,13 @@ var DataManager = (function () {
                             data.actions.project
                         ];
                     },
+                    asset: {
+                        image: "workshop",
+                        position: {
+                            x: "75",
+                            y: "13"
+                        }
+                    },
                     log: "Good organisation allow you to prepare project and do much more complex crafting.",
                     dropRate: 30
                 },
@@ -540,6 +581,13 @@ var DataManager = (function () {
                             [4, data.resources.craftable.complex.circuit],
                             [1, data.resources.craftable.advanced.computer]
                         ];
+                    },
+                    asset: {
+                        image: "radio-station",
+                        position: {
+                            x: "46",
+                            y: "86"
+                        }
                     },
                     log: "\"Message received. We thought no one survive the crash. Glad you still have the cube." +
                         "Unfortunately we can't risk being located, bring it to sent position. Over.\"",
@@ -572,6 +620,9 @@ var DataManager = (function () {
                             [2 / time.day, data.resources.gatherable.common.water]
                         ];
                     },
+                    asset: {
+                        image: "pump"
+                    },
                     log: "A big upgrade to your well ! Now we have a continuous flow of water coming.",
                     dropRate: 10
                 },
@@ -596,6 +647,13 @@ var DataManager = (function () {
                         return [
                             data.actions.exchange
                         ];
+                    },
+                    asset: {
+                        image: "trading-post",
+                        position: {
+                            x: "25",
+                            y: "86"
+                        }
                     },
                     log: "Arranging some space allow us to trade with merchant caravan passing by.",
                     dropRate: 10
@@ -622,6 +680,13 @@ var DataManager = (function () {
                             data.actions.launch
                         ];
                     },
+                    asset: {
+                        image: "module",
+                        position: {
+                            x: "82",
+                            y: "86"
+                        }
+                    },
                     log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>" +
                     "Now we end this all !",
                     dropRate: 5
@@ -629,7 +694,14 @@ var DataManager = (function () {
             },
             special: {
                 wreckage: {
-                    name: "wreckage"
+                    name: "wreckage",
+                    asset: {
+                        image: "wreckage",
+                        position: {
+                            x: "50",
+                            y: "37"
+                        }
+                    }
                 },
                 forum: {
                     name: "forum",
@@ -639,13 +711,20 @@ var DataManager = (function () {
                             data.actions.sleep
                         ];
                     },
-                    upgrade: function () {
-                        return data.buildings.special.wreckage.id;
-                    },
+//                    upgrade: function () {
+//                        return data.buildings.special.wreckage.id;
+//                    },
                     give: function () {
                         return [
                             [2, data.resources.room]
                         ];
+                    },
+                    asset: {
+                        image: "forum",
+                        position: {
+                            x: "51",
+                            y: "39"
+                        }
                     },
                     unique: true
                 }

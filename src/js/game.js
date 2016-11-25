@@ -15,7 +15,7 @@
         _assets,
         _assetsData
     ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(2) + "%");
+        console.log(file + " : " + percent.toFixed(1) + "% - " + round(performance.now()));
     }).then(function (media) {
         console.groupEnd();
         try {
@@ -43,7 +43,8 @@
  * @constructor
  */
 function GameController (holder, assets) {
-    console.log("Loaded in " + round(performance.now()) + "ms");
+    var now = round(performance.now())
+    console.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
     this.holder = holder;
@@ -71,7 +72,7 @@ function GameController (holder, assets) {
     this._init();
     this.refresh();
 
-    console.log("Started in " + round(performance.now()) + "ms");
+    console.log("Started in " + round(performance.now() - now) + "ms");
 }
 GameController.tickLength = 2000;
 GameController.prototype = {
@@ -153,6 +154,7 @@ GameController.prototype = {
                 game.build(building);
             }
         });
+        MessageBus.notify(MessageBus.MSG_TYPES.BUILD, DataManager.data.buildings.special.wreckage);
 
         // And we may die :'(
         MessageBus.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
@@ -180,6 +182,7 @@ GameController.prototype = {
             game.addToInitialActions(actions);
         });
 
+        // End of the game
         MessageBus.observe(MessageBus.MSG_TYPES.WIN, function () {
             this.flags.paused = true;
         });

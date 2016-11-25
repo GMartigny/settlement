@@ -31,36 +31,39 @@ var GraphicManager = (function () {
             wrapper.appendChild(layer.cnv);
 
             // watch for new buildings
-            _buildingsList = [];
+            _buildingsList = new Collection();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building.asset) {
-                    if (!_buildingsList[building.id]) {
-                        _buildingsList[building.id] = [];
+                    if (!_buildingsList.has(building.id)) {
+                        _buildingsList.push(building.id, []);
                     }
-                    _buildingsList[building.id].push(new Asset(_imageData[building.asset.image], building.asset));
-                    _buildingsList[building.id].sort(function (a, b) {
+                    var ref = _buildingsList.get(building.id);
+                    ref.push(new Asset(_imageData[building.asset.image], building.asset));
+                    ref.sort(function (a, b) {
                         return a.compare(b);
                     });
                 }
             }.bind(this));
             // watch for upgrade of buildings
             MessageBus.observe(MessageBus.MSG_TYPES.UPGRADE, function (upgrade) {
-                var target;
-                // select an asset to upgrade
-                if (_buildingsList[upgrade.from.id] && _buildingsList[upgrade.from.id].length) {
-                    var randomIndex = random(_buildingsList[upgrade.from.id].length - 1);
-                    target = _buildingsList[upgrade.from.id].splice(randomIndex, 1)[0];
-                }
                 if (upgrade.to.asset) {
+                    var target = null;
+                    // select an asset to upgrade
+                    if (_buildingsList.has(upgrade.from)) {
+                        var ref = _buildingsList.get(upgrade.from)
+                        target = ref[floor(random(ref.length - 1))];
+                    }
                     var assetData = upgrade.to.asset;
                     if (target) {
-                        target.defineData(assetData, {
-                            position: target.destination
-                        });
+                        target.defineSource(_imageData[assetData.image]);
                     }
                     else {
-                        _buildingsList[upgrade.to.id].push(new Asset(_imageData[assetData.image], assetData));
-                        _buildingsList[upgrade.to.id].sort(function (a, b) {
+                        if (!_buildingsList.has(upgrade.to.id)) {
+                            _buildingsList.push(upgrade.to.id, []);
+                        }
+                        var ref = _buildingsList.get(upgrade.to.id);
+                        ref.push(new Asset(_imageData[assetData.image], assetData));
+                        ref.sort(function (a, b) {
                             return a.compare(b);
                         });
                     }
@@ -126,46 +129,52 @@ var GraphicManager = (function () {
  */
 function Asset (sourceData, destData) {
     this.animationState = 0;
+    this.animationSteps = destData.animationSteps || 1;
 
-    this.defineData(sourceData, destData);
+    this.source = {
+        x: sourceData.x,
+        y: sourceData.y,
+        width: floor(sourceData.width / this.animationSteps),
+        height: sourceData.height
+    };
+
+    this.destination = {
+        width: this.source.width * Asset.ENLARGE,
+        height: this.source.height * Asset.ENLARGE,
+        x: 50,
+        y: 50
+    };
+    if (destData.position) {
+        var pos = destData.position;
+        if (pos.x.includes("-")) {
+            this.destination.x = random.apply(null, (pos.x + "").split("-"));
+        }
+        else {
+            this.destination.x = +pos.x;
+        }
+        if (pos.y.includes("-")) {
+            this.destination.y = random.apply(null, (pos.y + "").split("-"));
+        }
+        else {
+            this.destination.y = +pos.y;
+        }
+    }
+    else {
+        throw new TypeError("Can't draw asset without destination");
+    }
 }
 Asset.ANIMATION_INC = 2 / 60; // 2 animations per seconds at 60fps
 Asset.ENLARGE = 4; // 4 times bigger !!§!
 Asset.prototype = {
-    /**
-     * Define data for asset
-     * @param sourceData
-     * @param destData
-     */
-    defineData: function (sourceData, destData) {
-        this.animationSteps = destData.animationSteps || 1;
-        this.origin = {
+    defineSource: function (sourceData) {
+        this.source = {
             x: sourceData.x,
             y: sourceData.y,
             width: floor(sourceData.width / this.animationSteps),
             height: sourceData.height
         };
-
-        this.destination = {
-            width: this.origin.width * Asset.ENLARGE,
-            height: this.origin.height * Asset.ENLARGE,
-            x: 50,
-            y: 50
-        };
-        if (destData.position) {
-            if (destData.position.x.includes("-")) {
-                this.destination.x = random.apply(null, (destData.position.x + "").split("-"));
-            }
-            else {
-                this.destination.x = +destData.position.x;
-            }
-            if (destData.position.y.includes("-")) {
-                this.destination.y = random.apply(null, (destData.position.y + "").split("-"));
-            }
-            else {
-                this.destination.y = +destData.position.y;
-            }
-        }
+        this.destination.width = this.source.width * Asset.ENLARGE;
+        this.destination.height = this.source.height * Asset.ENLARGE;
     },
     /**
      * Draw this asset into a context
@@ -174,11 +183,11 @@ Asset.prototype = {
      */
     render: function (image, layer) {
         this.animationState = (this.animationState + Asset.ANIMATION_INC) % this.animationSteps;
-        var animationShift = floor(floor(this.animationState) * this.origin.width);
-        var posX = floor(layer.canvas.width * (this.destination.x / 100) - (this.destination.width / 2));
-        var posY = floor(layer.canvas.height * (this.destination.y / 100) - (this.destination.height / 2));
+        var animationShift = floor(floor(this.animationState) * this.source.width);
+        var posX = round(layer.canvas.width * (this.destination.x / 100) - (this.destination.width / 2));
+        var posY = round(layer.canvas.height * (this.destination.y / 100) - (this.destination.height / 2));
         layer.drawImage(image,
-            this.origin.x + animationShift, this.origin.y, this.origin.width, this.origin.height,
+            this.source.x + animationShift, this.source.y, this.source.width, this.source.height,
             posX, posY, this.destination.width, this.destination.height);
     },
     /**
@@ -190,10 +199,21 @@ Asset.prototype = {
     },
     /**
      * Compare with another asset to sort by depth
-     * @param {Asset} another - Another asset
+     * @param {Asset} other - Another asset
      * @return {Number}
      */
-    compare: function (another) {
-        return this.getDepth() - another.getDepth();
+    compare: function (other) {
+        return (this.destination.y - other.destination.y) + (this.destination.height - other.destination.height);
+    },
+    /**
+     * Define a new position to draw this asset
+     * @param {Number} x
+     * @param {Number} y
+     * @returns {Asset} Itself
+     */
+    setPosition: function (x, y){
+        this.destination.x = +x;
+        this.destination.y = +y;
+        return this;
     }
 };

@@ -25,6 +25,15 @@ function ceil (x) {
     return floor(x + 1);
 }
 
+function constrain (x, min, max) {
+    if (x < min) {
+        return min;
+    }
+    else if (x > max) {
+        return max;
+    }
+}
+
 /**
  * Return a random number between marks
  * @param {Number} [from=0]
@@ -35,18 +44,18 @@ var random = (function () {
     var RAND = Math.random;
 
     return function (from, to) {
-        from = +from || 0;
         if (to === undefined) {
-            if (from === 0) {
+            if (from === undefined) {
                 to = 1;
             }
             else {
-                to = from;
+                to = +from || 1;
             }
             from = 0;
         }
         else {
-            to = +to;
+            from = +from || 0;
+            to = +to || 1;
         }
         return RAND() * (to - from) + from;
     };

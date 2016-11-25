@@ -21,23 +21,7 @@ Building.prototype = {
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
 
-        this.html = this.toHTML();
-        if (this.tooltip) {
-            this.tooltip.remove();
-        }
-        tooltip(this.html, this.data);
-
         return this;
-    },
-    /**
-     * Return HTML for display
-     * @return {HTMLElement}
-     */
-    toHTML: function () {
-        this.counter = wrap("counter");
-        var html = wrap("building", capitalize(this.data.name));
-        html.appendChild(this.counter);
-        return html;
     },
     /**
      * Add more of this building
@@ -46,7 +30,6 @@ Building.prototype = {
      */
     add: function (number) {
         this.number += number;
-        this.counter.textContent = this.number;
         return this;
     }
 };
