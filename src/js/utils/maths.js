@@ -25,6 +25,13 @@ function ceil (x) {
     return floor(x + 1);
 }
 
+/**
+ * Return value constrained to lower and upper bounds
+ * @param {Number} x - Any value
+ * @param {Number} min - The lower bound
+ * @param {Number} max - The upper bound
+ * @return {Number}
+ */
 function constrain (x, min, max) {
     if (x < min) {
         return min;

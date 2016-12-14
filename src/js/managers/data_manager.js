@@ -325,7 +325,7 @@ var DataManager = (function () {
         /***** BUILDINGS *****/
         buildings: {
             small: {
-                tent: {
+                tent: { // disabled
                     name: "tent",
                     desc: "Allow someone to rejoin the colony.",
                     time: 4,
@@ -510,8 +510,7 @@ var DataManager = (function () {
                 }
             },
             big: {
-                barrack: {
-                    // Deactivated
+                barrack: { // disabled
                     name: "barrack",
                     desc: "Some place to sleep for a few people.",
                     time: 2 * time.day,
@@ -688,20 +687,22 @@ var DataManager = (function () {
                         }
                     },
                     log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>" +
-                    "Now we end this all !",
+                    "Now it's time to end it all !",
                     dropRate: 5
                 }
             },
             special: {
                 wreckage: {
                     name: "wreckage",
+                    desc: "Remainings of space-ships.",
                     asset: {
                         image: "wreckage",
                         position: {
                             x: "50",
                             y: "37"
                         }
-                    }
+                    },
+                    unique: true
                 },
                 forum: {
                     name: "forum",
@@ -711,9 +712,9 @@ var DataManager = (function () {
                             data.actions.sleep
                         ];
                     },
-//                    upgrade: function () {
-//                        return data.buildings.special.wreckage.id;
-//                    },
+                    upgrade: function () {
+                        return data.buildings.special.wreckage.id;
+                    },
                     give: function () {
                         return [
                             [2, data.resources.room]

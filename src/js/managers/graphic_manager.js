@@ -50,7 +50,7 @@ var GraphicManager = (function () {
                     var target = null;
                     // select an asset to upgrade
                     if (_buildingsList.has(upgrade.from)) {
-                        var ref = _buildingsList.get(upgrade.from)
+                        var ref = _buildingsList.get(upgrade.from);
                         target = ref[floor(random(ref.length - 1))];
                     }
                     var assetData = upgrade.to.asset;
@@ -166,6 +166,10 @@ function Asset (sourceData, destData) {
 Asset.ANIMATION_INC = 2 / 60; // 2 animations per seconds at 60fps
 Asset.ENLARGE = 4; // 4 times bigger !!§!
 Asset.prototype = {
+    /**
+     * Define the source image of this asset
+     * @param sourceData
+     */
     defineSource: function (sourceData) {
         this.source = {
             x: sourceData.x,
@@ -211,7 +215,7 @@ Asset.prototype = {
      * @param {Number} y
      * @returns {Asset} Itself
      */
-    setPosition: function (x, y){
+    setPosition: function (x, y) {
         this.destination.x = +x;
         this.destination.y = +y;
         return this;

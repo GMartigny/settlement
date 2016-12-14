@@ -43,7 +43,7 @@
  * @constructor
  */
 function GameController (holder, assets) {
-    var now = round(performance.now())
+    var now = round(performance.now());
     console.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
@@ -120,6 +120,7 @@ GameController.prototype = {
         LogManager.start(this.logsList);
         TimerManager.start();
 
+        game.build(DataManager.data.buildings.special.wreckage);
         // First person arrives
         TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 

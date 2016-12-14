@@ -13,7 +13,14 @@ Luckily, human strength is to learn and act fast. So keep moving and you may liv
 
 ## Changelog
 
-### [v0.2](https://github.com/GMartigny/settlement/releases/tag/v0.2.0) WIP
+### [v0.3](https://github.com/GMartigny/settlement/releases/tag/v0.3.0) WIP
+
+Drop randomisation for crafting and building.
+
+Add upgrade to building instead of multiplications.
+
+
+### [v0.2](https://github.com/GMartigny/settlement/releases/tag/v0.2.0)
 
 See your camp grow as you build it.
 
