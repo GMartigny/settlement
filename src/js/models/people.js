@@ -92,7 +92,6 @@ People.prototype = {
      * @param {Collection} resources - Resources list
      * @param {Number} elapse - Elapse tick since last call
      * @param {Object} flags - Game flags
-     * @return {People} Itself
      */
     refresh: function (resources, elapse, flags) {
         this.actions.forEach(function (action) {
@@ -118,7 +117,6 @@ People.prototype = {
         }
         this.starving = 0;
         this.thirsty = 0;
-        return this;
     },
     /**
      * Define people pronouns
@@ -147,7 +145,6 @@ People.prototype = {
     /**
      * Set busy with an action
      * @param {Object} action - Current action's data
-     * @returns {People} Itself
      */
     setBusy: function (action) {
         if (action && action.id !== DataManager.data.actions.sleep.id) {
@@ -155,7 +152,6 @@ People.prototype = {
         }
         this.busy = !!action ? action : false;
         this.html.classList.toggle("busy", !!action);
-        return this;
     },
     /**
      * Free from busy state
@@ -221,21 +217,10 @@ People.prototype = {
      */
     planBuilding: function (building) {
         this.plan = building;
-        return this;
-    },
-    /**
-     * Prepare a project
-     * @param {Object} craftable - Craftable tto prepare's data
-     * @returns {People} Itself
-     */
-    prepareProject: function (craftable) {
-        this.project = craftable;
-        return this;
     },
     /**
      * Add some actions
-     * @param {Action|Array} actions - One or more actions to add
-     * @returns {People} Itself
+     * @param {Action|Array<Action>} actions - One or more actions to add
      */
     addAction: function (actions) {
         if (isArray(actions)) {
@@ -258,12 +243,10 @@ People.prototype = {
                 this.actionList.appendChild(action.html);
             }
         }
-        return this;
     },
     /**
      * Lock some actions
-     * @param {Action|Array} actions - One or more actions to lock
-     * @returns {People}
+     * @param {ID|Array<ID>} actions - One or more actions ID to lock
      */
     lockAction: function (actions) {
         if (isArray(actions)) {
@@ -271,10 +254,9 @@ People.prototype = {
                 this.lockAction(actions[i]);
             }
         }
-        else if (this.actions.has(actions.id)) {
-            this.actions.pop(actions.id).lock();
+        else if (this.actions.has(actions)) {
+            this.actions.pop(actions).lock();
         }
-        return this;
     },
     /**
      * Try to obtains a perk
@@ -287,7 +269,7 @@ People.prototype = {
             var self = this;
             var perksList = DataManager.data.perks;
             // browse all perks
-            deepBrowse(perksList, function (perk) {
+            perksList.deepBrowse(function (perk) {
                 // perk not used
                 if (!People.usedPerks.includes(perk.id)) {
                     // perk is compatible
@@ -320,7 +302,6 @@ People.prototype = {
     /**
      * Add a perk
      * @param {Object} perk - The perk data
-     * @returns {People} Itself
      */
     gainPerk: function (perk) {
         perk.desc = LogManager.personify(perk.desc, this);
@@ -344,11 +325,9 @@ People.prototype = {
             this.lockAction(perk.lock());
         }
         People.usedPerks.push(perk.id);
-        return this;
     },
     /**
-     * Kill this
-     * @returns {People} Itself (one last time)
+     * Kill it for good
      */
     die: function () {
         if (this.html.classList.contains("arrived")) {
@@ -362,7 +341,6 @@ People.prototype = {
                 this.html.remove();
             }.bind(this), 400);
         }
-        return this;
     }
 };
 People.LST_ID = "peopleList";

@@ -8,6 +8,7 @@
 function Action (owner, data) {
     this.locked = true;
     this.running = false;
+    this.optionsWrapper = null;
 
     this.owner = owner;
     this.repeated = 0;
@@ -24,7 +25,6 @@ Action.prototype = {
      * Initialise object
      * @param {Object} data - The action data
      * @private
-     * @return {Action} Itself
      */
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "time", "energy", "consume"]);
@@ -35,13 +35,12 @@ Action.prototype = {
         this.html.textContent = capitalize(this.data.name);
 
         if (this.tooltip) {
-            this.tooltip.remove().update(this.data);
+            this.tooltip.remove();
+            this.tooltip.update(this.data);
         }
         else {
             this.tooltip = tooltip(this.html, this.data);
         }
-
-        return this;
     },
     /**
      * Return HTML for display
@@ -51,11 +50,17 @@ Action.prototype = {
     toHTML: function (data) {
         var html = wrap("action clickable disabled animated");
 
-        html.addEventListener("click", function () {
-            if (!this.locked && !this.running && !this.owner.busy) {
-                this.click.call(this);
-            }
-        }.bind(this));
+        if (isFunction(data.options)) {
+            html.classList.add("withOptions");
+            this.optionsWrapper = wrap("options");
+        }
+        else {
+            html.addEventListener("click", function () {
+                if (!this.locked && !this.running && !this.owner.busy) {
+                    this.click.call(this);
+                }
+            }.bind(this));
+        }
 
         html.style.order = data.order;
 
@@ -65,7 +70,6 @@ Action.prototype = {
      * Loop function called every game tick
      * @param {Collection} resources - Game resources
      * @param {Object} flags - Game flags
-     * @return {Action} Itself
      */
     refresh: function (resources, flags) {
         this.locked = (this.owner.isTired() && this.data.energy > 0) ||
@@ -90,7 +94,6 @@ Action.prototype = {
         else {
             this.html.classList.remove("disabled");
         }
-        return this;
     },
     /**
      * Player click on action
@@ -155,42 +158,37 @@ Action.prototype = {
             effect.give = formatArray(give);
         }
 
-        // Start collect
-        var collect = [];
-        if (isFunction(this.data.collect)) {
-            collect = this.data.collect(this);
-        }
-        // Add from constructed building
-        if (build && isFunction(build.collect)) {
-            collect = collect.concat(build.collect(this));
-        }
-        collect = compactResources(collect);
-        if (collect.length) {
-            MessageBus.notify(MessageBus.MSG_TYPES.COLLECT, collect);
-            effect.collect = formatArray(collect);
-        }
-
         // Unlock
+        var unlockForOne = [];
+        var unlockForAll = [];
         if (isFunction(this.data.unlock)) {
             var unlock = this.data.unlock(this).filter(function (action) {
                 return !action.condition || (action.condition && action.condition(this));
             }.bind(this));
+
             if (this.data.unique) {
-                // add to all
-                MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, unlock);
+                unlockForAll = unlock;
             }
             else {
-                // add to owner
-                this.owner.addAction(unlock);
+                unlockForOne = unlock;
             }
         }
+        if (unlockForAll.length) {
+            // add to all
+            MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, unlockForAll);
+        }
+        if (unlockForOne.length) {
+            // add to owner
+            this.owner.addAction(unlockForOne);
+        }
+
         // Lock
         if (isFunction(this.data.lock)) {
             var lock = this.data.lock(this);
             this.owner.lockAction(lock);
         }
         if (this.data.unique) {
-            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data);
+            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.id);
         }
 
         if (build) {
@@ -227,28 +225,25 @@ Action.prototype = {
     /**
      * Change the action according to an effect
      * @param effect
-     * @return {Action} Itself
      */
     applyEffect: function (effect) {
         if (isFunction(effect)) {
             effect(this.data);
             this._init(this.data);
         }
-        return this;
     },
     /**
      * Lock this action
+     * @return {Action} Itself
      * @return {Action} Itself
      */
     lock: function () {
         this.cancel();
         this.html.remove();
         this.tooltip.remove();
-        return this;
     },
     /**
      * Cancel this action
-     * @return {Action} Itself
      */
     cancel: function () {
         if (this.timeout) {
@@ -256,6 +251,5 @@ Action.prototype = {
             this.owner.setBusy(false);
             this.html.classList.remove("cooldown");
         }
-        return this;
     }
 };

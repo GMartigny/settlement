@@ -1,11 +1,11 @@
 {
     "box-model": false,
+    "order-alphabetical": false,
     "adjoining-classes": false,
     "box-sizing": false,
     "vendor-prefix": false,
     "compatible-vendor-prefixes": false,
-    "gradients": false,
     "fallback-colors": false,
     "ids": false,
-    "overqualified-elements": false
+    "zero-units": false
 }

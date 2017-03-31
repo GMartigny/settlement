@@ -106,13 +106,11 @@ var TimerManager = (function () {
         },
         /**
          * Stop all known timers
-         * @return {TimerManager} Itself
          */
         stopAll: function () {
             _timers.forEach(function (timer) {
                 timer.stop();
             });
-            return this;
         },
         /**
          * Restart a timer
@@ -124,14 +122,12 @@ var TimerManager = (function () {
         },
         /**
          * Restart all known timers
-         * @return {TimerManager} Itself
          */
         restartAll: function () {
             var now = performance.now();
             _timers.forEach(function (timer) {
                 timer.restart(now);
             });
-            return this;
         },
         /**
          * Stop a timer and remove it from the list
@@ -143,13 +139,11 @@ var TimerManager = (function () {
         },
         /**
          * Clear all known timers
-         * @return {TimerManager} Itself
          */
         clearAll: function () {
             _timers.forEach(function (timer) {
                 timer.clear();
             });
-            return this;
         },
         /**
          * Return remaining time on a timer

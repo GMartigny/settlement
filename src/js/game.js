@@ -82,7 +82,7 @@ GameController.prototype = {
      */
     _init: function () {
         var game = this;
-        deepBrowse(DataManager.data, function (item) {
+        DataManager.data.deepBrowse(function (item) {
             item.id = pickID();
             for (var attr in item) {
                 if (item.hasOwnProperty(attr) && isFunction(item[attr])) {
@@ -130,13 +130,6 @@ GameController.prototype = {
                 given.forEach(function (r) {
                     game.earn.apply(game, r);
                 });
-            }
-        });
-
-        // We may have a resource collector
-        MessageBus.observe(MessageBus.MSG_TYPES.COLLECT, function (collected) {
-            if (isArray(collected)) {
-                compactResources(game.collects.concat(collected));
             }
         });
 
@@ -219,7 +212,7 @@ GameController.prototype = {
     },
     /**
      * Remove actions from initial actions list
-     * @param {Action|Array} actions - One or more action
+     * @param {ID|Array<ID>} actions - One or more action ID
      */
     removeFromInitialActions: function (actions) {
         if (!isArray(actions)) {
@@ -227,7 +220,7 @@ GameController.prototype = {
         }
 
         actions.forEach(function (action) {
-            this.initialActions.pop(action.id);
+            this.initialActions.pop(action);
         }.bind(this));
         this.people.forEach(function (people) {
             people.lockAction(actions);
@@ -351,7 +344,7 @@ GameController.prototype = {
     /**
      * Need to use a resource
      * @param {Number} amount - Amount to use
-     * @param {Object} resource - Resource data
+     * @param {ResourceData} resource - Resource data
      * @param {lackOfResources} lack - A callback function in case of lack
      */
     consume: function (amount, resource, lack) {
@@ -376,7 +369,7 @@ GameController.prototype = {
     /**
      * Earn some resource
      * @param {Number} amount - Amount to earn
-     * @param {Object} resource - Resource data
+     * @param {ResourceData} resource - Resource data
      */
     earn: function (amount, resource) {
         var id = resource.id;
@@ -429,14 +422,11 @@ GameController.prototype = {
     },
     /**
      * Build something
-     * @param {Object} building - Building data
+     * @param {BuildingData} building - Building data
      */
     build: function (building) {
         var id = building.id;
-        if (this.buildings.has(id)) {
-            this.buildings.get(id).add(1);
-        }
-        else {
+        if (!this.buildings.has(id)) {
             var bld = new Building(building);
             this.buildings.push(id, bld);
 
@@ -450,12 +440,12 @@ GameController.prototype = {
     },
     /**
      * Return all unlocked craftables
-     * @return {Array}
+     * @return {Array<CraftableData>}
      */
     unlockedCraftables: function () {
         var craftables = [];
 
-        deepBrowse(DataManager.data.resources.craftable, function (craft) {
+        DataManager.data.resources.craftable.deepBrowse(function (craft) {
             if (!craft.condition || (isFunction(craft.condition) && craft.condition())) {
                 craftables.push(craft);
             }
@@ -464,8 +454,8 @@ GameController.prototype = {
         return craftables;
     },
     /**
-     * Return all possible craftables
-     * @return {Array}
+     * Return all possible craftables according to current resources
+     * @return {Array<CraftableData>}
      */
     possibleCraftables: function () {
         var resources = this.resources.items;
@@ -482,18 +472,21 @@ GameController.prototype = {
     },
     /**
      * Return all accessible buildings
-     * @return {Array}
+     * @return {Array<BuildingData>}
      */
     possibleBuildings: function () {
         var buildings = [],
             done = this.buildings;
 
-        deepBrowse(DataManager.data.buildings, function (build) {
-            // not unique and done
-            if (!build.unique || build.unique && !done.has(build.id)) {
+        DataManager.data.buildings.deepBrowse(function (build) {
+            // not already done
+            if (!done.has(build.id)) {
                 // no condition or condition meet
-                if (!isFunction(build.condition) || build.condition()) {
-                    buildings.push(build);
+                if (!isFunction(build.condition) || build.condition(build)) {
+                    // has the upgraded building
+                    if (!isFunction(build.upgrade) || done.has(build.upgrade())) {
+                        buildings.push(build);
+                    }
                 }
             }
         });
@@ -511,7 +504,7 @@ GameController.prototype = {
     },
     /**
      * Return an event that can happened
-     * @return {*}
+     * @return {EventData|null}
      */
     getRandomEvent: function () {
         var list = [],
@@ -536,24 +529,21 @@ GameController.prototype = {
             return randomize(list);
         }
         else {
-            return false;
+            return null;
         }
     }
 };
 if (IS_DEV) {
     /**
      * Earn one of each resources and buildings
-     * @returns {GameController} Itself
      */
     GameController.prototype.oneOfEach = function () {
-        deepBrowse(DataManager.data.resources, function (resource) {
+        DataManager.data.resources.deepBrowse(function (resource) {
             this.earn(1, resource);
         }.bind(this));
 
-        // deepBrowse(DataManager.data.buildings, function (build) {
-        //     this.build(build);
-        // }.bind(this));
-
-        return this;
+        DataManager.data.buildings.deepBrowse(function (build) {
+            this.build(build);
+        }.bind(this));
     };
 }

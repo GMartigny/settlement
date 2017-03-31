@@ -23,7 +23,6 @@ Resource.prototype = {
      * Initialise object
      * @param {Object} data - The resource's data
      * @private
-     * @returns {Resource} Itself
      */
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "consume"]);
@@ -32,8 +31,6 @@ Resource.prototype = {
             this.tooltip.remove();
         }
         this.tooltip = tooltip(this.html, this.data);
-
-        return this;
     },
     /**
      * Return HTML for display
@@ -56,19 +53,16 @@ Resource.prototype = {
     /**
      * Loop function called every game tick
      * @param {Array} [resources] - Game's resources
-     * @return {Resource} Itself
      */
     refresh: function (resources) {
         this.counter.textContent = floor(this.count);
         if (resources && isArray(this.data.consume)) {
             this.tooltip.refresh(resources, this.data.consume);
         }
-        return this;
     },
     /**
      * Change resource amount
      * @param {Number} amount - Diff to new value
-     * @return {Resource} Itself
      */
     update: function (amount) {
         var prevAmount = this.count;
@@ -92,7 +86,6 @@ Resource.prototype = {
                 TimerManager.timeout(cb, 700);
             }
         }
-        return this;
     },
     /**
      * Return this resource amount

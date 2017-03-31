@@ -3,10 +3,79 @@ var GraphicManager = (function () {
     var _combinedImage;
     var _imageData;
 
+    var _buildingsPosition = {
+        "forum+1": {
+            "x": 89,
+            "y": 32
+        },
+        "forum+2": {
+            "x": 89,
+            "y": 32
+        },
+        "forum+3": {
+            "x": 89,
+            "y": 32
+        },
+        "forum": {
+            "x": 89,
+            "y": 32
+        },
+        "furnace+1": {
+            "x": 89,
+            "y": 5
+        },
+        "furnace": {
+            "x": 89,
+            "y": 5
+        },
+        "module": {
+            "x": 159,
+            "y": 50
+        },
+        "pharmacy": {
+            "x": 95,
+            "y": 37
+        },
+        "plot+1": {
+            "x": 44,
+            "y": 14
+        },
+        "plot": {
+            "x": 52,
+            "y": 19
+        },
+        "pump": {
+            "x": 107,
+            "y": 53
+        },
+        "radio": {
+            "x": 59,
+            "y": 54
+        },
+        "trading": {
+            "x": 25,
+            "y": 50
+        },
+        "well": {
+            "x": 119,
+            "y": 55
+        },
+        "workshop": {
+            "x": 135,
+            "y": 19
+        },
+        "wreckage": {
+            "x": 89,
+            "y": 32
+        }
+    };
+
     var _buildingsLayer;
     var _buildingsList;
     var _eventsLayer;
     var _eventsList;
+
+    var _waterLevel = 0;
 
     return {
         /**
@@ -19,74 +88,53 @@ var GraphicManager = (function () {
             _combinedImage = image;
             _imageData = data;
 
-            var layer = prepareCanvas(Math.min(wrapper.offsetWidth, 800), Math.min(wrapper.offsetHeight, 200));
+            var layer = prepareCanvas(800, 300);
             _buildingsLayer = layer.ctx;
             _buildingsLayer.imageSmoothingEnabled = 0;
-            layer.cnv.classList.add("layer");
+            layer.cnv.classList.add("layer", "buildings");
             wrapper.appendChild(layer.cnv);
 
             layer = prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
             _eventsLayer = layer.ctx;
-            layer.cnv.classList.add("layer");
+            layer.cnv.classList.add("layer", "events");
             wrapper.appendChild(layer.cnv);
 
             // watch for new buildings
             _buildingsList = new Collection();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building.asset) {
-                    if (!_buildingsList.has(building.id)) {
-                        _buildingsList.push(building.id, []);
-                    }
-                    var ref = _buildingsList.get(building.id);
-                    ref.push(new Asset(_imageData[building.asset.image], building.asset));
-                    ref.sort(function (a, b) {
-                        return a.compare(b);
-                    });
+                    var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
+                    _buildingsList.push(building.id, asset);
                 }
             }.bind(this));
-            // watch for upgrade of buildings
+            // watch for upgrade of existing buildings
             MessageBus.observe(MessageBus.MSG_TYPES.UPGRADE, function (upgrade) {
-                if (upgrade.to.asset) {
-                    var target = null;
+                if (_buildingsList.has(upgrade.from) && upgrade.to.asset) {
                     // select an asset to upgrade
-                    if (_buildingsList.has(upgrade.from)) {
-                        var ref = _buildingsList.get(upgrade.from);
-                        target = ref[floor(random(ref.length - 1))];
-                    }
-                    var assetData = upgrade.to.asset;
-                    if (target) {
-                        target.defineSource(_imageData[assetData.image]);
-                    }
-                    else {
-                        if (!_buildingsList.has(upgrade.to.id)) {
-                            _buildingsList.push(upgrade.to.id, []);
-                        }
-                        var ref = _buildingsList.get(upgrade.to.id);
-                        ref.push(new Asset(_imageData[assetData.image], assetData));
-                        ref.sort(function (a, b) {
-                            return a.compare(b);
-                        });
-                    }
+                    var asset = new Asset(_imageData[upgrade.to.asset], _buildingsPosition[upgrade.to.asset]);
+                    _buildingsList.set(upgrade.from, asset);
                 }
+            });
+            MessageBus.observe(MessageBus.MSG_TYPES.UNBUILD, function (building) {
+                _buildingsList.pop(building.id);
             });
 
             // watch for new events
             _eventsList = new Collection();
             MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
                 if (event.asset) {
-                    _eventsList.push(event.id, new Asset(_imageData[event.asset.image], event.asset));
+                    _eventsList.push(event.id, new Asset(_imageData[event.asset], event.asset)); // FIXME
                 }
             });
             MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-                if (_eventsList.has(event.id)) {
-                    _eventsList.pop(event.id);
-                }
+                _eventsList.pop(event.id);
             });
 
             // watch for food and water level
             MessageBus.observe([MessageBus.MSG_TYPES.USE, MessageBus.MSG_TYPES.GIVE], function (resource) {
                 switch (resource.id) {
                     case DataManager.data.resources.gatherable.common.water:
+                        _waterLevel = resource.get();
                         break;
                     case DataManager.data.resources.gatherable.common.food:
                         break;
@@ -104,10 +152,11 @@ var GraphicManager = (function () {
 
             if (_buildingsList.length) {
                 _buildingsLayer.clear();
-                _buildingsList.forEach(function (assetType) {
-                    assetType.forEach(function (asset) {
-                        asset.render(_combinedImage, _buildingsLayer);
-                    });
+                // TODO : optimize to not sort each loop
+                _buildingsList.values().sort(function (a, b) {
+                    return a.compare(b);
+                }).forEach(function (asset) {
+                    asset.render(_combinedImage, _buildingsLayer);
                 });
             }
 
@@ -128,40 +177,18 @@ var GraphicManager = (function () {
  * @constructor
  */
 function Asset (sourceData, destData) {
+    if (!destData) {
+        throw new TypeError("Can't draw asset without destination");
+    }
     this.animationState = 0;
     this.animationSteps = destData.animationSteps || 1;
 
-    this.source = {
-        x: sourceData.x,
-        y: sourceData.y,
-        width: floor(sourceData.width / this.animationSteps),
-        height: sourceData.height
-    };
+    this.source = {};
+    this.destination = {};
+    this.defineSource(sourceData);
 
-    this.destination = {
-        width: this.source.width * Asset.ENLARGE,
-        height: this.source.height * Asset.ENLARGE,
-        x: 50,
-        y: 50
-    };
-    if (destData.position) {
-        var pos = destData.position;
-        if (pos.x.includes("-")) {
-            this.destination.x = random.apply(null, (pos.x + "").split("-"));
-        }
-        else {
-            this.destination.x = +pos.x;
-        }
-        if (pos.y.includes("-")) {
-            this.destination.y = random.apply(null, (pos.y + "").split("-"));
-        }
-        else {
-            this.destination.y = +pos.y;
-        }
-    }
-    else {
-        throw new TypeError("Can't draw asset without destination");
-    }
+    this.destination.x = floor(+destData.x * Asset.ENLARGE);
+    this.destination.y = floor(+destData.y * Asset.ENLARGE);
 }
 Asset.ANIMATION_INC = 2 / 60; // 2 animations per seconds at 60fps
 Asset.ENLARGE = 4; // 4 times bigger !!§!
@@ -188,8 +215,8 @@ Asset.prototype = {
     render: function (image, layer) {
         this.animationState = (this.animationState + Asset.ANIMATION_INC) % this.animationSteps;
         var animationShift = floor(floor(this.animationState) * this.source.width);
-        var posX = round(layer.canvas.width * (this.destination.x / 100) - (this.destination.width / 2));
-        var posY = round(layer.canvas.height * (this.destination.y / 100) - (this.destination.height / 2));
+        var posX = this.destination.x;
+        var posY = this.destination.y;
         layer.drawImage(image,
             this.source.x + animationShift, this.source.y, this.source.width, this.source.height,
             posX, posY, this.destination.width, this.destination.height);
@@ -207,17 +234,15 @@ Asset.prototype = {
      * @return {Number}
      */
     compare: function (other) {
-        return (this.destination.y - other.destination.y) + (this.destination.height - other.destination.height);
+        return (other.destination.y + other.destination.height) - (this.destination.y + this.destination.height);
     },
     /**
      * Define a new position to draw this asset
      * @param {Number} x
      * @param {Number} y
-     * @returns {Asset} Itself
      */
     setPosition: function (x, y) {
         this.destination.x = +x;
         this.destination.y = +y;
-        return this;
     }
 };

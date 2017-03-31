@@ -12,7 +12,7 @@ module.exports = function (grunt) {
     });
 
     var sourceDir = {
-        js: "src/js/**/*.js",
+        js: ["src/js/utils/**/*.js", "src/js/**/*.js"],
         css: "src/css/**/*.less",
         img: {
             icons: "src/img/icons/**/*.png",
@@ -140,7 +140,7 @@ module.exports = function (grunt) {
     });
 
     // JS linting
-    grunt.registerTask("check", ["jscs"/*, "lesslint"*/]); // need update from lesslint
+    grunt.registerTask("check", ["jscs", "lesslint"]);
 
     // Sources building
     grunt.registerTask("icons", ["sprite:icons"]);

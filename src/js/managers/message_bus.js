@@ -3,7 +3,7 @@
 var MessageBus = (function () {
     var _observers = [];
 
-    return {
+    var api = {
         /**
          * Observe an event
          * @param {Number|Array} type - One or more event type to observe
@@ -29,6 +29,10 @@ var MessageBus = (function () {
          * @return {MessageBus} Itself
          */
         notify: function (type, message) {
+            var typeDesc = this.SWAP_MSG_TYPE[type];
+            if (typeDesc) {
+                log("Message ", typeDesc, message);
+            }
             if (_observers[type]) {
                 _observers[type].forEach(function (action) {
                     action(message, type);
@@ -42,7 +46,6 @@ var MessageBus = (function () {
             REFRESH: 20, // The game has refreshed
             GIVE: 30, // Give some resources
             FIND_LOCATION: 31, // Find a new location
-            COLLECT: 32, // Start to collect a resource
             ARRIVAL: 33, // Someone arrive
             USE: 35, // Use some resources
             RUNS_OUT: 36, // Runs out of some resources
@@ -61,4 +64,8 @@ var MessageBus = (function () {
             WIN: 85 // Congratulation
         }
     };
+
+    api.SWAP_MSG_TYPE = api.MSG_TYPES.swap();
+
+    return api;
 })();

@@ -3,6 +3,7 @@
  * @type {{time, data}}
  */
 var DataManager = (function () {
+
     var time = {
         minute: 1 / 60,
         hour: 1,
@@ -11,32 +12,68 @@ var DataManager = (function () {
         month: 30 * 24,
         year: 12 * 30 * 24
     };
+
     var directions = [
         "north", "south", "east", "west",
         "north-east", "north-west", "south-east", "south-west"
     ];
-    // jscs:disable jsDoc
+
     /**
-     * Common fields description
-     * name: A name for display
-     * desc: Description for tooltip
-     * icon: Name of the icon
-     * condition: A condition to match
-     * time: Time it take
-     * deltaTime: Random margin time
-     * energy: Energy it draw (default: 5 * time)
-     * consume: Resources consumed
-     * giveSpan: Span of randomness for give
-     * give: Resources to earn
-     * collect: Start to collect resources
-     * lock: Actions to lock
-     * unlock: Actions to unlock
-     * build: Something to build
-     * unique: Should done only once
-     * dropRate: Chance of drop compare to others
-     * log: Message to display on logs
-     * order: How to sort with others
+     * @typedef {String} ID - A generated unique ID
      */
+    /**
+     * @typedef {Object} Data
+     * @param {ID} id - unique ID
+     * @param {String|function} name - The displayed name
+     * @param {String|Function} desc - A description for tooltip
+     * @param {Number} [order] - Order for display
+     */
+    /**
+     * @typedef {Object} ConsumerData
+     * @param {Function} [consume] - Return consumed resources
+     */
+    /**
+     * @typedef {Object} ResourceData
+     * @extends Data
+     * @param {String} icon - Icon image of the resource
+     * @param {Number} dropRate - Chance of getting it
+     */
+    /**
+     * @typedef {Object} CraftableData
+     * @extends ResourceData
+     * @extends ConsumerData
+     */
+    /**
+     * @typedef {Object} ActionData
+     * @extends Data
+     * @extends ConsumerData
+     * @param {Function} [options] - Return an array of options for this action
+     * @param {Function} [condition] - Return true if can be done
+     * @params {Function} [give] - Return an array of given resources
+     * @param {Function} [unlock] - Return an array of unlocked action for this person
+     * @param {Function} [lock] - Return an array of locked action for this person
+     * @param {Function} [build] - Return an array of built buildings id
+     * @param {Number|Function} time - In game time to do
+     * @param {Number} [timeDelta=0] - Added randomness to time
+     * @param {Number|Function} [energy=time*5] - Energy taken to do
+     * @param {Array<Number>} [giveSpan] - Span of randomness for give
+     * @param {String} log - A log string to display when done
+     */
+    /**
+     * @typedef {Object} BuildingData
+     * @extends ActionData
+     * @param {Function} [unlock] - Return an array of unlocked action for all people
+     * @param {Function} [lock] - Return an array of locked action for all people
+     * @param {Function} [upgrade] - Return a building ID to upgrade
+     * @param {String} asset - Id of the graphical asset
+     */
+    /**
+     * @typedef {Object} EventData
+     * @extends ActionData
+     * @param {String} asset - Id of the graphical asset
+     * @param {Number} dropRate - Chance of getting it
+     */
+    // jscs:disable jsDoc
     var data = {
         /***** RESOURCES *****/
         resources: {
@@ -325,34 +362,21 @@ var DataManager = (function () {
         /***** BUILDINGS *****/
         buildings: {
             small: {
-                tent: { // disabled
-                    name: "tent",
-                    desc: "Allow someone to rejoin the colony.",
-                    time: 4,
+                forum1: {
+                    name: "forum",
+                    desc: "",
+                    time: 1,
                     consume: function () {
                         return [
-                            [7, data.resources.gatherable.common.scrap],
-                            [5, data.resources.gatherable.common.rock]
+                            []
                         ];
                     },
-                    give: function () {
-                        return [
-                            [1, data.resources.room]
-                        ];
-                    },
-                    asset: {
-                        image: "tent",
-                        position: {
-                            x: "62-100",
-                            y: "25-75"
-                        }
-                    },
-                    log: "That's small and ugly, but give @give for someone to sleep safely.",
-                    dropRate: 100
+                    asset: "forum+1",
+                    log: ""
                 },
                 furnace: {
                     name: "furnace",
-                    desc: "Survival require to make as much as gathering things.",
+                    desc: "Survival require to craft as much as gather things.",
                     time: 7,
                     consume: function () {
                         return [
@@ -360,16 +384,8 @@ var DataManager = (function () {
                             [3, data.resources.gatherable.uncommon.oil]
                         ];
                     },
-                    asset: {
-                        image: "furnace",
-                        position: {
-                            x: "44",
-                            y: "13"
-                        }
-                    },
-                    log: "A small furnace can smelt small things like sand or little electronic.",
-                    unique: true,
-                    dropRate: 90
+                    asset: "furnace",
+                    log: "A small furnace can smelt small things like sand or little electronic."
                 },
                 plot: {
                     name: "farm plot",
@@ -383,46 +399,29 @@ var DataManager = (function () {
                     },
                     unlock: function () {
                         return [
-                            data.actions.harvest
+                            data.actions.harvest.id
                         ];
                     },
-                    asset: {
-                        image: "farm-plot",
-                        position: {
-                            x: "0-37",
-                            y: "0-75"
-                        }
-                    },
-                    log: "More crops required more care but that's going to help us keeping a constant stock of food.",
-                    dropRate: 80
+                    asset: "plot",
+                    log: "More crops required more care but that's going to help us keeping a constant stock of food."
                 },
                 pharmacy: {
                     name: "pharmacy",
                     desc: "\"Maybe we should avoid letting medications rot in plain sunlight ?!\"",
                     time: 6,
-                    unique: true,
                     consume: function () {
                         return [
                             [5, data.resources.gatherable.rare.medication],
                             [4, data.resources.craftable.basic.component]
                         ];
                     },
-                    asset: {
-                        image: "pharmacy",
-                        position: {
-                            x: "42",
-                            y: "42"
-                        }
-                    },
-                    log: "Sorting our medications should prevent further mistakes and bad reaction.",
-                    dropRate: 70
+                    asset: "pharmacy",
+                    log: "Sorting our medications should prevent further mistakes and bad reaction."
                 },
                 well: {
                     name: "well",
                     desc: "Just a large hole into the ground.",
                     time: 16,
-                    energy: 80,
-                    unique: true,
                     condition: function () {
                         return !this.buildings.has(data.buildings.big.pump.id);
                     },
@@ -444,18 +443,11 @@ var DataManager = (function () {
                     },
                     lock: function () {
                         return [
-                            data.actions.drawFrom.river
+                            data.actions.drawFrom.river.id
                         ];
                     },
-                    asset: {
-                        image: "well",
-                        position: {
-                            x: "57",
-                            y: "60"
-                        }
-                    },
-                    log: "Drawing water from the ground should allow to further polish stone into bricks.",
-                    dropRate: 80
+                    asset: "well",
+                    log: "Drawing water from the ground should allow to further polish stone into bricks."
                 }
             },
             medium: {
@@ -463,10 +455,6 @@ var DataManager = (function () {
                     name: "forge",
                     desc: "A good upgrade to the furnace.",
                     time: 10,
-                    unique: true,
-                    condition: function () {
-                        this.buildings.has(data.buildings.small.furnace.id);
-                    },
                     consume: function () {
                         return [
                             [5, data.resources.gatherable.uncommon.oil],
@@ -477,66 +465,35 @@ var DataManager = (function () {
                     upgrade: function () {
                         return data.buildings.small.furnace.id;
                     },
-                    asset: {
-                        image: "forge"
-                    },
-                    log: "We can now work metal better and make more complex part.",
-                    dropRate: 60
+                    asset: "furnace+1",
+                    log: "We can now work metal better and make more complex part."
                 },
-                house: {
-                    name: "house",
-                    desc: "Turn a tent into what looks like a house.",
-                    time: 13,
-                    condition: function () {
-                        this.buildings.has(data.buildings.small.tent.id);
-                    },
+                plot2: {
+                    name: "field",
+                    desc: "",
                     consume: function () {
                         return [
-                            [7, data.resources.gatherable.common.rock],
-                            [1, data.resources.craftable.complex.furniture]
+                            [10, data.resources.gatherable.common.water]
                         ];
                     },
                     upgrade: function () {
-                        return data.buildings.small.tent;
+                        return data.buildings.small.plot.id;
                     },
-                    give: function () {
-                        return [round(random(2, 3)), data.resources.room];
+                    unlock: function () {
+                        return [
+                            data.actions.harvest
+                        ];
                     },
-                    asset: {
-                        image: "house"
-                    },
-                    log: "Better than a simple tent, it provide @give.",
-                    dropRate: 50
+                    asset: "plot+1",
+                    log: ""
                 }
             },
             big: {
-                barrack: { // disabled
-                    name: "barrack",
-                    desc: "Some place to sleep for a few people.",
-                    time: 2 * time.day,
-                    energy: 110,
-                    condition: function () {
-                        return this.buildings.has(data.buildings.medium.house.id) && false;
-                    },
-                    consume: function () {
-                        return [
-                            [5, data.resources.gatherable.uncommon.sand],
-                            [8, data.resources.craftable.complex.brick],
-                            [1, data.resources.craftable.complex.furniture]
-                        ];
-                    },
-                    give: function () {
-                        return [round(random(3, 4)), data.resources.room];
-                    },
-                    log: "That's a lots of space to welcome wanderers.",
-                    dropRate: 0
-                },
                 workshop: {
                     name: "workshop",
                     desc: "Organizing your workforce make them more efficient at crafting.",
                     time: 3 * time.day,
                     energy: 90,
-                    unique: true,
                     condition: function () {
                         return this.buildings.has(data.buildings.small.furnace.id);
                     },
@@ -556,22 +513,14 @@ var DataManager = (function () {
                             data.actions.project
                         ];
                     },
-                    asset: {
-                        image: "workshop",
-                        position: {
-                            x: "75",
-                            y: "13"
-                        }
-                    },
-                    log: "Good organisation allow you to prepare project and do much more complex crafting.",
-                    dropRate: 30
+                    asset: "workshop",
+                    log: "Good organisation allow you to prepare project and do much more complex crafting."
                 },
                 radio: {
                     name: "radio-station",
                     desc: "Broadcasting could finally bring us some help.",
                     time: 6,
                     energy: 60,
-                    unique: true,
                     condition: function () {
                         return this.buildings.has(data.buildings.big.workshop.id);
                     },
@@ -581,26 +530,15 @@ var DataManager = (function () {
                             [1, data.resources.craftable.advanced.computer]
                         ];
                     },
-                    asset: {
-                        image: "radio-station",
-                        position: {
-                            x: "46",
-                            y: "86"
-                        }
-                    },
+                    asset: "radio-station",
                     log: "\"Message received. We thought no one survive the crash. Glad you still have the cube." +
-                        "Unfortunately we can't risk being located, bring it to sent position. Over.\"",
-                    dropRate: 20
+                        "Unfortunately we can't risk being located, bring it to sent position. Over.\""
                 },
                 pump: {
                     name: "water pump",
                     desc: "A buried contraption that collect water from the earth moisture.",
                     time: 3 * time.day,
                     energy: 120,
-                    unique: true,
-                    condition: function () {
-                        return this.buildings.has(data.buildings.small.well.id);
-                    },
                     consume: function () {
                         return [
                             [20, data.resources.craftable.basic.stone],
@@ -614,23 +552,14 @@ var DataManager = (function () {
                     unlock: function () {
                         return [data.actions.drawFrom.well];
                     },
-                    collect: function () {
-                        return [
-                            [2 / time.day, data.resources.gatherable.common.water]
-                        ];
-                    },
-                    asset: {
-                        image: "pump"
-                    },
-                    log: "A big upgrade to your well ! Now we have a continuous flow of water coming.",
-                    dropRate: 10
+                    asset: "pump",
+                    log: "A big upgrade to your well ! Now we have a continuous flow of water coming."
                 },
                 trading: {
                     name: "trading post",
                     desc: "Since the radio station bring a handful of merchant, better take advantage of it.",
                     time: time.day,
                     energy: 70,
-                    unique: true,
                     condition: function () {
                         return this.buildings.has(data.buildings.big.radio.id) &&
                             this.resources.has(data.resources.craftable.complex.jewelry);
@@ -647,22 +576,14 @@ var DataManager = (function () {
                             data.actions.exchange
                         ];
                     },
-                    asset: {
-                        image: "trading-post",
-                        position: {
-                            x: "25",
-                            y: "86"
-                        }
-                    },
-                    log: "Arranging some space allow us to trade with merchant caravan passing by.",
-                    dropRate: 10
+                    asset: "trading-post",
+                    log: "Arranging some space allow us to trade with merchant caravan passing by."
                 },
                 module: {
                     name: "module",
                     desc: "With that, we can finally deliver the cube to security.",
                     time: time.week,
                     energy: 100,
-                    unique: true,
                     condition: function () {
                         return this.buildings.has(data.buildings.big.radio.id);
                     },
@@ -679,30 +600,16 @@ var DataManager = (function () {
                             data.actions.launch
                         ];
                     },
-                    asset: {
-                        image: "module",
-                        position: {
-                            x: "82",
-                            y: "86"
-                        }
-                    },
+                    asset: "module",
                     log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>" +
-                    "Now it's time to end it all !",
-                    dropRate: 5
+                    "Now it's time to end it all !"
                 }
             },
             special: {
                 wreckage: {
                     name: "wreckage",
                     desc: "Remainings of space-ships.",
-                    asset: {
-                        image: "wreckage",
-                        position: {
-                            x: "50",
-                            y: "37"
-                        }
-                    },
-                    unique: true
+                    asset: "wreckage"
                 },
                 forum: {
                     name: "forum",
@@ -717,17 +624,10 @@ var DataManager = (function () {
                     },
                     give: function () {
                         return [
-                            [2, data.resources.room]
+                            [1, data.resources.room]
                         ];
                     },
-                    asset: {
-                        image: "forum",
-                        position: {
-                            x: "51",
-                            y: "39"
-                        }
-                    },
-                    unique: true
+                    asset: "forum"
                 }
             }
         },
@@ -741,6 +641,12 @@ var DataManager = (function () {
                     action.owner.updateLife(100);
                     return [
                         data.actions.look
+                    ];
+                },
+                options: function () {
+                    return [
+                        data.resources.gatherable.common.water,
+                        data.resources.gatherable.common.food
                     ];
                 },
                 log: "@people.name gets up painfully.",
@@ -832,7 +738,7 @@ var DataManager = (function () {
                 },
                 lock: function (action) {
                     if (action.repeated > 10) {
-                        return [action.data];
+                        return [action.data.id];
                     }
                     else {
                         return [];
@@ -1013,7 +919,7 @@ var DataManager = (function () {
                     return compactResources(consume);
                 },
                 lock: function (action) {
-                    var lock = [action.data];
+                    var lock = [action.data.id];
                     if (isFunction(action.owner.plan.lock)) {
                         lock.push.apply(lock, action.owner.plan.lock(action));
                     }
@@ -1062,13 +968,8 @@ var DataManager = (function () {
                     energy: 15,
                     giveSpan: [1, 3],
                     give: function (action) {
-                        var draw = 0;
-                        if (this.buildings.has(data.buildings.small.well.id)) {
-                            draw = random.apply(null, action.data.giveSpan);
-                        }
-                        else if (this.buildings.has(data.buildings.big.pump.id)) {
-                            draw = random.apply(null, action.data.giveSpan) + 4;
-                        } // shouldn't have other case
+                        var hasPump = this.buildings.has(data.buildings.big.pump.id);
+                        var draw = random.apply(null, action.data.giveSpan) + (hasPump ? 4 : 0);
 
                         return [
                             [round(draw), data.resources.gatherable.common.water]
@@ -1082,23 +983,21 @@ var DataManager = (function () {
                 name: "harvest crops",
                 desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
                 time: function () {
-                    var nbCrops = 0;
-                    if (this.buildings.has(data.buildings.small.plot.id)) {
-                        nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
-                    }
-                    return 4 + nbCrops;
+                    var hasField = this.buildings.has(data.buildings.medium.plot2.id);
+                    return hasField ? 6 : 4;
                 },
                 consume: function () {
+                    var hasField = this.buildings.has(data.buildings.medium.plot2.id);
                     return [
-                        [1, data.resources.gatherable.common.water]
+                        [hasField ? 3 : 2, data.resources.gatherable.common.water]
                     ];
                 },
-                giveSpan: [1.5, 2],
+                giveSpan: [1.5, 2], // [3, 4] with field
                 give: function (action) {
-                    var nbCrops = this.buildings.get(data.buildings.small.plot.id).number;
-                    var rand = round(random.apply(null, action.data.giveSpan) * nbCrops);
+                    var hasField = this.buildings.has(data.buildings.medium.plot2.id);
+                    var rand = random.apply(null, action.giveSpan) * (hasField ? 2 : 1);
                     return [
-                        [rand, data.resources.gatherable.common.food]
+                        [round(rand), data.resources.gatherable.common.food]
                     ];
                 },
                 log: "Our crops produce @give.",
@@ -1151,54 +1050,6 @@ var DataManager = (function () {
                     }
                 },
                 order: 6
-            },
-            project: {
-                name: "project",
-                desc: "Prepare in order to craft an object.",
-                time: 2,
-                energy: 20,
-                give: function (action) {
-                    action.owner.prepareProject(randomize(this.unlockedCraftables()));
-                    return [];
-                },
-                unlock: function () {
-                    return [
-                        data.actions.make
-                    ];
-                },
-                log: "Looking at the resources, @people.name could make @project."
-            },
-            make: {
-                name: function (action) {
-                    return "make " + an(action.owner.project.name);
-                },
-                desc: "Now that all is ready, craft what we need.",
-                time: function () {
-                    var time = data.actions.craft.time;
-                    return isFunction(time) ? time() : time;
-                },
-                consume: function (action) {
-                    var consume = [];
-                    if (isFunction(action.owner.project.consume)) {
-                        consume.push.apply(consume, action.owner.project.consume(action));
-                    }
-                    return consume;
-                },
-                lock: function (action) {
-                    var lock = [action.data];
-                    if (isFunction(action.owner.project.lock)) {
-                        lock.push.apply(lock, action.owner.project.lock(action));
-                    }
-                    return lock;
-                },
-                unlock: function (action) {
-                    var unlock = [];
-                    if (isFunction(action.owner.project.unlock)) {
-                        unlock.push.apply(unlock, action.owner.project.unlock(action));
-                    }
-                    return unlock;
-                },
-                log: "@people.name successfully made @give."
             },
             exchange: {
                 name: "exchange",
@@ -1346,7 +1197,7 @@ var DataManager = (function () {
                     name: "sandstorm",
                     desc: "The wind is blowing hard, impossible to go out for now.",
                     time: 20,
-                    deltaTime: 4,
+                    timeDelta: 4,
                     effect: function (isOn) {
                         this.flags.cantGoOut = isOn;
                     },
@@ -1409,7 +1260,10 @@ var DataManager = (function () {
                     // Always find epic locations
                     // And get an extras when exploring
                     if (action.id === data.actions.explore.id) {
-                        action.giveSpan += 2;
+                        var extra = 2;
+                        action.giveSpan.map(function (value) {
+                            return value + extra;
+                        });
                     }
                 }
             },
@@ -1419,8 +1273,7 @@ var DataManager = (function () {
                 actions: function () {
                     return [
                         data.actions.craft.id,
-                        data.actions.build.id,
-                        data.actions.make.id
+                        data.actions.build.id
                     ];
                 },
                 iteration: 50,

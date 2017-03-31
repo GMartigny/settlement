@@ -45,7 +45,6 @@ function tooltip (html, data) {
         /**
          * Update tooltip content
          * @param data
-         * @return {Object} Itself
          */
         update: function (data) {
             box = wrap("tooltip");
@@ -67,13 +66,11 @@ function tooltip (html, data) {
                 });
                 box.appendChild(resourcesContainer);
             }
-            return api;
         },
         /**
          * Update consumption on tooltip
          * @param {Collection} resources
          * @param {Array} consume
-         * @return {Object} Itself
          */
         refresh: function (resources, consume) {
             if (data.consume) {
@@ -88,15 +85,12 @@ function tooltip (html, data) {
                     }
                 });
             }
-            return api;
         },
         /**
          * Remove tooltip from DOM
-         * @return {Object} Itself
          */
         remove: function () {
             box.remove();
-            return api;
         }
     };
     api.update(data);

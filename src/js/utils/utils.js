@@ -126,7 +126,7 @@ function randomize (list, amount) {
     var all = {},
         dropRateScale = [],
         dropRateSum = 0;
-    deepBrowse(list, function (item) {
+    list.deepBrowse(function (item) {
         if (item.dropRate) {
             dropRateSum += item.dropRate;
             dropRateScale.push(dropRateSum);
@@ -184,41 +184,12 @@ function randomizeMultiple (list, amount) {
 
 /**
  * Display log while in dev
- * @param {String} message - Any message
+ * @param {*} message... - Any message
  */
-function log (message) {
+function log () {
     if (IS_DEV) {
-        console.log(message);
+        console.log.apply(console, arguments);
     }
-}
-
-/**
- * Browse all item in a nested tree
- * @param {Object} tree - A tree of object
- * @param {Function} action - A function for each item
- * @returns {object}
- */
-function deepBrowse (tree, action) {
-    for (var item in tree) {
-        if (tree.hasOwnProperty(item)) {
-            if (tree[item].name) {
-                action(tree[item], tree);
-            }
-            else {
-                deepBrowse(tree[item], action);
-            }
-        }
-    }
-    return tree;
-}
-
-/**
- * Return a new reference of an object
- * @param {Object} obj - Any object
- * @return {Object}
- */
-function clone (obj) {
-    return Object.assign({}, obj);
 }
 
 /**
@@ -231,7 +202,7 @@ function clone (obj) {
 function consolidateData (context, object, fields) {
     fields = fields || Object.keys(object);
 
-    var data = clone(object);
+    var data = object.clone();
     fields.forEach(function (field) {
         if (data[field] && isFunction(data[field])) {
             data[field] = data[field](context);
@@ -348,48 +319,6 @@ function compactResources (resources) {
         return reduced;
     }, []);
 }
-
-/**
- * Return the last item of the array
- * @return {*}
- */
-Array.prototype.last = function () {
-    return this[this.length - 1];
-};
-
-/**
- * Get a random item from an array
- * @return {*}
- */
-Array.prototype.random = function () {
-    return this[floor(random(0, this.length))];
-};
-
-/**
- * Remove an item from an array
- * @param {*} item - Any item of the array
- * @return {Number} The array length
- */
-Array.prototype.out = function (item) {
-    this.splice(this.indexOf(item), 1);
-    return this.length;
-};
-
-/**
- * Return all value of an object as array
- * @return {Array}
- */
-Object.prototype.values = function () {
-    var values = [];
-
-    for (var key in this) {
-        if (this.hasOwnProperty(key)) {
-            values.push(this[key]);
-        }
-    }
-
-    return values;
-};
 
 /**
  * Load some image with a promise

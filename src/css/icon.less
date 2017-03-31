@@ -5,8 +5,10 @@
     display: inline-block;
     vertical-align: middle;
     background-image: url(@iconPath);
-    image-rendering: pixelated;
+    /* csslint ignore:start */
+    image-rendering: pixelated; // Standardisation on the way
     image-rendering: crisp-edges;
+    /* csslint ignore:end */
 }
 
 .icon(@sprite) {

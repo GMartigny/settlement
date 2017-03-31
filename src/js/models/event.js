@@ -17,7 +17,6 @@ Event.prototype = {
      * Initialize object
      * @param {Object} data - The event data
      * @private
-     * @return {Event} Itself
      */
     _init: function (data) {
         this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
@@ -27,8 +26,6 @@ Event.prototype = {
             this.tooltip.remove();
         }
         this.tooltip = tooltip(this.html, this.data);
-
-        return this;
     },
     /**
      * Return HTML for display

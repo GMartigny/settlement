@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buildings Planner</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        #planner {
+            position: relative;
+            background-color: #e2a673;
+            width: 800px;
+            height: 300px;
+            overflow: hidden;
+        }
+        #planner img {
+            position: absolute;
+            left: 0;
+            top: 0;
+            image-rendering: pixelated;
+        }
+        #planner img.disabled {
+            z-index: 0 !important;
+            opacity: 0.1;
+        }
+        #wrapper {
+            overflow: hidden;
+        }
+        #imgList, #output {
+            margin: 0;
+            width: 50%;
+            max-width: 50%;
+            height: 500px;
+            float: left;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<div id="planner"></div>
+<input type="number" id="scaler" value="4" min="1" max="10" step="1"><br>
+<input type="checkbox" id="all" checked onclick="switchDisplay()"><label for="all">All</label>
+<div id="wrapper">
+    <ul id="imgList"></ul>
+    <textarea id="output"></textarea>
+</div>
+<script>
+    var planner = document.getElementById("planner");
+    var imgList = document.getElementById("imgList");
+    var output = document.getElementById("output");
+    var scaler = document.getElementById("scaler");
+    var scale = scaler.value;
+    var data = {};
+
+    if (localStorage.save) {
+        data = JSON.parse(localStorage.save);
+    }
+    if (localStorage.scale) {
+        scale = +localStorage.scale;
+        scaler.value = scale;
+    }
+
+    var dragged = null;
+    function draggable (img) {
+        img.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            if (!dragged) {
+                dragged = img;
+                dragged.startX = e.offsetX;
+                dragged.startY = e.offsetY;
+            }
+        });
+    }
+    function switchDisplay (id) {
+        if (!id) {
+            var force = document.getElementById("all").checked;
+            for (var name in data) {
+                if (data.hasOwnProperty(name)) {
+                    document.getElementById(name + "-chk").checked = force;
+                    switchDisplay(name);
+                }
+            }
+        }
+        else {
+            document.getElementById(id).classList.toggle("disabled", !document.getElementById(id + "-chk").checked);
+        }
+    }
+    function dataToString () {
+        output.textContent = JSON.stringify(data, null, 4);
+        localStorage.save = JSON.stringify(data);
+    }
+    function moveTo (img, x, y, height) {
+        data[img.id].x = x;
+        data[img.id].y = y;
+        img.style.left = x * scale + "px";
+        img.style.top = y * scale + "px";
+        img.style.zIndex = y + height;
+    }
+
+    scaler.addEventListener("change", function () {
+        scale = this.value;
+        localStorage.scale = scale;
+    });
+    planner.addEventListener("mousemove", function (e) {
+        if (dragged) {
+            var x = Math.floor((e.clientX - dragged.startX) / scale);
+            var y = Math.floor((e.clientY - dragged.startY) / scale);
+            moveTo(dragged, x, y, dragged.height / scale);
+            dataToString();
+        }
+    });
+    planner.addEventListener("mouseup", function () {
+        dragged = null;
+    });
+
+    fetch("../../dist/js/assets.json").then(function (response) {
+        if (response.ok) {
+            return response.json();
+        }
+    }).then(function (assetsData) {
+        var order = 0;
+        for (var name in assetsData) {
+            if (assetsData.hasOwnProperty(name)) {
+                var asset = assetsData[name];
+                data[name] = data[name] || {
+                    x: 0,
+                    y: 0
+                };
+
+                imgList.innerHTML += `<li><input type="checkbox" checked id="${name}-chk" onclick="switchDisplay('${name}')"/><label for="${name}-chk">${name}</label></li>`;
+
+                var img = new Image();
+                img.src = "../../" + asset.source_image;
+                img.id = name;
+                img.style.width = asset.width * scale + "px";
+                moveTo(img, data[name].x, data[name].y, asset.height);
+                draggable(img);
+                planner.appendChild(img);
+            }
+        }
+        dataToString();
+    });
+</script>
+</body>
+</html>

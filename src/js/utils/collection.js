@@ -85,7 +85,6 @@ Collection.prototype = {
     /**
      * Execute a function for each item
      * @param {collectionCallback} action - A callback function called on each item
-     * @return {Collection} Itself
      */
     forEach: function (action) {
         if (this.length > 0) {
@@ -95,7 +94,6 @@ Collection.prototype = {
                 }
             }
         }
-        return this;
     },
     /**
      * Filter out item with a function
@@ -135,12 +133,10 @@ Collection.prototype = {
     },
     /**
      * Empty the collection
-     * @return {Collection} Itself
      */
     clear: function () {
         this.items = {};
         this.length = 0;
-        return this;
     },
     /**
      * Convert collection to string

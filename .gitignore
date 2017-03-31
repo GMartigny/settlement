@@ -4,3 +4,4 @@ nbproject
 node_modules
 dist
 /src/css/sprites.less
+*.log
