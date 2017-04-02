@@ -69,14 +69,14 @@ People.prototype = {
         html.appendChild(nameNode);
 
         this.lifeBar = wrap("bar life");
-        tooltip(this.lifeBar, {
+        new Tooltip(this.lifeBar, {
             name: "Health",
             desc: "The first thing you want is a good health."
         });
 
         html.appendChild(this.lifeBar);
         this.energyBar = wrap("bar energy");
-        tooltip(this.energyBar, {
+        new Tooltip(this.energyBar, {
             name: "Energy",
             desc: "Drained faster when busy or hungry."
         });
@@ -229,10 +229,7 @@ People.prototype = {
             }
         }
         else {
-            if (this.actions.has(actions.id)) {
-                this.actions.get(actions.id)._init(actions);
-            }
-            else {
+            if (!this.actions.has(actions.id)) {
                 var action = new Action(this, actions);
                 if (this.perk && isFunction(this.perk.effect)) {
                     if (!this.perk.actions || this.perk.actions().includes(actions.id)) {

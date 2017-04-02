@@ -78,7 +78,7 @@ var DataManager = (function () {
         /***** RESOURCES *****/
         resources: {
             /***** GATHERABLES *****/
-            gatherable: {
+            gatherables: {
                 common: { // drop rate more than 80
                     water: {
                         name: "water",
@@ -166,7 +166,7 @@ var DataManager = (function () {
                 }
             },
             /***** CRAFTABLES *****/
-            craftable: {
+            craftables: {
                 basic: { // Max 2 gatherables, no more than uncommon
                     stone: {
                         name: "smooth stone",
@@ -174,7 +174,7 @@ var DataManager = (function () {
                         icon: "stone",
                         consume: function () {
                             return [
-                                [3, data.resources.gatherable.common.rock]
+                                [3, data.resources.gatherables.common.rock]
                             ];
                         },
                         dropRate: 100,
@@ -189,7 +189,7 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [4, data.resources.gatherable.uncommon.sand]
+                                [4, data.resources.gatherables.uncommon.sand]
                             ];
                         },
                         dropRate: 60,
@@ -201,8 +201,8 @@ var DataManager = (function () {
                         icon: "pipes-large",
                         consume: function () {
                             return [
-                                [2, data.resources.gatherable.common.scrap],
-                                [2, data.resources.gatherable.uncommon.plastic]
+                                [2, data.resources.gatherables.common.scrap],
+                                [2, data.resources.gatherables.uncommon.plastic]
                             ];
                         },
                         dropRate: 120,
@@ -214,8 +214,8 @@ var DataManager = (function () {
                         icon: "tools",
                         consume: function () {
                             return [
-                                [1, data.resources.craftable.basic.component],
-                                [2, data.resources.gatherable.common.rock]
+                                [1, data.resources.craftables.basic.component],
+                                [2, data.resources.gatherables.common.rock]
                             ];
                         },
                         dropRate: 90,
@@ -232,8 +232,8 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [1, data.resources.craftable.basic.stone],
-                                [1, data.resources.craftable.basic.tool]
+                                [1, data.resources.craftables.basic.stone],
+                                [1, data.resources.craftables.basic.tool]
                             ];
                         },
                         dropRate: 80,
@@ -245,9 +245,9 @@ var DataManager = (function () {
                         icon: "electronic-circuit-board",
                         consume: function () {
                             return [
-                                [1, data.resources.gatherable.common.scrap],
-                                [2, data.resources.craftable.basic.component],
-                                [3, data.resources.gatherable.rare.electronic]
+                                [1, data.resources.gatherables.common.scrap],
+                                [2, data.resources.craftables.basic.component],
+                                [3, data.resources.gatherables.rare.electronic]
                             ];
                         },
                         dropRate: 60,
@@ -262,8 +262,8 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [4, data.resources.gatherable.common.scrap],
-                                [1, data.resources.craftable.basic.tool]
+                                [4, data.resources.gatherables.common.scrap],
+                                [1, data.resources.craftables.basic.tool]
                             ];
                         },
                         dropRate: 80,
@@ -275,8 +275,8 @@ var DataManager = (function () {
                         icon: "glass-table",
                         consume: function () {
                             return [
-                                [2, data.resources.craftable.basic.glass],
-                                [2, data.resources.craftable.complex.metalPipe]
+                                [2, data.resources.craftables.basic.glass],
+                                [2, data.resources.craftables.complex.metalPipe]
                             ];
                         },
                         dropRate: 40,
@@ -291,8 +291,8 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [4, data.resources.gatherable.rare.electronic],
-                                [3, data.resources.gatherable.special.quartz]
+                                [4, data.resources.gatherables.rare.electronic],
+                                [3, data.resources.gatherables.special.quartz]
                             ];
                         },
                         dropRate: 40,
@@ -309,9 +309,9 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [10, data.resources.gatherable.uncommon.oil],
-                                [5, data.resources.craftable.basic.tool],
-                                [5, data.resources.craftable.complex.metalPipe]
+                                [10, data.resources.gatherables.uncommon.oil],
+                                [5, data.resources.craftables.basic.tool],
+                                [5, data.resources.craftables.complex.metalPipe]
                             ];
                         },
                         dropRate: 30,
@@ -326,9 +326,9 @@ var DataManager = (function () {
                         },
                         consume: function () {
                             return [
-                                [10, data.resources.craftable.basic.component],
-                                [7, data.resources.craftable.basic.tool],
-                                [3, data.resources.craftable.complex.circuit]
+                                [10, data.resources.craftables.basic.component],
+                                [7, data.resources.craftables.basic.tool],
+                                [3, data.resources.craftables.complex.circuit]
                             ];
                         },
                         dropRate: 20,
@@ -353,8 +353,8 @@ var DataManager = (function () {
             needs: function (flags) {
                 var waterNeed = data.people.consumption.water * (flags.drought ? 2 : 1);
                 return [
-                    [waterNeed, data.resources.gatherable.common.water, "thirsty"],
-                    [data.people.consumption.food, data.resources.gatherable.common.food, "starving"]
+                    [waterNeed, data.resources.gatherables.common.water, "thirsty"],
+                    [data.people.consumption.food, data.resources.gatherables.common.food, "starving"]
                 ];
             },
             dropRate: 0.005
@@ -380,8 +380,8 @@ var DataManager = (function () {
                     time: 7,
                     consume: function () {
                         return [
-                            [8, data.resources.gatherable.common.rock],
-                            [3, data.resources.gatherable.uncommon.oil]
+                            [8, data.resources.gatherables.common.rock],
+                            [3, data.resources.gatherables.uncommon.oil]
                         ];
                     },
                     asset: "furnace",
@@ -393,8 +393,8 @@ var DataManager = (function () {
                     time: 12,
                     consume: function () {
                         return [
-                            [5, data.resources.gatherable.common.food],
-                            [10, data.resources.gatherable.uncommon.sand]
+                            [5, data.resources.gatherables.common.food],
+                            [10, data.resources.gatherables.uncommon.sand]
                         ];
                     },
                     unlock: function () {
@@ -411,8 +411,8 @@ var DataManager = (function () {
                     time: 6,
                     consume: function () {
                         return [
-                            [5, data.resources.gatherable.rare.medication],
-                            [4, data.resources.craftable.basic.component]
+                            [5, data.resources.gatherables.rare.medication],
+                            [4, data.resources.craftables.basic.component]
                         ];
                     },
                     asset: "pharmacy",
@@ -427,13 +427,13 @@ var DataManager = (function () {
                     },
                     consume: function () {
                         return [
-                            [10, data.resources.craftable.basic.stone],
-                            [3, data.resources.craftable.basic.tool]
+                            [10, data.resources.craftables.basic.stone],
+                            [3, data.resources.craftables.basic.tool]
                         ];
                     },
                     give: function () {
                         return [
-                            [5, data.resources.gatherable.common.water]
+                            [5, data.resources.gatherables.common.water]
                         ];
                     },
                     unlock: function () {
@@ -457,9 +457,9 @@ var DataManager = (function () {
                     time: 10,
                     consume: function () {
                         return [
-                            [5, data.resources.gatherable.uncommon.oil],
-                            [10, data.resources.craftable.basic.stone],
-                            [2, data.resources.craftable.basic.tool]
+                            [5, data.resources.gatherables.uncommon.oil],
+                            [10, data.resources.craftables.basic.stone],
+                            [2, data.resources.craftables.basic.tool]
                         ];
                     },
                     upgrade: function () {
@@ -473,7 +473,7 @@ var DataManager = (function () {
                     desc: "",
                     consume: function () {
                         return [
-                            [10, data.resources.gatherable.common.water]
+                            [10, data.resources.gatherables.common.water]
                         ];
                     },
                     upgrade: function () {
@@ -499,19 +499,14 @@ var DataManager = (function () {
                     },
                     consume: function () {
                         return [
-                            [6, data.resources.gatherable.common.scrap],
-                            [5, data.resources.craftable.basic.glass],
-                            [10, data.resources.craftable.basic.tool],
-                            [15, data.resources.craftable.complex.brick]
+                            [6, data.resources.gatherables.common.scrap],
+                            [5, data.resources.craftables.basic.glass],
+                            [10, data.resources.craftables.basic.tool],
+                            [15, data.resources.craftables.complex.brick]
                         ];
                     },
                     give: function () {
                         return [];
-                    },
-                    unlock: function () {
-                        return [
-                            data.actions.project
-                        ];
                     },
                     asset: "workshop",
                     log: "Good organisation allow you to prepare project and do much more complex crafting."
@@ -526,8 +521,8 @@ var DataManager = (function () {
                     },
                     consume: function () {
                         return [
-                            [4, data.resources.craftable.complex.circuit],
-                            [1, data.resources.craftable.advanced.computer]
+                            [4, data.resources.craftables.complex.circuit],
+                            [1, data.resources.craftables.advanced.computer]
                         ];
                     },
                     asset: "radio-station",
@@ -541,9 +536,9 @@ var DataManager = (function () {
                     energy: 120,
                     consume: function () {
                         return [
-                            [20, data.resources.craftable.basic.stone],
-                            [5, data.resources.craftable.complex.metalPipe],
-                            [1, data.resources.craftable.advanced.engine]
+                            [20, data.resources.craftables.basic.stone],
+                            [5, data.resources.craftables.complex.metalPipe],
+                            [1, data.resources.craftables.advanced.engine]
                         ];
                     },
                     upgrade: function () {
@@ -562,13 +557,13 @@ var DataManager = (function () {
                     energy: 70,
                     condition: function () {
                         return this.buildings.has(data.buildings.big.radio.id) &&
-                            this.resources.has(data.resources.craftable.complex.jewelry);
+                            this.resources.has(data.resources.craftables.complex.jewelry);
                     },
                     consume: function () {
                         return [
-                            [2, data.resources.craftable.basic.glass],
-                            [10, data.resources.craftable.complex.brick],
-                            [2, data.resources.craftable.complex.furniture]
+                            [2, data.resources.craftables.basic.glass],
+                            [10, data.resources.craftables.complex.brick],
+                            [2, data.resources.craftables.complex.furniture]
                         ];
                     },
                     unlock: function () {
@@ -589,10 +584,10 @@ var DataManager = (function () {
                     },
                     consume: function () {
                         return [
-                            [15, data.resources.gatherable.uncommon.oil],
-                            [3, data.resources.craftable.complex.furniture],
-                            [1, data.resources.craftable.advanced.computer],
-                            [2, data.resources.craftable.advanced.engine]
+                            [15, data.resources.gatherables.uncommon.oil],
+                            [3, data.resources.craftables.complex.furniture],
+                            [1, data.resources.craftables.advanced.computer],
+                            [2, data.resources.craftables.advanced.engine]
                         ];
                     },
                     unlock: function () {
@@ -645,8 +640,8 @@ var DataManager = (function () {
                 },
                 options: function () {
                     return [
-                        data.resources.gatherable.common.water,
-                        data.resources.gatherable.common.food
+                        data.resources.gatherables.common.water,
+                        data.resources.gatherables.common.food
                     ];
                 },
                 log: "@people.name gets up painfully.",
@@ -663,9 +658,9 @@ var DataManager = (function () {
                         MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
                     }, 1000);
                     return [,
-                        [10, data.resources.gatherable.common.water],
-                        [8, data.resources.gatherable.common.food],
-                        [2, data.resources.craftable.basic.component]
+                        [10, data.resources.gatherables.common.water],
+                        [8, data.resources.gatherables.common.food],
+                        [2, data.resources.craftables.basic.component]
                     ];
                 },
                 unlock: function () {
@@ -708,7 +703,7 @@ var DataManager = (function () {
                 },
                 giveSpan: [3, 6],
                 give: function (action) {
-                    return randomizeMultiple(data.resources.gatherable, action.data.giveSpan);
+                    return randomizeMultiple(data.resources.gatherables, action.data.giveSpan);
                 },
                 log: "@people.name comes back with @give.",
                 order: 0
@@ -720,7 +715,7 @@ var DataManager = (function () {
                 isOut: 1,
                 consume: function () {
                     return [
-                        [2, data.resources.gatherable.common.water]
+                        [2, data.resources.gatherables.common.water]
                     ];
                 },
                 condition: function (action) {
@@ -746,9 +741,9 @@ var DataManager = (function () {
                 },
                 giveSpan: [1, 3],
                 give: function (action, effect) {
-                    var give = randomizeMultiple(data.resources.gatherable, action.data.giveSpan);
-                    if (random() < data.resources.gatherable.special.ruins.dropRate) {
-                        give.push([1, data.resources.gatherable.special.ruins]);
+                    var give = randomizeMultiple(data.resources.gatherables, action.data.giveSpan);
+                    if (random() < data.resources.gatherables.special.ruins.dropRate) {
+                        give.push([1, data.resources.gatherables.special.ruins]);
                         var location = randomize(data.locations.near);
                         this.knownLocations.push(location);
                         effect.location = an(location.name);
@@ -777,18 +772,18 @@ var DataManager = (function () {
                 isOut: 1,
                 consume: function () {
                     return [
-                        [2, data.resources.gatherable.common.water]
+                        [2, data.resources.gatherables.common.water]
                     ];
                 },
                 giveSpan: [2, 4],
                 give: function (action, effect) {
-                    var give = randomize(data.resources.gatherable, action.data.giveSpan);
+                    var give = randomize(data.resources.gatherables, action.data.giveSpan);
                     // Add 50% chance for ruins (or 100% if explorer)
-                    var baseDropRate = data.resources.gatherable.special.ruins.dropRate;
+                    var baseDropRate = data.resources.gatherables.special.ruins.dropRate;
                     var isExplorer = action.owner.perk && action.owner.perk.id === data.perks.explorer;
                     var modifier = isExplorer ? 1 : 0.5;
                     if (random() < (baseDropRate + (1 - baseDropRate) * modifier)) {
-                        give.push([1, data.resources.gatherable.special.ruins]);
+                        give.push([1, data.resources.gatherablse.special.ruins]);
                         var location = randomize(isExplorer ? data.locations.epic : data.locations.far);
                         this.knownLocations.push(location);
                         effect.location = an(location.name);
@@ -816,9 +811,9 @@ var DataManager = (function () {
                 isOut: 1,
                 consume: function () {
                     return [
-                        [4, data.resources.gatherable.common.water],
-                        [1, data.resources.gatherable.common.food],
-                        [1, data.resources.gatherable.special.ruins]
+                        [4, data.resources.gatherables.common.water],
+                        [1, data.resources.gatherables.common.food],
+                        [1, data.resources.gatherables.special.ruins]
                     ];
                 },
                 giveSpan: [5, 9],
@@ -878,9 +873,9 @@ var DataManager = (function () {
                 energy: 20,
                 consume: function () {
                     return [
-                        [1, data.resources.gatherable.common.water],
-                        [1, data.resources.gatherable.common.food],
-                        [1, data.resources.craftable.basic.tool]
+                        [1, data.resources.gatherables.common.water],
+                        [1, data.resources.gatherables.common.food],
+                        [1, data.resources.craftables.basic.tool]
                     ];
                 },
                 give: function (action, effect) {
@@ -910,8 +905,8 @@ var DataManager = (function () {
                 },
                 consume: function (action) {
                     var consume = [
-                        [2, data.resources.gatherable.common.water],
-                        [1, data.resources.gatherable.common.food]
+                        [2, data.resources.gatherables.common.water],
+                        [1, data.resources.gatherables.common.food]
                     ];
                     if (isFunction(action.owner.plan.consume)) {
                         consume.push.apply(consume, action.owner.plan.consume(action));
@@ -955,7 +950,7 @@ var DataManager = (function () {
                     giveSpan: [2, 6],
                     give: function (action) {
                         return [
-                            [round(random.apply(null, action.data.giveSpan)), data.resources.gatherable.common.water]
+                            [round(random.apply(null, action.data.giveSpan)), data.resources.gatherables.common.water]
                         ];
                     },
                     log: "Coming back from the river, @people.name brings @give with @people.accusative.",
@@ -972,7 +967,7 @@ var DataManager = (function () {
                         var draw = random.apply(null, action.data.giveSpan) + (hasPump ? 4 : 0);
 
                         return [
-                            [round(draw), data.resources.gatherable.common.water]
+                            [round(draw), data.resources.gatherables.common.water]
                         ];
                     },
                     log: "Using our well, @people.name get @give.",
@@ -989,7 +984,7 @@ var DataManager = (function () {
                 consume: function () {
                     var hasField = this.buildings.has(data.buildings.medium.plot2.id);
                     return [
-                        [hasField ? 3 : 2, data.resources.gatherable.common.water]
+                        [hasField ? 3 : 2, data.resources.gatherables.common.water]
                     ];
                 },
                 giveSpan: [1.5, 2], // [3, 4] with field
@@ -997,7 +992,7 @@ var DataManager = (function () {
                     var hasField = this.buildings.has(data.buildings.medium.plot2.id);
                     var rand = random.apply(null, action.giveSpan) * (hasField ? 2 : 1);
                     return [
-                        [round(rand), data.resources.gatherable.common.food]
+                        [round(rand), data.resources.gatherables.common.food]
                     ];
                 },
                 log: "Our crops produce @give.",
@@ -1027,7 +1022,7 @@ var DataManager = (function () {
                 energy: 1,
                 consume: function () {
                     return [
-                        [2, data.resources.gatherable.rare.medication]
+                        [2, data.resources.gatherables.rare.medication]
                     ];
                 },
                 give: function (action, effect) {
@@ -1058,12 +1053,12 @@ var DataManager = (function () {
                 energy: 20,
                 consume: function () {
                     return [
-                        [2, data.resources.craftable.complex.jewelry]
+                        [2, data.resources.craftables.complex.jewelry]
                     ];
                 },
                 giveSpan: [2, 3],
                 give: function (action) {
-                    var possible = Object.assign({}, data.resources.craftable.basic, data.resources.craftable.complex);
+                    var possible = Object.assign({}, data.resources.craftables.basic, data.resources.craftables.complex);
                     delete possible.jewelry;
                     return randomizeMultiple(possible, action.data.giveSpan);
                 },
@@ -1077,7 +1072,7 @@ var DataManager = (function () {
                 isOut: 1,
                 consume: function () {
                     return [
-                        [10, data.resources.gatherable.uncommon.oil]
+                        [10, data.resources.gatherables.uncommon.oil]
                     ];
                 },
                 give: function () {
@@ -1098,9 +1093,9 @@ var DataManager = (function () {
                     name: "mountain",
                     give: function () {
                         return [
-                            data.resources.gatherable.common.rock,
-                            data.resources.gatherable.common.scrap,
-                            data.resources.craftable.basic.component
+                            data.resources.gatherables.common.rock,
+                            data.resources.gatherables.common.scrap,
+                            data.resources.craftables.basic.component
                         ];
                     },
                     log: "That was hard to climb those mountains, but at least @people find @give.",
@@ -1110,9 +1105,9 @@ var DataManager = (function () {
                     name: "desert",
                     give: function () {
                         return [
-                            data.resources.gatherable.common.scrap,
-                            data.resources.gatherable.uncommon.oil,
-                            data.resources.gatherable.uncommon.sand
+                            data.resources.gatherables.common.scrap,
+                            data.resources.gatherables.uncommon.oil,
+                            data.resources.gatherables.uncommon.sand
                         ];
                     },
                     log: "Dunes everywhere give a felling of hopelessness. Anyway, here's @give for the stock.",
@@ -1122,9 +1117,9 @@ var DataManager = (function () {
                     name: "hangar",
                     give: function () {
                         return [
-                            data.resources.gatherable.common.food,
-                            data.resources.gatherable.rare.medication,
-                            data.resources.craftable.basic.glass
+                            data.resources.gatherables.common.food,
+                            data.resources.gatherables.rare.medication,
+                            data.resources.craftables.basic.glass
                         ];
                     },
                     log: "Quite easy to loot, but full of dangers too. " +
@@ -1140,9 +1135,9 @@ var DataManager = (function () {
                     },
                     give: function () {
                         return [
-                            data.resources.gatherable.common.water,
-                            data.resources.gatherable.uncommon.plastic,
-                            data.resources.craftable.basic.stone
+                            data.resources.gatherables.common.water,
+                            data.resources.gatherables.uncommon.plastic,
+                            data.resources.craftables.basic.stone
                         ];
                     },
                     log: "It's nice by the river, @people.name found @give.",
@@ -1152,9 +1147,9 @@ var DataManager = (function () {
                     name: "old ruin",
                     give: function () {
                         return [
-                            data.resources.gatherable.rare.electronic,
-                            data.resources.craftable.basic.component,
-                            data.resources.craftable.basic.tool
+                            data.resources.gatherables.rare.electronic,
+                            data.resources.craftables.basic.component,
+                            data.resources.craftables.basic.tool
                         ];
                     },
                     log: "Amazing no-one get lost in those caves to get @give.",
@@ -1166,9 +1161,9 @@ var DataManager = (function () {
                     name: "abandoned building",
                     give: function () {
                         return [
-                            data.resources.gatherable.rare.medication,
-                            data.resources.craftable.basic.glass,
-                            data.resources.craftable.complex.circuit
+                            data.resources.gatherables.rare.medication,
+                            data.resources.craftables.basic.glass,
+                            data.resources.craftables.complex.circuit
                         ];
                     },
                     log: "No-one could guess what that building was, but it sure was interesting. " +
@@ -1179,9 +1174,9 @@ var DataManager = (function () {
                     name: "spaceship wreck",
                     give: function () {
                         return [
-                            data.resources.gatherable.rare.electronic,
-                            data.resources.craftable.basic.tool,
-                            data.resources.craftable.complex.furniture
+                            data.resources.gatherables.rare.electronic,
+                            data.resources.craftables.basic.tool,
+                            data.resources.craftables.complex.furniture
                         ];
                     },
                     log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
@@ -1356,7 +1351,7 @@ var DataManager = (function () {
                 effect: function (action) {
                     action.consume = function () {
                         return [
-                            [1, data.resources.craftable.complex.jewelry]
+                            [1, data.resources.craftables.complex.jewelry]
                         ];
                     };
                 }

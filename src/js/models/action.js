@@ -5,20 +5,24 @@
  * @param {Object} data - The action data
  * @constructor
  */
-function Action (owner, data) {
+function Action (owner, data, parentAction) {
     this.locked = true;
     this.running = false;
+    this.options = null;
     this.optionsWrapper = null;
 
     this.owner = owner;
+    this.parentAction = parentAction || null;
     this.repeated = 0;
-    this.data = {};
+    this.data = null;
 
-    this.location = false;
+    this.location = false; // TODO used ?
 
     this.html = this.toHTML(data);
+    this.tooltip = new Tooltip(this.html, data);
 
     this._init(data);
+    this.generateOptions();
 }
 Action.prototype = {
     /**
@@ -27,19 +31,10 @@ Action.prototype = {
      * @private
      */
     _init: function (data) {
-        this.data = consolidateData(this, data, ["name", "desc", "time", "energy", "consume"]);
+        this.data = data;
+        data = consolidateData(this, this.data, ["time", "energy"]);
         if (isUndefined(this.data.energy)) {
-            this.data.energy = this.data.time * 5;
-        }
-
-        this.html.textContent = capitalize(this.data.name);
-
-        if (this.tooltip) {
-            this.tooltip.remove();
-            this.tooltip.update(this.data);
-        }
-        else {
-            this.tooltip = tooltip(this.html, this.data);
+            this.data.energy = data.time * 5;
         }
     },
     /**
@@ -48,11 +43,12 @@ Action.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function (data) {
-        var html = wrap("action clickable disabled animated");
+        var html = wrap("action clickable disabled animated", capitalize(data.name));
 
         if (isFunction(data.options)) {
             html.classList.add("withOptions");
             this.optionsWrapper = wrap("options");
+            html.appendChild(this.optionsWrapper);
         }
         else {
             html.addEventListener("click", function () {
@@ -66,26 +62,45 @@ Action.prototype = {
 
         return html;
     },
+    generateOptions: function () {
+        if (isFunction(this.data.options)) {
+            this.options = new Collection();
+            var options = this.data.options(this);
+            for (var i = 0, l = options.length; i < l; ++i) {
+                var option = new Action(this.owner, options[i]);
+                this.options.push(option);
+                this.optionsWrapper.appendChild(option.html);
+            }
+        }
+    },
     /**
      * Loop function called every game tick
      * @param {Collection} resources - Game resources
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        this.locked = (this.owner.isTired() && this.data.energy > 0) ||
-            (this.data.isOut && flags.cantGoOut);
+        var data = consolidateData(this, this.data, ["name", "desc", "time", "energy", "consume"]);
+
+        this.locked = (this.owner.isTired() && data.energy > 0) ||
+            (this.data.isOut && flags.cantGoOut) ||
+            (this.parentAction && this.parentAction.locked);
 
         // check consummation
-        if (isArray(this.data.consume)) {
-            this.tooltip.refresh(resources, this.data.consume);
+        if (isArray(data.consume)) {
+            this.tooltip.refresh(resources, data);
             if (!this.locked) {
-                this.data.consume.forEach(function (r) {
+                data.consume.forEach(function (r) {
                     var id = r[1].id;
                     if (!resources.has(id) || !resources.get(id).has(r[0])) {
                         this.locked = true;
                     }
                 }.bind(this));
             }
+        }
+        if (this.options) {
+            this.options.forEach(function (option) {
+                option.refresh(resources, flags);
+            });
         }
 
         if (this.locked) {
@@ -97,29 +112,36 @@ Action.prototype = {
     },
     /**
      * Player click on action
-     * @return {boolean} Is launched
+     * @param {*} [option] - The choosed option
+     * @return {Boolean} Is launched
      */
-    click: function () {
+    click: function (option) {
         if (!this.owner.busy && !this.locked) {
             // Use
             if (isArray(this.data.consume)) {
                 MessageBus.notify(MessageBus.MSG_TYPES.USE, this.data.consume);
             }
 
-            ++this.repeated;
+            if (this.parentAction) {
+                return this.parentAction.click(this);
+            }
+            else {
+                ++this.repeated;
 
-            this.owner.setBusy(this.data);
-            var duration = (this.data.time || 0) * GameController.tickLength;
+                this.owner.setBusy(this.data);
+                var duration = (this.data.time || 0) * GameController.tickLength;
 
-            if (this.data.deltaTime) {
-                duration += random(-this.data.deltaTime, this.data.deltaTime);
+                if (this.data.deltaTime) {
+                    duration += random(-this.data.deltaTime, this.data.deltaTime);
+                }
+
+                this.html.style.animationDuration = duration + "ms";
+                this.html.classList.add("cooldown");
+
+                this.timeout = TimerManager.timeout(this.end.bind(this), duration);
+                return true;
             }
 
-            this.html.style.animationDuration = duration + "ms";
-            this.html.classList.add("cooldown");
-
-            this.timeout = TimerManager.timeout(this.end.bind(this), duration);
-            return true;
         }
         else {
             return false;

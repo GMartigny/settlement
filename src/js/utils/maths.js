@@ -39,6 +39,9 @@ function constrain (x, min, max) {
     else if (x > max) {
         return max;
     }
+    else {
+        return x;
+    }
 }
 
 /**

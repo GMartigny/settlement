@@ -1,0 +1,38 @@
+.action {
+    display: inline-block;
+    margin-right: 5px;
+
+    &.withOptions {
+        cursor: default;
+        text-decoration: none;
+
+        &:after {
+            content: "...";
+        }
+
+        .options {
+            position: absolute;
+            padding-top: 5px;
+            left: 0;
+            overflow: hidden;
+
+            // animated
+            height: 0;
+            opacity: 0;
+            top: 50%;
+
+            .action {
+                white-space: nowrap;
+                margin-top: -1px;
+            }
+        }
+
+        &:hover .options {
+            @duration: .3s;
+            transition: opacity linear @duration, top ease-out @duration;
+            height: auto;
+            opacity: 1;
+            top: 100%;
+        }
+    }
+}

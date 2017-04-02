@@ -445,7 +445,7 @@ GameController.prototype = {
     unlockedCraftables: function () {
         var craftables = [];
 
-        DataManager.data.resources.craftable.deepBrowse(function (craft) {
+        DataManager.data.resources.craftables.deepBrowse(function (craft) {
             if (!craft.condition || (isFunction(craft.condition) && craft.condition())) {
                 craftables.push(craft);
             }

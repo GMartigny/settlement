@@ -9,6 +9,7 @@ function Resource (data, count) {
     this.data = {};
 
     this.html = this.toHTML(data);
+    this.tooltip = tooltip(this.html, this.data);
 
     this._init(data);
 
@@ -25,12 +26,7 @@ Resource.prototype = {
      * @private
      */
     _init: function (data) {
-        this.data = consolidateData(this, data, ["name", "desc", "consume"]);
-
-        if (this.tooltip) {
-            this.tooltip.remove();
-        }
-        this.tooltip = tooltip(this.html, this.data);
+        this.data = data;
     },
     /**
      * Return HTML for display
