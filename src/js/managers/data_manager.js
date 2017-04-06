@@ -26,6 +26,7 @@ var DataManager = (function () {
      * @param {ID} id - unique ID
      * @param {String|function} name - The displayed name
      * @param {String|Function} desc - A description for tooltip
+     * @param {String} icon - Icon image of the resource
      * @param {Number} [order] - Order for display
      */
     /**
@@ -35,7 +36,6 @@ var DataManager = (function () {
     /**
      * @typedef {Object} ResourceData
      * @extends Data
-     * @param {String} icon - Icon image of the resource
      * @param {Number} dropRate - Chance of getting it
      */
     /**
@@ -740,15 +740,17 @@ var DataManager = (function () {
                     }
                 },
                 giveSpan: [1, 3],
-                give: function (action, effect) {
+                give: function (action) {
                     var give = randomizeMultiple(data.resources.gatherables, action.data.giveSpan);
                     if (random() < data.resources.gatherables.special.ruins.dropRate) {
                         give.push([1, data.resources.gatherables.special.ruins]);
-                        var location = randomize(data.locations.near);
-                        this.knownLocations.push(location);
-                        effect.location = an(location.name);
                     }
                     return give;
+                },
+                effect: function (effect) {
+                    var location = randomize(data.locations.near);
+                    this.knownLocations.push(location);
+                    effect.location = an(location.name);
                 },
                 log: function (effect) {
                     var log;
@@ -836,104 +838,25 @@ var DataManager = (function () {
                 time: function () {
                     return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 5;
                 },
-                unlock: function () {
-                    return [data.actions.plan];
+                options: function () {
+                    return this.unlockedCraftables();
                 },
-                give: function () {
-                    var possible = this.possibleCraftables();
-                    if (possible.length) {
-                        var pick = randomize(possible);
-                        if (isFunction(pick.consume)) {
-                            // consume craftable requirement
-                            MessageBus.notify(MessageBus.MSG_TYPES.USE, pick.consume(this));
-                        }
-                        return [
-                            [1, pick]
-                        ];
-                    }
-                    else {
-                        return [];
-                    }
+                give: function (action, option) {
+                    return option;
                 },
-                log: function (effect) {
-                    if (effect.give) {
-                        return "@people.name succeeds to craft @give.";
-                    }
-                    else {
-                        effect.logType = MessageBus.MSG_TYPES.LOGS.WARN;
-                        return "Nothing could be made with what you have right now.";
-                    }
+                log: function () {
+                    return "@people.name succeeds to craft @give.";
                 },
                 order: 30
             },
-            plan: {
-                name: "plan a building",
-                desc: "Prepare blueprint and space for a new building.",
-                time: 8,
-                energy: 20,
-                consume: function () {
-                    return [
-                        [1, data.resources.gatherables.common.water],
-                        [1, data.resources.gatherables.common.food],
-                        [1, data.resources.craftables.basic.tool]
-                    ];
-                },
-                give: function (action, effect) {
-                    var building = randomize(this.possibleBuildings());
-                    effect.plan = an(building.name);
-                    action.owner.planBuilding(building);
-                    return [];
-                },
-                unlock: function () {
-                    return [data.actions.build];
-                },
-                log: "Everything's ready to build @plan.",
-                order: 40
-            },
             build: {
-                name: function (action) {
-                    return "build " + an(action.owner.plan.name);
+                name: "build",
+                desc: "Put together some materials to come up with what looks like a building.",
+                build: function (action, option) {
+                    return option;
                 },
-                desc: function (action) {
-                    return action.owner.plan.desc;
-                },
-                time: function (action) {
-                    return action.owner.plan.time;
-                },
-                energy: function (action) {
-                    return action.owner.plan.energy;
-                },
-                consume: function (action) {
-                    var consume = [
-                        [2, data.resources.gatherables.common.water],
-                        [1, data.resources.gatherables.common.food]
-                    ];
-                    if (isFunction(action.owner.plan.consume)) {
-                        consume.push.apply(consume, action.owner.plan.consume(action));
-                    }
-                    return compactResources(consume);
-                },
-                lock: function (action) {
-                    var lock = [action.data.id];
-                    if (isFunction(action.owner.plan.lock)) {
-                        lock.push.apply(lock, action.owner.plan.lock(action));
-                    }
-                    return lock;
-                },
-                unlock: function (action) {
-                    var unlock = [];
-                    if (isFunction(action.owner.plan.unlock)) {
-                        unlock.push.apply(unlock, action.owner.plan.unlock(action));
-                    }
-                    return unlock;
-                },
-                build: function (action) {
-                    return action.owner.plan;
-                },
-                log: function (effect, action) {
-                    // log using building's data
-                    var log = action.owner.plan.log;
-                    return isFunction(log) ? log(effect, action) : log;
+                options: function () {
+                    return this.possibleBuildings();
                 },
                 order: 50
             },

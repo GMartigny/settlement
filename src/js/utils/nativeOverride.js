@@ -100,3 +100,29 @@ Object.prototype.clone = function () {
     }
     return clone;
 };
+
+/**
+ * Make this class extends a parent class
+ * @param {Function} parent - A parent to draw prototype from
+ * @param {Object} override - A map like object with overrides
+ */
+Function.prototype.extends = function (parent, override) {
+    if (parent) {
+        this.prototype = Object.create(parent.prototype);
+        /**
+         * Call to parent constructor
+         */
+        this.prototype.super = parent;
+        this.prototype.constructor = this;
+    }
+    if (override) {
+        var self = this;
+        override.browse(function (func, funcName) {
+            // Save parent inherited function with leading "_"
+            if (self.prototype[funcName]) {
+                self.prototype["_" + funcName] = self.prototype[funcName];
+            }
+            self.prototype[funcName] = func;
+        });
+    }
+};

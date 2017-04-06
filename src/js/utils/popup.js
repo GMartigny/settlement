@@ -1,14 +1,12 @@
 /**
  * Display a popup with choice buttons
  * @param {Object} data - Text for the popup
- * @param {Function} onYes - Action to do on validate
+ * @param {Function} [onYes] - Action to do on validate
  * @param {String} [CSSClasses] - Additional classes for the popup
  * @returns {Object} Some functions
  */
 function popup (data, onYes, CSSClasses) {
-    if (!isFunction(onYes)) {
-        throw new TypeError("Popup need a confirm function");
-    }
+    onYes = onYes || noop;
 
     // FIXME: maybe
     var holder = document.getElementById("main");

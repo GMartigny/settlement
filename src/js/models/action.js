@@ -2,74 +2,91 @@
 /**
  * Class for actions
  * @param {People} owner - THe action owner
- * @param {Object} data - The action data
+ * @param {ActionData} data - The action data
+ * @param {Action} [parentAction] - If this action has a parent
  * @constructor
  */
 function Action (owner, data, parentAction) {
     this.locked = true;
     this.running = false;
+    this.nameNode = null;
     this.options = null;
     this.optionsWrapper = null;
 
     this.owner = owner;
     this.parentAction = parentAction || null;
     this.repeated = 0;
-    this.data = null;
 
-    this.location = false; // TODO used ?
+    this.location = false; // FIXME I'm ugly
 
-    this.html = this.toHTML(data);
-    this.tooltip = new Tooltip(this.html, data);
-
-    this._init(data);
-    this.generateOptions();
+    this.super(data);
 }
-Action.prototype = {
+Action.extends(Model, /** @lends Action.prototype */ {
     /**
      * Initialise object
-     * @param {Object} data - The action data
      * @private
      */
-    _init: function (data) {
-        this.data = data;
-        data = consolidateData(this, this.data, ["time", "energy"]);
-        if (isUndefined(this.data.energy)) {
+    _init: function () {
+        var data = consolidateData(this, this.data, ["time", "energy"]);
+        if (isUndefined(this.data.energy) && data.time) {
             this.data.energy = data.time * 5;
         }
+
+        this.tooltip = new Tooltip(this.nameNode, data);
+
+        this.manageOptions();
     },
     /**
      * Return HTML for display
-     * @param {Object} data - The action data
      * @return {HTMLElement}
      */
-    toHTML: function (data) {
-        var html = wrap("action clickable disabled animated", capitalize(data.name));
+    toHTML: function () {
+        var html = this._toHTML();
 
-        if (isFunction(data.options)) {
+        var name = wrap("name clickable disabled animated", capitalize(this.data.name));
+        this.nameNode = name;
+        html.appendChild(name);
+
+        if (isFunction(this.data.options)) {
             html.classList.add("withOptions");
             this.optionsWrapper = wrap("options");
             html.appendChild(this.optionsWrapper);
         }
         else {
-            html.addEventListener("click", function () {
-                if (!this.locked && !this.running && !this.owner.busy) {
-                    this.click.call(this);
-                }
-            }.bind(this));
+            html.addEventListener("click", this.click.bind(this));
         }
 
-        html.style.order = data.order;
+        html.style.order = this.data.order;
 
         return html;
     },
-    generateOptions: function () {
+    /**
+     * If needed, create and maintain options for this action
+     */
+    manageOptions: function () {
         if (isFunction(this.data.options)) {
-            this.options = new Collection();
-            var options = this.data.options(this);
-            for (var i = 0, l = options.length; i < l; ++i) {
-                var option = new Action(this.owner, options[i]);
-                this.options.push(option);
-                this.optionsWrapper.appendChild(option.html);
+            if (!this.options) {
+                this.options = new Collection();
+            }
+            var newOptions = this.data.options(this);
+            // Looks for options not available anymore
+            this.options.forEach(function (option) {
+                var find = newOptions.find(function (item) {
+                    return item.id === option.data.id;
+                });
+                if (!find) {
+                    option.lock();
+                }
+            });
+            // Add new options
+            var option, data;
+            for (var i = 0, l = newOptions.length; i < l; ++i) {
+                data = newOptions[i];
+                if (!this.options.has(data.id)) {
+                    option = new Action(this.owner, data, this);
+                    this.options.push(data.id, option);
+                    this.optionsWrapper.appendChild(option.html);
+                }
             }
         }
     },
@@ -79,15 +96,16 @@ Action.prototype = {
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        var data = consolidateData(this, this.data, ["name", "desc", "time", "energy", "consume"]);
+        var data = consolidateData(this, this.data, ["time", "energy", "consume"]);
 
         this.locked = (this.owner.isTired() && data.energy > 0) ||
             (this.data.isOut && flags.cantGoOut) ||
             (this.parentAction && this.parentAction.locked);
 
+        this.tooltip.refresh(resources, data);
+
         // check consummation
         if (isArray(data.consume)) {
-            this.tooltip.refresh(resources, data);
             if (!this.locked) {
                 data.consume.forEach(function (r) {
                     var id = r[1].id;
@@ -97,6 +115,7 @@ Action.prototype = {
                 }.bind(this));
             }
         }
+        this.manageOptions();
         if (this.options) {
             this.options.forEach(function (option) {
                 option.refresh(resources, flags);
@@ -104,22 +123,23 @@ Action.prototype = {
         }
 
         if (this.locked) {
-            this.html.classList.add("disabled");
+            this.nameNode.classList.add("disabled");
         }
         else {
-            this.html.classList.remove("disabled");
+            this.nameNode.classList.remove("disabled");
         }
     },
     /**
      * Player click on action
-     * @param {*} [option] - The choosed option
+     * @param {CraftableData|BuildingData} [option] - The chosen option
      * @return {Boolean} Is launched
      */
     click: function (option) {
-        if (!this.owner.busy && !this.locked) {
+        if (!this.running && !this.owner.busy && !this.locked) {
+            var data = consolidateData(this, this.data, ["time", "deltaTime"]);
             // Use
-            if (isArray(this.data.consume)) {
-                MessageBus.notify(MessageBus.MSG_TYPES.USE, this.data.consume);
+            if (isFunction(data.consume)) {
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume(this));
             }
 
             if (this.parentAction) {
@@ -129,19 +149,18 @@ Action.prototype = {
                 ++this.repeated;
 
                 this.owner.setBusy(this.data);
-                var duration = (this.data.time || 0) * GameController.tickLength;
+                var duration = (data.time || 0) * GameController.tickLength;
 
-                if (this.data.deltaTime) {
-                    duration += random(-this.data.deltaTime, this.data.deltaTime);
+                if (data.deltaTime) {
+                    duration += random(-data.deltaTime, data.deltaTime);
                 }
 
-                this.html.style.animationDuration = duration + "ms";
-                this.html.classList.add("cooldown");
+                this.nameNode.style.animationDuration = duration + "ms";
+                this.nameNode.classList.add("cooldown");
 
-                this.timeout = TimerManager.timeout(this.end.bind(this), duration);
+                this.timeout = TimerManager.timeout(this.end.bind(this, option), duration);
                 return true;
             }
-
         }
         else {
             return false;
@@ -149,19 +168,24 @@ Action.prototype = {
     },
     /**
      * Resolve the end of an action
+     * @param {CraftableData|BuildingData} [option] - The chosen option
      */
-    end: function () {
+    end: function (option) {
         this.timeout = 0;
-        this.html.classList.remove("cooldown");
+        this.nameNode.classList.remove("cooldown");
 
         var effect = {
             name: this.data.name,
             people: this.owner
         };
 
+        if (isFunction(this.data.effect)) {
+            this.data.effect(effect);
+        }
+
         // Build
         if (isFunction(this.data.build)) {
-            var build = this.data.build(this);
+            var build = this.data.build(this, option);
             effect.build = an(build.name);
         }
 
@@ -172,7 +196,7 @@ Action.prototype = {
         }
         // Add from constructed building
         if (build && isFunction(build.give)) {
-            give = give.concat(build.give(this));
+            give = give.concat(build.give(this, option));
         }
         give = compactResources(give);
         if (give.length) {
@@ -234,11 +258,13 @@ Action.prototype = {
 
         // Log
         var rawLog = "";
-        if (isFunction(this.data.log)) {
-            rawLog = this.data.log(effect, this);
-        }
-        else if (this.data.log) {
-            rawLog = this.data.log;
+        if (this.data.log) {
+            if (isFunction(this.data.log)) {
+                rawLog = this.data.log(effect, this);
+            }
+            else {
+                rawLog = this.data.log;
+            }
         }
         var log = LogManager.personify(rawLog, effect);
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
@@ -246,23 +272,27 @@ Action.prototype = {
     },
     /**
      * Change the action according to an effect
-     * @param effect
+     * @param {Function} effect -
      */
     applyEffect: function (effect) {
         if (isFunction(effect)) {
-            effect(this.data);
-            this._init(this.data);
+
         }
     },
     /**
      * Lock this action
-     * @return {Action} Itself
-     * @return {Action} Itself
      */
     lock: function () {
         this.cancel();
-        this.html.remove();
         this.tooltip.remove();
+
+        if (this.options) {
+            this.options.forEach(function (option) {
+                option.lock();
+            });
+        }
+
+        this.html.remove();
     },
     /**
      * Cancel this action
@@ -271,7 +301,7 @@ Action.prototype = {
         if (this.timeout) {
             TimerManager.clear(this.timeout);
             this.owner.setBusy(false);
-            this.html.classList.remove("cooldown");
+            this.nameNode.classList.remove("cooldown");
         }
     }
-};
+});

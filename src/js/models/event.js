@@ -1,31 +1,29 @@
 "use strict";
 /**
  * Class for events
- * @param {Object} data - The event data
+ * @param {EventData} data - The event data
  * @constructor
  */
 function Event (data) {
-    this.data = {};
     this.timer = null;
+    this.nameNode = null;
+    this.progressBar = null;
+    this.tooltip = null;
 
-    this.html = this.toHTML();
-
-    this._init(data);
+    this.super(data);
 }
-Event.prototype = {
+Event.extends(Model, /** @lends Event.prototype */ {
     /**
      * Initialize object
-     * @param {Object} data - The event data
      * @private
      */
-    _init: function (data) {
-        this.data = consolidateData(this, data, ["name", "desc", "time", "consume"]);
+    _init: function () {
+        var data = consolidateData(this, this.data, ["time", "consume"]);
 
-        this.nameNode.textContent = this.data.name;
         if (this.tooltip) {
             this.tooltip.remove();
         }
-        this.tooltip = tooltip(this.html, this.data);
+        this.tooltip = new Tooltip(this.html, data);
     },
     /**
      * Return HTML for display
@@ -34,7 +32,7 @@ Event.prototype = {
     toHTML: function () {
         var html = wrap("event");
 
-        this.nameNode = wrap("name");
+        this.nameNode = wrap("name", capitalize(this.data.name));
         html.appendChild(this.nameNode);
         this.progressBar = wrap("animated bar");
         html.appendChild(this.progressBar);
@@ -78,5 +76,5 @@ Event.prototype = {
 
         this.html.remove();
     }
-};
+});
 Event.LST_ID = "eventList";

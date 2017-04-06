@@ -32,9 +32,6 @@ function peopleFactory (amount) {
  * @constructor
  */
 function People (name, gender) {
-    this.name = name;
-    this.gender = gender || "other";
-    this.setPronouns();
     this.actions = new Collection();
 
     this.busy = false;
@@ -50,12 +47,19 @@ function People (name, gender) {
     };
     this.perk = null;
 
-    this.plan = null;
-    this.project = null;
-
-    this.html = this.toHTML();
+    this.super({
+        name: name,
+        gender: gender || "other"
+    });
 }
-People.prototype = {
+People.extends(Model, /** @lends People.prototype */ {
+    /**
+     * Initialise object
+     * @private
+     */
+    _init: function () {
+        this.setPronouns();
+    },
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -63,7 +67,7 @@ People.prototype = {
     toHTML: function () {
         var html = wrap("people");
 
-        var nameNode = wrap("name", this.name);
+        var nameNode = wrap("name", capitalize(this.data.name));
         this.perkNode = wrap("perk");
         nameNode.appendChild(this.perkNode);
         html.appendChild(nameNode);
@@ -122,7 +126,7 @@ People.prototype = {
      * Define people pronouns
      */
     setPronouns: function () {
-        switch (this.gender) {
+        switch (this.data.gender) {
             case "female":
                 this.nominative = "she";
                 this.accusative = "her";
@@ -211,16 +215,8 @@ People.prototype = {
         return this.life;
     },
     /**
-     * Plan a building
-     * @param {Object} building - Building to plan's data
-     * @returns {People} Itself
-     */
-    planBuilding: function (building) {
-        this.plan = building;
-    },
-    /**
      * Add some actions
-     * @param {Action|Array<Action>} actions - One or more actions to add
+     * @param {ActionData|Array<ActionData>} actions - One or more actions to add
      */
     addAction: function (actions) {
         if (isArray(actions)) {
@@ -304,7 +300,7 @@ People.prototype = {
         perk.desc = LogManager.personify(perk.desc, this);
         this.perk = perk;
         this.perkNode.textContent = "the \"" + capitalize(perk.name) + "\"";
-        tooltip(this.perkNode, perk);
+        new Tooltip(this.perkNode, perk);
 
         MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
         if (isFunction(perk.effect)) {
@@ -339,7 +335,7 @@ People.prototype = {
             }.bind(this), 400);
         }
     }
-};
+});
 People.LST_ID = "peopleList";
 People.usedPerks = [];
 /**

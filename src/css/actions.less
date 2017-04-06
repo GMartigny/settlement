@@ -1,33 +1,41 @@
-.action {
+.Action {
     display: inline-block;
     margin-right: 5px;
 
-    &.withOptions {
-        cursor: default;
-        text-decoration: none;
+    .name {
+        display: inline-block;
+    }
 
-        &:after {
-            content: "...";
+    &.withOptions {
+
+        & > .name {
+            cursor: default;
+
+            &:after {
+                content: "...";
+            }
         }
 
         .options {
             position: absolute;
-            padding-top: 5px;
+            padding-top: 6px;
             left: 0;
             overflow: hidden;
+            display: flex;
+            flex-flow: column;
 
             // animated
             height: 0;
             opacity: 0;
             top: 50%;
 
-            .action {
+            .Action {
                 white-space: nowrap;
                 margin-top: -1px;
             }
         }
 
-        &:hover .options {
+        &:not(.disabled):not(.cooldown):hover .options {
             @duration: .3s;
             transition: opacity linear @duration, top ease-out @duration;
             height: auto;

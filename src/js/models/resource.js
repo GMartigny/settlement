@@ -1,32 +1,26 @@
 "use strict";
 /**
  * Class for resources
- * @param {Object} data - The resource's data
+ * @param {ResourceData} data - The resource's data
  * @param {Number} [count=0] - The resource amount
  * @constructor
  */
 function Resource (data, count) {
-    this.data = {};
-
-    this.html = this.toHTML(data);
-    this.tooltip = tooltip(this.html, this.data);
-
-    this._init(data);
-
     this.count = 0;
     if (count) {
         this.update(+count);
     }
     this.warnLack = false;
+
+    this.super(data);
 }
-Resource.prototype = {
+Resource.extends(Model, /** @lends Resource.prototype */ {
     /**
      * Initialise object
-     * @param {Object} data - The resource's data
      * @private
      */
-    _init: function (data) {
-        this.data = data;
+    _init: function () {
+        this.tooltip = new Tooltip(this.html, this.data);
     },
     /**
      * Return HTML for display
@@ -48,7 +42,7 @@ Resource.prototype = {
     },
     /**
      * Loop function called every game tick
-     * @param {Array} [resources] - Game's resources
+     * @param {Collection} [resources] - Game's resources
      */
     refresh: function (resources) {
         this.counter.textContent = floor(this.count);
@@ -88,7 +82,7 @@ Resource.prototype = {
      * @return {Number}
      */
     get: function () {
-        return this.count | 0;
+        return round(this.count);
     },
     /**
      * Define this resource amount
@@ -121,7 +115,7 @@ Resource.prototype = {
         }
         return str;
     }
-};
+});
 /**
  * Give the HTML string for an icon name
  * @param {String} iconName - An icon name
