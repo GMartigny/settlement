@@ -14,6 +14,6 @@ engines:
         enabled: true
 ratings:
     paths:
-        - "src/"
+        - "src/js/**/*.js"
 exclude_paths:
     - "tools/"
