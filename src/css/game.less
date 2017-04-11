@@ -1,16 +1,10 @@
 @import (reference) "base";
 
-#main {
+.GameController {
     overflow: hidden;
     height: 100%;
 
     &.paused {
-
-        &:before{
-            .initPseudo();
-            background: rgba(0, 0, 0, .3);
-            z-index: 5000;
-        }
 
         &:after {
             content: "Paused";
@@ -24,7 +18,7 @@
             padding: 20px 40px;
             background: #FFF;
             box-shadow: 0 2px 10px #333;
-            z-index: 5100;
+            z-index: @pauseZIndex;
         }
 
         .animated {

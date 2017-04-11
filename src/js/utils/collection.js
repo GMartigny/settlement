@@ -67,13 +67,12 @@ Collection.prototype = {
      * Set an existing item from the collection
      * @param {String} id - ID of the item
      * @param {*} value - It's new value
-     * @return {*} The inserted value
+     * @return {*} The old value of the item
      */
     set: function (id, value) {
-        if (!this.has(id)) {
-            throw new RangeError("Unknown ID (" + id + ") in Collection (" + this + ")");
-        }
-        return this.items[id] = value;
+        var oldValue = this.get(id);
+        this.items[id] = value;
+        return oldValue;
     },
     /**
      * The callback executed on Collection
@@ -88,11 +87,9 @@ Collection.prototype = {
      */
     forEach: function (action) {
         if (this.length > 0) {
-            for (var id in this.items) {
-                if (this.items.hasOwnProperty(id)) {
-                    action(this.items[id], id, this);
-                }
-            }
+            this.items.browse(function (item, key) {
+                action(item, key, this);
+            }.bind(this));
         }
     },
     /**

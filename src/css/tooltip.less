@@ -1,3 +1,5 @@
+@import (reference) "base";
+
 .tooltip {
 
     @background: #333;
@@ -12,7 +14,7 @@
     padding: 10px;
     border: 1px dashed #CCC;
     outline: 2px solid @background;
-    z-index: 100;
+    z-index: @tooltipZIndex;
 
     .title {
         font-weight: bold;

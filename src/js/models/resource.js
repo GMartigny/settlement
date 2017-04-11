@@ -28,7 +28,7 @@ Resource.extends(Model, /** @lends Resource.prototype */ {
      * @return {HTMLElement}
      */
     toHTML: function (data) {
-        var html = wrap("resource get-more");
+        var html = this._toHTML();
 
         this.counter = wrap("counter", "1");
         html.appendChild(this.counter);

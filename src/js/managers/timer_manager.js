@@ -69,15 +69,9 @@ var TimerManager = (function () {
         }
     };
 
-    var _timers = null;
+    var _timers = new Collection();
 
     return {
-        /**
-         * Initialize the manager
-         */
-        start: function () {
-            _timers = new Collection();
-        },
         /**
          * Set a timeout
          * @param {Function} action - A callback function called after timeout

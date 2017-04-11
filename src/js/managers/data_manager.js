@@ -26,7 +26,6 @@ var DataManager = (function () {
      * @param {ID} id - unique ID
      * @param {String|function} name - The displayed name
      * @param {String|Function} desc - A description for tooltip
-     * @param {String} icon - Icon image of the resource
      * @param {Number} [order] - Order for display
      */
     /**
@@ -36,6 +35,7 @@ var DataManager = (function () {
     /**
      * @typedef {Object} ResourceData
      * @extends Data
+     * @param {String} icon - Icon image of the resource
      * @param {Number} dropRate - Chance of getting it
      */
     /**
@@ -53,7 +53,7 @@ var DataManager = (function () {
      * @param {Function} [unlock] - Return an array of unlocked action for this person
      * @param {Function} [lock] - Return an array of locked action for this person
      * @param {Function} [build] - Return an array of built buildings id
-     * @param {Number|Function} time - In game time to do
+     * @param {Number|Function} [time=0] - In game time to do
      * @param {Number} [timeDelta=0] - Added randomness to time
      * @param {Number|Function} [energy=time*5] - Energy taken to do
      * @param {Array<Number>} [giveSpan] - Span of randomness for give
@@ -604,7 +604,8 @@ var DataManager = (function () {
                 wreckage: {
                     name: "wreckage",
                     desc: "Remainings of space-ships.",
-                    asset: "wreckage"
+                    asset: "wreckage",
+                    log: ""
                 },
                 forum: {
                     name: "forum",
@@ -622,7 +623,8 @@ var DataManager = (function () {
                             [1, data.resources.room]
                         ];
                     },
-                    asset: "forum"
+                    asset: "forum",
+                    log: ""
                 }
             }
         },
@@ -638,12 +640,6 @@ var DataManager = (function () {
                         data.actions.look
                     ];
                 },
-                options: function () {
-                    return [
-                        data.resources.gatherables.common.water,
-                        data.resources.gatherables.common.food
-                    ];
-                },
                 log: "@people.name gets up painfully.",
                 order: 0,
                 unique: true
@@ -657,7 +653,7 @@ var DataManager = (function () {
                     TimerManager.timeout(function () {
                         MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
                     }, 1000);
-                    return [,
+                    return [
                         [10, data.resources.gatherables.common.water],
                         [8, data.resources.gatherables.common.food],
                         [2, data.resources.craftables.basic.component]

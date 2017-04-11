@@ -30,7 +30,7 @@ Event.extends(Model, /** @lends Event.prototype */ {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        var html = wrap("event");
+        var html = this._toHTML();
 
         this.nameNode = wrap("name", capitalize(this.data.name));
         html.appendChild(this.nameNode);

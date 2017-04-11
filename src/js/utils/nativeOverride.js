@@ -31,11 +31,9 @@ Array.prototype.out = function (item) {
 Object.prototype.values = function () {
     var values = [];
 
-    for (var key in this) {
-        if (this.hasOwnProperty(key)) {
-            values.push(this[key]);
-        }
-    }
+    this.browse(function (value) {
+        value.push(value);
+    });
 
     return values;
 };
@@ -72,11 +70,9 @@ Object.prototype.deepBrowse = function (action) {
  */
 Object.prototype.swap = function () {
     var res = {};
-    for (var key in this) {
-        if (this.hasOwnProperty(key)) {
-            res[this[key]] = key;
-        }
-    }
+    this.browse(function (value, key) {
+        res[value] = key;
+    });
     return res;
 };
 

@@ -2,42 +2,8 @@
 /* global VERSION, IS_DEV, performance */
 
 /**
- * Loader
- */
-(function () {
-    console.groupCollapsed("Loading");
-
-    var _assets = "dist/img/assets.png";
-    var _assetsData = "dist/js/assets.json";
-
-    loadAsync([
-        "dist/img/icons.png",
-        _assets,
-        _assetsData
-    ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(1) + "% - " + round(performance.now()));
-    }).then(function (media) {
-        console.groupEnd();
-        try {
-            var Game = new GameController(document.getElementById("main"), {
-                images: media[sanitize(_assets)],
-                data: media[sanitize(_assetsData)]
-            });
-            if (IS_DEV) {
-                window.G = Game;
-            }
-        }
-        catch (e) {
-            console.warn("Fail to load game : " + e.message, e.stack);
-        }
-    }).catch(function (error) {
-        console.warn(error.message);
-    });
-})();
-
-/**
  * Main game controller
- * This is where all game logic is decided
+ * This is where all game logic is done
  * @param {HTMLElement} holder - HTML element holding the game
  * @param {Object} assets - All graphical resources
  * @constructor
@@ -47,13 +13,11 @@ function GameController (holder, assets) {
     console.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
-    this.holder = holder;
     this.assets = assets;
 
     this.resources = new Collection();
     this.buildings = new Collection();
     this.events = new Collection();
-    this.collects = [];
     this.people = [];
     this.initialActions = new Collection();
     this.knownLocations = new Collection();
@@ -67,15 +31,45 @@ function GameController (holder, assets) {
         productivity: 1
     };
 
-    this.lastTick = performance.now();
+    this.super();
+    holder.appendChild(this.html);
 
-    this._init();
+    this.lastTick = performance.now();
     this.refresh();
 
     console.log("Started in " + round(performance.now() - now) + "ms");
 }
 GameController.tickLength = 2000;
-GameController.prototype = {
+GameController.extends(Model, {
+    /**
+     * Return HTML for display
+     * @return {HTMLElement}
+     */
+    toHTML: function () {
+        var html = this._toHTML();
+
+        this.resourcesList = wrap();
+        this.resourcesList.id = Resource.LST_ID;
+        html.appendChild(this.resourcesList);
+
+        this.peopleList = wrap();
+        this.peopleList.id = People.LST_ID;
+        html.appendChild(this.peopleList);
+
+        this.visualPane = wrap();
+        this.visualPane.id = "visualPane";
+        html.appendChild(this.visualPane);
+
+        this.eventsList = wrap();
+        this.eventsList.id = Event.LST_ID;
+        html.appendChild(this.eventsList);
+
+        this.logsList = wrap();
+        this.logsList.id = "logs";
+        html.appendChild(this.logsList);
+
+        return html;
+    },
     /**
      * Start a new adventure
      * @private
@@ -84,43 +78,21 @@ GameController.prototype = {
         var game = this;
         DataManager.data.deepBrowse(function (item) {
             item.id = pickID();
-            for (var attr in item) {
-                if (item.hasOwnProperty(attr) && isFunction(item[attr])) {
-                    item[attr] = item[attr].bind(game);
+            item.browse(function (attr) {
+                if (isFunction(attr)) {
+                    attr = attr.bind(game);
                 }
-            }
+            });
         });
 
         this.initialActions.push(DataManager.data.actions.wakeUp);
 
         KeyManager.attach(KeyManager.KEYS.SPACE, this.togglePause.bind(this));
 
-        this.resourcesList = wrap();
-        this.resourcesList.id = Resource.LST_ID;
-        this.holder.appendChild(this.resourcesList);
-
-        this.peopleList = wrap();
-        this.peopleList.id = People.LST_ID;
-        this.holder.appendChild(this.peopleList);
-
-        this.visualPane = wrap();
-        this.visualPane.id = "visualPane";
-        this.holder.appendChild(this.visualPane);
-
-        this.eventsList = wrap();
-        this.eventsList.id = Event.LST_ID;
-        this.holder.appendChild(this.eventsList);
-
-        this.logsList = wrap();
-        this.logsList.id = "logs";
-        this.holder.appendChild(this.logsList);
-
         // Start managers
         GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
         LogManager.start(this.logsList);
-        TimerManager.start();
 
-        game.build(DataManager.data.buildings.special.wreckage);
         // First person arrives
         TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
 
@@ -131,53 +103,52 @@ GameController.prototype = {
                     game.earn.apply(game, r);
                 });
             }
-        });
-
+        })
         // We may use resources
-        MessageBus.observe(MessageBus.MSG_TYPES.USE, function (use) {
+        .observe(MessageBus.MSG_TYPES.USE, function (use) {
             if (isArray(use)) {
                 compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
                 });
             }
-        });
-
+        })
         // We may build
-        MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
+        .observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
                 game.build(building);
             }
-        });
-        MessageBus.notify(MessageBus.MSG_TYPES.BUILD, DataManager.data.buildings.special.wreckage);
+        })
+        // Put the ships wreckage into play
+        .notify(MessageBus.MSG_TYPES.BUILD, DataManager.data.buildings.special.wreckage)
 
         // And we may die :'(
-        MessageBus.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
+        .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
             game.people.out(person);
             // The last hope fade away
             if (game.people.length <= 0) {
                 MessageBus.notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
                 game.flags.paused = true;
             }
-        });
+        })
 
         // Keep track of running events
-        MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
+        .observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
             game.events.push(event.data.id, event);
-        });
-        MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
+        })
+        .observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
             game.events.pop(event.data.id);
-        });
+        })
 
         // Lock or unlock actions for all
-        MessageBus.observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
+        .observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
             game.removeFromInitialActions(actions);
-        });
-        MessageBus.observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
+        })
+        .observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
             game.addToInitialActions(actions);
-        });
+        })
 
         // End of the game
-        MessageBus.observe(MessageBus.MSG_TYPES.WIN, function () {
+        .observe(MessageBus.MSG_TYPES.WIN, function () {
             this.flags.paused = true;
         });
 
@@ -245,7 +216,8 @@ GameController.prototype = {
      */
     togglePause: function () {
         this.flags.paused = !this.flags.paused;
-        this.holder.classList.toggle("paused", this.flags.paused);
+        this.html.classList.toggle("paused", this.flags.paused);
+        this.html.classList.toggle("backdrop", this.flags.paused);
         if (this.flags.paused) {
             TimerManager.stopAll();
         }
@@ -388,12 +360,13 @@ GameController.prototype = {
      * @param {Boolean} [first=false] - First person
      */
     welcome: function (amount, first) {
+        var game = this;
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
-                person.addAction(this.initialActions.values());
+                person.addAction(game.initialActions.values());
 
-                this.people.push(person);
-                this.peopleList.appendChild(person.html);
+                game.people.push(person);
+                game.peopleList.appendChild(person.html);
 
                 if (first) {
                     person.life = 0;
@@ -406,19 +379,19 @@ GameController.prototype = {
                     person.html.offsetHeight;
                     MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
 
-                    if (this.people.length === 2) {
+                    if (game.people.length === 2) {
                         TimerManager.timeout(function () {
                             MessageBus.notify(
                                 MessageBus.MSG_TYPES.LOGS.FLAVOR,
                                 person.name + " say that there's other desert-walkers " +
                                     "ready to join you if there's room for them.");
-                        }.bind(this), 2000);
+                        }, 2000);
                     }
                 }
 
                 person.html.classList.add("arrived");
-            }.bind(this));
-        }.bind(this));
+            });
+        });
     },
     /**
      * Build something
@@ -532,7 +505,7 @@ GameController.prototype = {
             return null;
         }
     }
-};
+});
 if (IS_DEV) {
     /**
      * Earn one of each resources and buildings

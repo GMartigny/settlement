@@ -65,7 +65,7 @@ People.extends(Model, /** @lends People.prototype */ {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        var html = wrap("people");
+        var html = this._toHTML();
 
         var nameNode = wrap("name", capitalize(this.data.name));
         this.perkNode = wrap("perk");
@@ -154,8 +154,8 @@ People.extends(Model, /** @lends People.prototype */ {
         if (action && action.id !== DataManager.data.actions.sleep.id) {
             this.stats.idle = 0;
         }
-        this.busy = !!action ? action : false;
-        this.html.classList.toggle("busy", !!action);
+        this.busy = action || false;
+        this.html.classList.toggle("busy", this.busy);
     },
     /**
      * Free from busy state

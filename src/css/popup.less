@@ -10,7 +10,7 @@
     background: #FFF;
     box-shadow: 0 2px 10px #333;
     max-width: 60%;
-    z-index: 510;
+    z-index: @popupZIndex;
 
     .title {
         font-size: 25px;
@@ -31,7 +31,7 @@
     }
 }
 
-#main.backdrop:before {
+.backdrop:before {
     .initPseudo();
     background: rgba(0, 0, 0, .3);
     z-index: 500;
