@@ -136,10 +136,10 @@ Action.extends(Model, /** @lends Action.prototype */ {
      */
     click: function (option) {
         if (!this.running && !this.owner.busy && !this.locked) {
-            var data = consolidateData(this, this.data, ["time", "deltaTime"]);
+            var data = consolidateData(this, (option || this.data), ["time", "timeDelta", "consume"]);
             // Use
-            if (isFunction(data.consume)) {
-                MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume(this));
+            if (isArray(data.consume)) {
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
             }
 
             if (this.parentAction) {
@@ -148,11 +148,12 @@ Action.extends(Model, /** @lends Action.prototype */ {
             else {
                 ++this.repeated;
 
-                this.owner.setBusy(this.data);
+                this.owner.setBusy(data);
+
                 var duration = (data.time || 0) * GameController.tickLength;
 
-                if (data.deltaTime) {
-                    duration += random(-data.deltaTime, data.deltaTime);
+                if (data.timeDelta) {
+                    duration += random(-data.timeDelta, data.timeDelta) * GameController.tickLength;
                 }
 
                 this.nameNode.style.animationDuration = duration + "ms";
