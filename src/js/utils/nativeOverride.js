@@ -32,7 +32,7 @@ Object.prototype.values = function () {
     var values = [];
 
     this.browse(function (value) {
-        value.push(value);
+        values.push(value);
     });
 
     return values;
@@ -54,9 +54,9 @@ Object.prototype.browse = function (action) {
  * @param {Function} action - A function called on each item
  */
 Object.prototype.deepBrowse = function (action) {
-    this.browse(function (value) {
+    this.browse(function (value, index, list) {
         if (value.name) {
-            action(value);
+            action(value, index, list);
         }
         else {
             value.deepBrowse(action);

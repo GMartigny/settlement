@@ -76,6 +76,7 @@ var GraphicManager = (function () {
     var _eventsList;
 
     var _waterLevel = 0;
+    var _foodLevel = 0;
 
     return {
         /**
@@ -133,10 +134,11 @@ var GraphicManager = (function () {
             // watch for food and water level
             MessageBus.observe([MessageBus.MSG_TYPES.USE, MessageBus.MSG_TYPES.GIVE], function (resource) {
                 switch (resource.id) {
-                    case DataManager.data.resources.gatherable.common.water:
+                    case DataManager.data.resources.gatherables.common.water:
                         _waterLevel = resource.get();
                         break;
-                    case DataManager.data.resources.gatherable.common.food:
+                    case DataManager.data.resources.gatherables.common.food:
+                        _foodLevel = resource.get();
                         break;
                 }
             });

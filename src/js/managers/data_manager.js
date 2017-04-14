@@ -281,7 +281,9 @@ var DataManager = (function () {
                         },
                         dropRate: 40,
                         order: 116
-                    },
+                    }
+                },
+                advanced: { // At least 3 requirements with 2 craftables (and more)
                     jewelry: {
                         name: "jewelry",
                         desc: "A really beautiful ornament you could use for trading.",
@@ -297,9 +299,7 @@ var DataManager = (function () {
                         },
                         dropRate: 40,
                         order: 117
-                    }
-                },
-                advanced: { // At least 3 requirements with 2 craftables (and more)
+                    },
                     engine: {
                         name: "engine",
                         desc: "Amazing what you manage to do with all those scraps !",
@@ -632,7 +632,6 @@ var DataManager = (function () {
         actions: {
             wakeUp: {
                 name: "wake up",
-                energy: 0,
                 unlock: function (action) {
                     action.owner.updateEnergy(100);
                     action.owner.updateLife(100);
@@ -647,7 +646,7 @@ var DataManager = (function () {
             look: {
                 name: "look around",
                 desc: "What am I doing here ?",
-                time: 2,
+                time: 1,
                 energy: 0,
                 give: function () {
                     TimerManager.timeout(function () {
@@ -672,7 +671,7 @@ var DataManager = (function () {
             settle: {
                 name: "settle here",
                 desc: "Ok, let's settle right there !",
-                time: 3,
+                time: 1,
                 energy: 0,
                 unlock: function () {
                     this.flags.settled = true;
@@ -698,8 +697,17 @@ var DataManager = (function () {
                     ];
                 },
                 giveSpan: [3, 6],
-                give: function (action) {
-                    return randomizeMultiple(data.resources.gatherables, action.data.giveSpan);
+                give: function (action, option) {
+                    return [ // FIXME tmp
+                        [round(random.apply(null, action.data.giveSpan)), option]
+                    ];
+                },
+                options: function () {
+                    var possibles = [];
+                    data.resources.gatherables.deepBrowse(function (resource) {
+                        possibles.push(resource);
+                    });
+                    return possibles;
                 },
                 log: "@people.name comes back with @give.",
                 order: 0
@@ -740,13 +748,11 @@ var DataManager = (function () {
                     var give = randomizeMultiple(data.resources.gatherables, action.data.giveSpan);
                     if (random() < data.resources.gatherables.special.ruins.dropRate) {
                         give.push([1, data.resources.gatherables.special.ruins]);
+                        var location = randomize(data.locations.near);
+                        this.knownLocations.push(location);
+                        effect.location = an(location.name);
                     }
                     return give;
-                },
-                effect: function (effect) {
-                    var location = randomize(data.locations.near);
-                    this.knownLocations.push(location);
-                    effect.location = an(location.name);
                 },
                 log: function (effect) {
                     var log;
@@ -774,7 +780,7 @@ var DataManager = (function () {
                     ];
                 },
                 giveSpan: [2, 4],
-                give: function (action, effect) {
+                give: function (action, option, effect) {
                     var give = randomize(data.resources.gatherables, action.data.giveSpan);
                     // Add 50% chance for ruins (or 100% if explorer)
                     var baseDropRate = data.resources.gatherables.special.ruins.dropRate;
@@ -947,7 +953,7 @@ var DataManager = (function () {
                 give: function (action, effect) {
                     var lifeChange = 99;
                     if (!this.buildings.has(data.buildings.small.pharmacy.id) && random() < 2 / 5) {
-                        lifeChange = -15;
+                        lifeChange = -10;
                         // remember for log
                         effect.wasBad = true;
                     }
@@ -977,8 +983,10 @@ var DataManager = (function () {
                 },
                 giveSpan: [2, 3],
                 give: function (action) {
-                    var possible = Object.assign({}, data.resources.craftables.basic, data.resources.craftables.complex);
-                    delete possible.jewelry;
+                    var possible = {
+                        basic: data.resources.craftables.basic,
+                        complex: data.resources.craftables.complex
+                    };
                     return randomizeMultiple(possible, action.data.giveSpan);
                 },
                 log: "@people.name manage to trade a couple of jewelries for @give."

@@ -78,9 +78,9 @@ GameController.extends(Model, {
         var game = this;
         DataManager.data.deepBrowse(function (item) {
             item.id = pickID();
-            item.browse(function (attr) {
+            item.browse(function (attr, attrName) {
                 if (isFunction(attr)) {
-                    attr = attr.bind(game);
+                    item[attrName] = attr.bind(game);
                 }
             });
         });

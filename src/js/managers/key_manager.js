@@ -3,7 +3,7 @@ var KeyManager = (function () {
     var _attachedMap = {};
 
     window.addEventListener("keyup", function (event) {
-        log(event.keyCode);
+        log("Pressed " + event.keyCode);
         var action = _attachedMap[event.keyCode];
 
         if (isFunction(action)) {

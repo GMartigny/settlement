@@ -32,6 +32,8 @@ function peopleFactory (amount) {
  * @constructor
  */
 function People (name, gender) {
+    this.name = name;
+    this.gender = gender || "other";
     this.actions = new Collection();
 
     this.busy = false;
@@ -41,16 +43,13 @@ function People (name, gender) {
     this.thirsty = false;
 
     this.stats = {
-        actionsDone: {},
+        actionsDone: {}, // FIXME duplicate for action.repeated
         idle: 0,
         age: 0
     };
     this.perk = null;
 
-    this.super({
-        name: name,
-        gender: gender || "other"
-    });
+    this.super();
 }
 People.extends(Model, /** @lends People.prototype */ {
     /**
@@ -67,7 +66,7 @@ People.extends(Model, /** @lends People.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        var nameNode = wrap("name", capitalize(this.data.name));
+        var nameNode = wrap("name", capitalize(this.name));
         this.perkNode = wrap("perk");
         nameNode.appendChild(this.perkNode);
         html.appendChild(nameNode);
@@ -126,7 +125,7 @@ People.extends(Model, /** @lends People.prototype */ {
      * Define people pronouns
      */
     setPronouns: function () {
-        switch (this.data.gender) {
+        switch (this.gender) {
             case "female":
                 this.nominative = "she";
                 this.accusative = "her";
@@ -217,6 +216,7 @@ People.extends(Model, /** @lends People.prototype */ {
     /**
      * Add some actions
      * @param {ActionData|Array<ActionData>} actions - One or more actions to add
+     * @memberOf People#
      */
     addAction: function (actions) {
         if (isArray(actions)) {

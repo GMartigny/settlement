@@ -7,12 +7,12 @@
  */
 function Resource (data, count) {
     this.count = 0;
-    if (count) {
-        this.update(+count);
-    }
     this.warnLack = false;
 
     this.super(data);
+    if (count) {
+        this.update(+count);
+    }
 }
 Resource.extends(Model, /** @lends Resource.prototype */ {
     /**
@@ -24,19 +24,18 @@ Resource.extends(Model, /** @lends Resource.prototype */ {
     },
     /**
      * Return HTML for display
-     * @param {Object} data - The resource's data
      * @return {HTMLElement}
      */
-    toHTML: function (data) {
+    toHTML: function () {
         var html = this._toHTML();
 
         this.counter = wrap("counter", "1");
         html.appendChild(this.counter);
 
-        var icon = wrap("icon icon-" + data.icon);
+        var icon = wrap("icon icon-" + this.data.icon);
         html.appendChild(icon);
 
-        html.style.order = data.order;
+        html.style.order = this.data.order;
 
         return html;
     },

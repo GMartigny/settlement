@@ -21,13 +21,16 @@ function Action (owner, data, parentAction) {
 
     this.super(data);
 }
+Action.COOLDOWN_CLASS = "cooldown";
+Action.RUNNING_CLASS = "running";
+Action.DISABLED_CLASS = "disabled";
 Action.extends(Model, /** @lends Action.prototype */ {
     /**
      * Initialise object
      * @private
      */
     _init: function () {
-        var data = consolidateData(this, this.data, ["time", "energy"]);
+        var data = consolidateData(this, this.data, ["time", "energy", "consume"]);
         if (isUndefined(this.data.energy) && data.time) {
             this.data.energy = data.time * 5;
         }
@@ -123,10 +126,10 @@ Action.extends(Model, /** @lends Action.prototype */ {
         }
 
         if (this.locked) {
-            this.nameNode.classList.add("disabled");
+            this.nameNode.classList.add(Action.DISABLED_CLASS);
         }
         else {
-            this.nameNode.classList.remove("disabled");
+            this.nameNode.classList.remove(Action.DISABLED_CLASS);
         }
     },
     /**
@@ -136,16 +139,18 @@ Action.extends(Model, /** @lends Action.prototype */ {
      */
     click: function (option) {
         if (!this.running && !this.owner.busy && !this.locked) {
-            var data = consolidateData(this, (option || this.data), ["time", "timeDelta", "consume"]);
+            var cherryPick = Object.assign({}, option, this.data);
+            var data = consolidateData(this, cherryPick, ["time", "timeDelta", "consume"]);
             // Use
             if (isArray(data.consume)) {
                 MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
             }
 
             if (this.parentAction) {
-                return this.parentAction.click(this);
+                return this.parentAction.click(this.data);
             }
             else {
+                this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
                 this.owner.setBusy(data);
@@ -157,7 +162,7 @@ Action.extends(Model, /** @lends Action.prototype */ {
                 }
 
                 this.nameNode.style.animationDuration = duration + "ms";
-                this.nameNode.classList.add("cooldown");
+                this.nameNode.classList.add(Action.COOLDOWN_CLASS);
 
                 this.timeout = TimerManager.timeout(this.end.bind(this, option), duration);
                 return true;
@@ -173,31 +178,28 @@ Action.extends(Model, /** @lends Action.prototype */ {
      */
     end: function (option) {
         this.timeout = 0;
-        this.nameNode.classList.remove("cooldown");
+        this.html.classList.remove(Action.RUNNING_CLASS);
+        this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
 
         var effect = {
             name: this.data.name,
             people: this.owner
         };
 
-        if (isFunction(this.data.effect)) {
-            this.data.effect(effect);
-        }
-
         // Build
         if (isFunction(this.data.build)) {
-            var build = this.data.build(this, option);
+            var build = this.data.build(this, option, effect);
             effect.build = an(build.name);
         }
 
         // Give
         var give = [];
         if (isFunction(this.data.give)) {
-            give = this.data.give(this, effect);
+            give = this.data.give(this, option, effect);
         }
         // Add from constructed building
         if (build && isFunction(build.give)) {
-            give = give.concat(build.give(this, option));
+            give = give.concat(build.give(this, option, effect));
         }
         give = compactResources(give);
         if (give.length) {
@@ -209,7 +211,7 @@ Action.extends(Model, /** @lends Action.prototype */ {
         var unlockForOne = [];
         var unlockForAll = [];
         if (isFunction(this.data.unlock)) {
-            var unlock = this.data.unlock(this).filter(function (action) {
+            var unlock = this.data.unlock(this, option, effect).filter(function (action) {
                 return !action.condition || (action.condition && action.condition(this));
             }.bind(this));
 
@@ -231,7 +233,7 @@ Action.extends(Model, /** @lends Action.prototype */ {
 
         // Lock
         if (isFunction(this.data.lock)) {
-            var lock = this.data.lock(this);
+            var lock = this.data.lock(this, option, effect);
             this.owner.lockAction(lock);
         }
         if (this.data.unique) {
@@ -248,13 +250,6 @@ Action.extends(Model, /** @lends Action.prototype */ {
             else {
                 MessageBus.notify(MessageBus.MSG_TYPES.BUILD, build);
             }
-        }
-
-        if (this.owner.plan) {
-            effect.plan = an(this.owner.plan.name);
-        }
-        if (this.owner.project) {
-            effect.project = an(this.owner.project.name);
         }
 
         // Log
@@ -302,7 +297,8 @@ Action.extends(Model, /** @lends Action.prototype */ {
         if (this.timeout) {
             TimerManager.clear(this.timeout);
             this.owner.setBusy(false);
-            this.nameNode.classList.remove("cooldown");
+            this.html.classList.remove(Action.RUNNING_CLASS);
+            this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
         }
     }
 });

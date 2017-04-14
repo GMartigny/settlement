@@ -7,10 +7,9 @@
 function Tooltip (container, data) {
     this.container = container;
     this.nodes = {};
+    this.resourcesMapper = {};
     this.box = this.toHTML(data);
     this._addEvents();
-
-    this.resourcesMapper = {};
 }
 Tooltip.prototype = {
     bodyWidth: document.body.offsetWidth,
@@ -56,7 +55,7 @@ Tooltip.prototype = {
     _addEvents: function () {
         this.container.classList.add("tooltiped");
 
-        this.container.addEventListener("mouseenter", this._mouseOver.bind(this));
+        this.container.addEventListener("mouseover", this._mouseOver.bind(this));
         this.container.addEventListener("mousemove", this._mouseMove.bind(this));
         this.container.addEventListener("mouseout", this._mouseOut.bind(this));
     },
@@ -67,7 +66,7 @@ Tooltip.prototype = {
     _removeEvents: function () {
         this.container.classList.remove("tooltiped");
 
-        this.container.removeEventListener("mouseenter", this._mouseOver);
+        this.container.removeEventListener("mouseover", this._mouseOver);
         this.container.removeEventListener("mousemove", this._mouseMove);
         this.container.removeEventListener("mouseout", this._mouseOut);
     },
@@ -93,12 +92,11 @@ Tooltip.prototype = {
         }
         if (isArray(data.consume)) {
             var resourcesContainer = wrap("consumption");
-            var item;
-            for (var i = 0, l = data.consume.length; i < l; ++i) {
-                item = wrap("resource not-enough", r[0] + " " + r[1].name);
-                this.resourcesMapper[r[1].id] = item;
+            data.consume.forEach(function (resource) {
+                var item = wrap("resource not-enough", resource[0] + " " + resource[1].name);
+                this.resourcesMapper[resource[1].id] = item;
                 resourcesContainer.appendChild(item);
-            }
+            }.bind(this));
             html.appendChild(resourcesContainer);
         }
         return html;
@@ -117,13 +115,11 @@ Tooltip.prototype = {
             this.nodes.time.textContent = formatTime(data.time);
         }
         if (isArray(data.consume)) {
-            var id;
-            var hasEnougth;
-            for (var i = 0, l = data.consume.length; i < l; ++i) {
-                id = data.consume[i][1].id;
-                hasEnougth = resources.has(id) && resources.get(id).has(data[0]);
+            data.consume.forEach(function (resource) {
+                var id = resource[1].id;
+                var hasEnougth = resources.has(id) && resources.get(id).has(data[0]);
                 this.resourcesMapper[id].classList.toggle("not-enougth", !hasEnougth);
-            }
+            }.bind(this));
         }
     },
     /**

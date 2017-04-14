@@ -54,8 +54,8 @@ var random = (function () {
     var RAND = Math.random;
 
     return function (from, to) {
-        if (to === undefined) {
-            if (from === undefined) {
+        if (isUndefined(to)) {
+            if (isUndefined(from)) {
                 to = 1;
             }
             else {
