@@ -8,8 +8,7 @@
 function popup (data, onYes, CSSClasses) {
     onYes = onYes || noop;
 
-    // FIXME: maybe
-    var holder = document.getElementById("main");
+    var holder = document.body;
 
     CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
     var box = wrap(CSSClasses);
