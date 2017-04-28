@@ -144,8 +144,13 @@ function randomize (list, amount) {
     }
 
     if (amount) {
-        if (isString(amount)) {
-            amount = amount.split("-");
+        if (!isArray(amount)) {
+            if (isString(amount)) {
+                amount = amount.split("-");
+            }
+            else {
+                amount = [+amount];
+            }
         }
         return [round(random.apply(null, amount)), all[pick]];
     }
@@ -167,13 +172,18 @@ function randomizeMultiple (list, amount) {
     }
     var res = [];
 
-    if (isString(amount)) {
-        amount = amount.split("-");
+    if (!isArray(amount)) {
+        if (isString(amount)) {
+            amount = amount.split("-");
+        }
+        else {
+            amount = [+amount];
+        }
     }
     var total = round(random.apply(null, amount));
     var sum = 0;
 
-    while (sum + 1 <= total) { // can't add 1
+    while (sum < total) { // can add 1
         var pick = round(random(1, total - sum));
         res.push([pick, randomize(list)]);
         sum += pick;

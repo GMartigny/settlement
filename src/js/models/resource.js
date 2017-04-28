@@ -9,18 +9,20 @@ function Resource (data, count) {
     this.count = 0;
     this.warnLack = false;
 
-    this.super(data);
-    if (count) {
-        this.update(+count);
-    }
+    this.super(data, count);
 }
-Resource.extends(Model, /** @lends Resource.prototype */ {
+Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     /**
      * Initialise object
+     * @param {Number} count - The resource amount
      * @private
      */
-    _init: function () {
-        this.tooltip = new Tooltip(this.html, this.data);
+    _init: function (count) {
+        if (count) {
+            this.update(+count);
+        }
+        var data = consolidateData(this, this.data, ["consume"]);
+        this.tooltip = new Tooltip(this.html, data);
     },
     /**
      * Return HTML for display

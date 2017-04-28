@@ -7,5 +7,5 @@
 function Building (data) {
     this.super(data);
 }
-Building.extends(Model, /** @lends Building.prototype */ {
+Building.extends(Model, "Building", /** @lends Building.prototype */ {
 });

@@ -6,7 +6,7 @@
 function Model (data) {
     this.data = data;
     this.html = this.toHTML();
-    this._init();
+    this._init.apply(this, Array.prototype.splice.call(arguments, 1));
 }
 Model.prototype = {
     /**
@@ -19,6 +19,6 @@ Model.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function () {
-        return wrap(this.constructor.name);
+        return wrap(this.modelName);
     }
 };

@@ -9,6 +9,10 @@ function Tooltip (container, data) {
     this.nodes = {};
     this.resourcesMapper = {};
     this.box = this.toHTML(data);
+    this._mouseOver();
+    this.width = this.box.offsetWidth;
+    this.height = this.box.offsetHeight;
+    this._mouseOut();
     this._addEvents();
 }
 Tooltip.prototype = {
@@ -21,8 +25,8 @@ Tooltip.prototype = {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = constrain(x + 10, 0, this.bodyWidth - 305);
-        var top = constrain(y + 10, 0, this.bodyHeight);
+        var left = constrain(x + 10, 0, this.bodyWidth - this.width);
+        var top = constrain(y + 10, 0, this.bodyHeight - this.height);
         this.box.style.left = left + "px";
         this.box.style.top = top + "px";
     },
@@ -117,8 +121,8 @@ Tooltip.prototype = {
         if (isArray(data.consume)) {
             data.consume.forEach(function (resource) {
                 var id = resource[1].id;
-                var hasEnougth = resources.has(id) && resources.get(id).has(data[0]);
-                this.resourcesMapper[id].classList.toggle("not-enougth", !hasEnougth);
+                var hasEnougth = resources.has(id) && resources.get(id).has(resource[0]);
+                this.resourcesMapper[id].classList.toggle("not-enough", !hasEnougth);
             }.bind(this));
         }
     },

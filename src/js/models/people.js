@@ -9,7 +9,7 @@
 function peopleFactory (amount) {
     // We don't want to spam the webservice when in dev
     if (IS_DEV) {
-        var code = "Bot-" + random().toString(36).substr(-round(random(3, 24)), 3).toUpperCase();
+        var code = "Bot-" + random().toString(36).substr(round(random(2, 9)), 3).toUpperCase();
         return Promise.resolve((new Array(amount || 1)).fill(new People(code)));
     }
     else {
@@ -51,7 +51,7 @@ function People (name, gender) {
 
     this.super();
 }
-People.extends(Model, /** @lends People.prototype */ {
+People.extends(Model, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
      * @private
@@ -113,9 +113,6 @@ People.extends(Model, /** @lends People.prototype */ {
             this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
             if (this.thirsty) { // drying
                 this.updateLife(-elapse * this.thirsty * 30);
-            }
-            else if (this.energy > 80 && !(this.starving || this.thirsty)) { // healing
-                this.updateLife(elapse * 0.5);
             }
         }
         this.starving = 0;
@@ -297,20 +294,14 @@ People.extends(Model, /** @lends People.prototype */ {
      * @param {Object} perk - The perk data
      */
     gainPerk: function (perk) {
-        perk.desc = LogManager.personify(perk.desc, this);
+        perk.desc = LogManager.personify(perk.desc, {
+            people: this
+        });
         this.perk = perk;
         this.perkNode.textContent = "the \"" + capitalize(perk.name) + "\"";
         new Tooltip(this.perkNode, perk);
 
         MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
-        if (isFunction(perk.effect)) {
-            var actionsIds = isFunction(perk.actions) && perk.actions();
-            this.actions.filter(function (action) {
-                return !actionsIds || actionsIds.includes(action.data.id);
-            }).forEach(function (action) {
-                action.applyEffect(perk.effect);
-            });
-        }
         if (isFunction(perk.unlock)) {
             this.addAction(perk.unlock());
         }

@@ -5,68 +5,68 @@ var GraphicManager = (function () {
 
     var _buildingsPosition = {
         "forum+1": {
-            "x": 89,
-            "y": 32
+            "x": 80,
+            "y": 30
         },
         "forum+2": {
-            "x": 89,
-            "y": 32
+            "x": 80,
+            "y": 30
         },
         "forum+3": {
-            "x": 89,
-            "y": 32
+            "x": 80,
+            "y": 30
         },
         "forum": {
-            "x": 89,
-            "y": 32
+            "x": 80,
+            "y": 30
         },
         "furnace+1": {
-            "x": 89,
-            "y": 5
+            "x": 63,
+            "y": 6
         },
         "furnace": {
-            "x": 89,
-            "y": 5
+            "x": 63,
+            "y": 6
         },
         "module": {
-            "x": 159,
-            "y": 50
+            "x": 172,
+            "y": 28
         },
         "pharmacy": {
-            "x": 95,
-            "y": 37
+            "x": 86,
+            "y": 35
         },
         "plot+1": {
-            "x": 44,
-            "y": 14
+            "x": 23,
+            "y": 23
         },
         "plot": {
-            "x": 52,
-            "y": 19
+            "x": 31,
+            "y": 28
         },
         "pump": {
-            "x": 107,
-            "y": 53
+            "x": 101,
+            "y": 58
         },
         "radio": {
-            "x": 59,
-            "y": 54
+            "x": 63,
+            "y": 57
         },
         "trading": {
-            "x": 25,
-            "y": 50
+            "x": 28,
+            "y": 53
         },
         "well": {
-            "x": 119,
-            "y": 55
+            "x": 112,
+            "y": 59
         },
         "workshop": {
-            "x": 135,
-            "y": 19
+            "x": 132,
+            "y": 10
         },
         "wreckage": {
-            "x": 89,
-            "y": 32
+            "x": 80,
+            "y": 30
         }
     };
 
@@ -105,17 +105,17 @@ var GraphicManager = (function () {
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
-                    _buildingsList.push(building.id, asset);
+                    if (isFunction(building.upgrade)) {
+                        var upgradedId = building.upgrade(building);
+                        if (_buildingsList.has(upgradedId)) {
+                            _buildingsList.set(upgradedId, asset);
+                        }
+                    }
+                    else {
+                        _buildingsList.push(building.id, asset);
+                    }
                 }
             }.bind(this));
-            // watch for upgrade of existing buildings
-            MessageBus.observe(MessageBus.MSG_TYPES.UPGRADE, function (upgrade) {
-                if (_buildingsList.has(upgrade.from) && upgrade.to.asset) {
-                    // select an asset to upgrade
-                    var asset = new Asset(_imageData[upgrade.to.asset], _buildingsPosition[upgrade.to.asset]);
-                    _buildingsList.set(upgrade.from, asset);
-                }
-            });
             MessageBus.observe(MessageBus.MSG_TYPES.UNBUILD, function (building) {
                 _buildingsList.pop(building.id);
             });

@@ -1,9 +1,12 @@
+@import (reference) "base";
+
 .Action {
     display: inline-block;
-    margin-right: 5px;
+    margin: 0 5px 3px 0;
 
     .name {
         display: inline-block;
+        background-color: #FFF;
     }
 
     &.withOptions {
@@ -23,6 +26,7 @@
             overflow: hidden;
             display: flex;
             flex-flow: column;
+            z-index: @actionsZIndex;
 
             // animated
             height: 0;

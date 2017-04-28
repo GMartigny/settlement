@@ -12,7 +12,7 @@ function Event (data) {
 
     this.super(data);
 }
-Event.extends(Model, /** @lends Event.prototype */ {
+Event.extends(Model, "Event", /** @lends Event.prototype */ {
     /**
      * Initialize object
      * @private

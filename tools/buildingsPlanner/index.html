@@ -39,6 +39,7 @@
 </head>
 <body>
 <div id="planner"></div>
+<label for="scaler">Scale ratio</label>
 <input type="number" id="scaler" value="4" min="1" max="10" step="1"><br>
 <input type="checkbox" id="all" checked onclick="switchDisplay()"><label for="all">All</label>
 <div id="wrapper">
@@ -65,7 +66,7 @@
     function draggable (img) {
         img.addEventListener("mousedown", function (e) {
             e.preventDefault();
-            if (!dragged) {
+            if (!(dragged || img.classList.contains("disabled"))) {
                 dragged = img;
                 dragged.startX = e.offsetX;
                 dragged.startY = e.offsetY;
@@ -83,11 +84,21 @@
             }
         }
         else {
-            document.getElementById(id).classList.toggle("disabled", !document.getElementById(id + "-chk").checked);
+            var checked = document.getElementById(id + "-chk").checked;
+            data[id].disabled = !checked;
+            document.getElementById(id).classList.toggle("disabled", !checked);
+            dataToString();
         }
     }
     function dataToString () {
-        output.textContent = JSON.stringify(data, null, 4);
+        var filtered = {};
+        for (var id in data) {
+            if (data.hasOwnProperty(id) && !data[id].disabled) {
+                filtered[id] = data[id];
+                delete filtered[id].disabled;
+            }
+        }
+        output.textContent = JSON.stringify(filtered, null, 4);
         localStorage.save = JSON.stringify(data);
     }
     function moveTo (img, x, y, height) {
@@ -119,7 +130,6 @@
             return response.json();
         }
     }).then(function (assetsData) {
-        var order = 0;
         for (var name in assetsData) {
             if (assetsData.hasOwnProperty(name)) {
                 var asset = assetsData[name];
@@ -127,13 +137,16 @@
                     x: 0,
                     y: 0
                 };
+                data[name].disabled = data[name].disabled || false;
+                var checked = !data[name].disabled;
 
-                imgList.innerHTML += `<li><input type="checkbox" checked id="${name}-chk" onclick="switchDisplay('${name}')"/><label for="${name}-chk">${name}</label></li>`;
+                imgList.innerHTML += `<li><input type="checkbox" ` + (checked ? "checked" : "") + ` id="${name}-chk" onclick="switchDisplay('${name}')"/><label for="${name}-chk">${name}</label></li>`;
 
                 var img = new Image();
                 img.src = "../../" + asset.source_image;
                 img.id = name;
                 img.style.width = asset.width * scale + "px";
+                img.classList.toggle("disabled", !checked);
                 moveTo(img, data[name].x, data[name].y, asset.height);
                 draggable(img);
                 planner.appendChild(img);

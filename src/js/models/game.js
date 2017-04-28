@@ -33,14 +33,10 @@ function GameController (holder, assets) {
 
     this.super();
     holder.appendChild(this.html);
-
-    this.lastTick = performance.now();
-    this.refresh();
-
     console.log("Started in " + round(performance.now() - now) + "ms");
 }
 GameController.tickLength = 2000;
-GameController.extends(Model, {
+GameController.extends(Model, "GameController", {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -164,6 +160,9 @@ GameController.extends(Model, {
                 this.flags.ready = true;
             }.bind(this));
         }
+
+        this.lastTick = performance.now();
+        this.refresh();
     },
     /**
      * Add actions to initial actions list
@@ -244,10 +243,10 @@ GameController.extends(Model, {
                 this.flags.survived += elapse * GameController.tickLength;
                 // People consume resources to survive
                 var peopleConsumption = DataManager.data.people.needs(this.flags);
-                MessageBus.notify(MessageBus.MSG_TYPES.USE, peopleConsumption);
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, peopleConsumption, true);
                 peopleConsumption.forEach(function (need) {
-                    var resource = need[0];
-                    var amount = need[1];
+                    var amount = need[0];
+                    var resource = need[1];
                     var lacking = need[2];
 
                     var instance = this.resources.has(resource.id) && this.resources.get(resource.id);
@@ -268,7 +267,7 @@ GameController.extends(Model, {
                     }
                 }.bind(this));
 
-                if (this.canSomeoneArrive()) {
+                if (this.canSomeoneArrive() && random() < DataManager.data.people.dropRate) {
                     this.welcome();
                 }
 
@@ -412,6 +411,15 @@ GameController.extends(Model, {
         }
     },
     /**
+     * Upgrade a building
+     * @param {Object} upgrade -
+     */
+    upgradeBuilding: function (upgrade) {
+        if (upgrade) {
+            this.buildings.set(upgrade.from, upgrade.to);
+        }
+    },
+    /**
      * Return all unlocked craftables
      * @return {Array<CraftableData>}
      */
@@ -471,9 +479,7 @@ GameController.extends(Model, {
      * @return {Boolean}
      */
     canSomeoneArrive: function () {
-        return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1) &&
-            random() < DataManager.data.people.dropRate &&
-            this.getSettledTime() / DataManager.time.day > 5;
+        return this.hasEnough(DataManager.data.resources.room.id, this.people.length + 1);
     },
     /**
      * Return an event that can happened
@@ -510,13 +516,19 @@ if (IS_DEV) {
     /**
      * Earn one of each resources and buildings
      */
-    GameController.prototype.oneOfEach = function () {
-        DataManager.data.resources.deepBrowse(function (resource) {
-            this.earn(1, resource);
+    GameController.prototype.resourcesOverflow = function () {
+        DataManager.data.resources.gatherables.deepBrowse(function (resource) {
+            this.earn(50, resource);
         }.bind(this));
-
-        DataManager.data.buildings.deepBrowse(function (build) {
-            this.build(build);
+        DataManager.data.resources.craftables.deepBrowse(function (resource) {
+            this.earn(50, resource);
         }.bind(this));
+    };
+    /**
+     * Build a random building
+     */
+    GameController.prototype.nextBuilding = function () {
+        var pick = this.possibleBuildings().random();
+        MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
     };
 }

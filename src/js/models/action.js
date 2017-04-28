@@ -1,6 +1,7 @@
 "use strict";
 /**
  * Class for actions
+ * @extends Model
  * @param {People} owner - THe action owner
  * @param {ActionData} data - The action data
  * @param {Action} [parentAction] - If this action has a parent
@@ -17,14 +18,12 @@ function Action (owner, data, parentAction) {
     this.parentAction = parentAction || null;
     this.repeated = 0;
 
-    this.location = false; // FIXME I'm ugly
-
     this.super(data);
 }
 Action.COOLDOWN_CLASS = "cooldown";
 Action.RUNNING_CLASS = "running";
 Action.DISABLED_CLASS = "disabled";
-Action.extends(Model, /** @lends Action.prototype */ {
+Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Initialise object
      * @private
@@ -65,6 +64,7 @@ Action.extends(Model, /** @lends Action.prototype */ {
     },
     /**
      * If needed, create and maintain options for this action
+     * @memberOf Action#
      */
     manageOptions: function () {
         if (isFunction(this.data.options)) {
@@ -139,17 +139,18 @@ Action.extends(Model, /** @lends Action.prototype */ {
      */
     click: function (option) {
         if (!this.running && !this.owner.busy && !this.locked) {
-            var cherryPick = Object.assign({}, option, this.data);
-            var data = consolidateData(this, cherryPick, ["time", "timeDelta", "consume"]);
-            // Use
-            if (isArray(data.consume)) {
-                MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
-            }
 
             if (this.parentAction) {
                 return this.parentAction.click(this.data);
             }
             else {
+                var cherryPick = Object.assign({}, option, this.data);
+                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "consume"]);
+                // Use
+                if (isArray(data.consume)) {
+                    MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
+                }
+
                 this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
@@ -215,12 +216,17 @@ Action.extends(Model, /** @lends Action.prototype */ {
                 return !action.condition || (action.condition && action.condition(this));
             }.bind(this));
 
+            // Unique actions have to unlock for everyone
             if (this.data.unique) {
                 unlockForAll = unlock;
             }
             else {
                 unlockForOne = unlock;
             }
+        }
+        // Add from constructed building
+        if (build && isFunction(build.unlock)) {
+            unlockForAll = unlockForAll.concat(build.unlock(this, option, effect));
         }
         if (unlockForAll.length) {
             // add to all
@@ -232,34 +238,46 @@ Action.extends(Model, /** @lends Action.prototype */ {
         }
 
         // Lock
+        var lockForOne = [];
+        var lockForAll = [];
         if (isFunction(this.data.lock)) {
             var lock = this.data.lock(this, option, effect);
-            this.owner.lockAction(lock);
+
+            // Unique actions have to lock for everyone
+            if (this.data.unique) {
+                lockForAll = lock;
+            }
+            else {
+                lockForOne = lock;
+            }
         }
         if (this.data.unique) {
-            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.id);
+            lockForAll.push(this.data.id);
+        }
+        // Add from constructed building
+        if (build && isFunction(build.lock)) {
+            lockForAll = lockForAll.concat(build.lock(this, option, effect));
+        }
+        if (lockForAll.length) {
+            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, lockForAll);
+        }
+        if (lockForOne.length) {
+            this.owner.lockAction(lockForOne);
         }
 
         if (build) {
-            if (isFunction(build.upgrade)) {
-                MessageBus.notify(MessageBus.MSG_TYPES.UPGRADE, {
-                    from: build.upgrade(),
-                    to: build
-                });
-            }
-            else {
-                MessageBus.notify(MessageBus.MSG_TYPES.BUILD, build);
-            }
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, build);
         }
 
         // Log
+        var logData = (option && option.log) || this.data.log;
         var rawLog = "";
-        if (this.data.log) {
-            if (isFunction(this.data.log)) {
-                rawLog = this.data.log(effect, this);
+        if (logData) {
+            if (isFunction(logData)) {
+                rawLog = logData(effect, this);
             }
             else {
-                rawLog = this.data.log;
+                rawLog = logData;
             }
         }
         var log = LogManager.personify(rawLog, effect);
@@ -272,7 +290,7 @@ Action.extends(Model, /** @lends Action.prototype */ {
      */
     applyEffect: function (effect) {
         if (isFunction(effect)) {
-
+            // TODO
         }
     },
     /**
@@ -286,6 +304,9 @@ Action.extends(Model, /** @lends Action.prototype */ {
             this.options.forEach(function (option) {
                 option.lock();
             });
+        }
+        else if (this.parentAction) {
+            this.parentAction.options.pop(this.data.id);
         }
 
         this.html.remove();

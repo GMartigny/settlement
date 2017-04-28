@@ -25,29 +25,29 @@ var LogManager = (function () {
             // Log informations
             MessageBus.observe(self.LOG_TYPES.values(), function (message, type) {
                 self.log(message, type);
-            });
+            })
 
-            MessageBus.observe(MessageBus.MSG_TYPES.ARRIVAL, function (name) {
+            .observe(MessageBus.MSG_TYPES.ARRIVAL, function (name) {
                 self.log(name + " has arrived.", MessageBus.MSG_TYPES.LOGS.EVENT);
-            });
+            })
 
-            MessageBus.observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
+            .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
                 var message = "We lost " + person.name + ".";
                 self.log(message, self.LOG_TYPES.WARN);
-            });
+            })
 
-            MessageBus.observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
+            .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 var message = "We held up for " + survivalDuration + ", but all is lost now.";
                 self.log(message, self.LOG_TYPES.FLAVOR);
-            });
+            })
 
-            MessageBus.observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resource) {
+            .observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resource) {
                 var icon = resource.icon ? Resource.iconAsString(resource.icon) : "";
                 var message = "We run out of " + resource.name + " " + icon + ", we need to do something.";
                 self.log(message, self.LOG_TYPES.WARN);
-            });
+            })
 
-            MessageBus.observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
+            .observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
                 var message = people.name + " is now known as the \"" + capitalize(people.perk.name) + "\".";
                 self.log(message, self.LOG_TYPES.EVENT);
             });

@@ -17,9 +17,10 @@
         margin-bottom: 10px;
         line-height: 30px;
         left: -100%;
+        background-color: #FFF;
         opacity: 0;
         transition: opacity ease-out .4s,
-        left ease-out .4s;
+            left ease-out .4s;
 
         &.arrived {
             left: 0;
@@ -27,7 +28,11 @@
         }
 
         &.busy {
-            background: #cccccc;
+            background-color: #CCC;
+
+            .Action .name {
+                background-color: #CCC;
+            }
         }
 
         .name .perk {

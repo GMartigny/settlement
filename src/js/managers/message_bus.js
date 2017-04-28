@@ -26,11 +26,12 @@ var MessageBus = (function () {
          * Fire an event
          * @param {Number} type - Type of event
          * @param {*} [message] - Additional data attached
+         * @param {Boolean} [silent=false] - True to output log
          * @return {MessageBus} Itself
          */
-        notify: function (type, message) {
+        notify: function (type, message, silent) {
             var typeDesc = this.SWAP_MSG_TYPE[type];
-            if (typeDesc) {
+            if (typeDesc && !silent) {
                 log("Message ", typeDesc, message);
             }
             if (_observers[type]) {
@@ -54,9 +55,9 @@ var MessageBus = (function () {
             UNLOCK: 40, // Unlock an action
             GAIN_PERK: 45, // People gain a perk
             LOCK: 50, // Lock an action
+            START_BUILD: 59, // Someone started to build
             BUILD: 60, // Build a building
             UNBUILD: 61, // Remove a building
-            UPGRADE: 62, // Upgrade a building
             EVENT_START: 70, // An event start
             EVENT_CANCEL: 71, // Cancel an event
             EVENT_END: 72, // An event end

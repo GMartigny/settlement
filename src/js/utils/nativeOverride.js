@@ -100,9 +100,10 @@ Object.prototype.clone = function () {
 /**
  * Make this class extends a parent class
  * @param {Function} parent - A parent to draw prototype from
+ * @param {String} name - The constructor's name
  * @param {Object} override - A map like object with overrides
  */
-Function.prototype.extends = function (parent, override) {
+Function.prototype.extends = function (parent, name, override) {
     if (parent) {
         this.prototype = Object.create(parent.prototype);
         /**
@@ -110,6 +111,7 @@ Function.prototype.extends = function (parent, override) {
          */
         this.prototype.super = parent;
         this.prototype.constructor = this;
+        this.prototype.modelName = name;
     }
     if (override) {
         var self = this;
