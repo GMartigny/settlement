@@ -91,7 +91,7 @@ var DataManager = (function () {
                         name: "food",
                         desc: "Everyone need food to keep his strength.",
                         icon: "foodcan",
-                        dropRate: 100,
+                        dropRate: 90,
                         order: 20
                     },
                     rock: {
@@ -814,7 +814,6 @@ var DataManager = (function () {
                         log = "Despite nothing special found towards @direction, @people.name brings back @give.";
                     }
                     effect.direction = directions.random();
-
                     return log;
                 },
                 order: 10
@@ -826,7 +825,7 @@ var DataManager = (function () {
                 isOut: 1,
                 consume: function () {
                     return [
-                        [2, data.resources.gatherables.common.water]
+                        [1, data.resources.gatherables.common.water]
                     ];
                 },
                 giveSpan: [2, 4],
@@ -853,6 +852,7 @@ var DataManager = (function () {
                     else {
                         log = "No special location towards @direction, but @people.name find @give.";
                     }
+                    effect.direction = directions.random();
                     return log;
                 },
                 order: 10
@@ -878,7 +878,12 @@ var DataManager = (function () {
                     var location = option;
                     // remember it for log
                     effect.location = location;
-                    return randomizeMultiple(location.give(), action.data.giveSpan);
+                    var give = randomizeMultiple(location.give(), action.data.giveSpan);
+                    var quartz = data.resources.gatherables.special.quartz;
+                    if (random() < quartz.dropRate) {
+                        give.push([1, quartz]);
+                    }
+                    return give;
                 },
                 log: function (effect) {
                     // log using location's data
@@ -888,7 +893,7 @@ var DataManager = (function () {
                 order: 20
             },
             craft: {
-                name: "craft something",
+                name: "craft",
                 desc: "Use some resources to tinker something useful.",
                 time: function () {
                     return this.buildings.has(data.buildings.big.workshop.id) ? 4 : 5;

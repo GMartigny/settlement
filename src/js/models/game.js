@@ -21,6 +21,7 @@ function GameController (holder, assets) {
     this.people = [];
     this.initialActions = new Collection();
     this.knownLocations = new Collection();
+    this.buildingsInProgress = [];
 
     this.flags = {
         ready: false,
@@ -30,6 +31,7 @@ function GameController (holder, assets) {
         popup: false,
         productivity: 1
     };
+    this.lastTick = now;
 
     this.super();
     holder.appendChild(this.html);
@@ -108,6 +110,12 @@ GameController.extends(Model, "GameController", {
                 });
             }
         })
+        // Keep track of building in progress
+        .observe(MessageBus.MSG_TYPES.START_BUILD, function (buildingId) {
+            if (buildingId) {
+                game.buildingsInProgress.push(buildingId);
+            }
+        })
         // We may build
         .observe(MessageBus.MSG_TYPES.BUILD, function (building) {
             if (building) {
@@ -160,8 +168,7 @@ GameController.extends(Model, "GameController", {
                 this.flags.ready = true;
             }.bind(this));
         }
-
-        this.lastTick = performance.now();
+        // Start the refresh loop
         this.refresh();
     },
     /**
@@ -304,7 +311,7 @@ GameController.extends(Model, "GameController", {
      * @return {Boolean}
      */
     hasEnough: function (id, amount) {
-        return this.resources.get(id).has(amount);
+        return this.resources.has(id) && this.resources.get(id).has(amount);
     },
     /**
      * A callback to handle missing resources
@@ -380,10 +387,9 @@ GameController.extends(Model, "GameController", {
 
                     if (game.people.length === 2) {
                         TimerManager.timeout(function () {
-                            MessageBus.notify(
-                                MessageBus.MSG_TYPES.LOGS.FLAVOR,
-                                person.name + " say that there's other desert-walkers " +
-                                    "ready to join you if there's room for them.");
+                            var message = person.name + " say that there's other desert-walkers " +
+                                "ready to join you if there's room for them."
+                            MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, message);
                         }, 2000);
                     }
                 }
@@ -398,6 +404,7 @@ GameController.extends(Model, "GameController", {
      */
     build: function (building) {
         var id = building.id;
+        this.buildingsInProgress.out(id);
         if (!this.buildings.has(id)) {
             var bld = new Building(building);
             this.buildings.push(id, bld);
@@ -408,15 +415,6 @@ GameController.extends(Model, "GameController", {
             if (isFunction(building.unlock)) {
                 this.addToInitialActions(building.unlock(bld));
             }
-        }
-    },
-    /**
-     * Upgrade a building
-     * @param {Object} upgrade -
-     */
-    upgradeBuilding: function (upgrade) {
-        if (upgrade) {
-            this.buildings.set(upgrade.from, upgrade.to);
         }
     },
     /**
@@ -440,12 +438,13 @@ GameController.extends(Model, "GameController", {
      */
     possibleCraftables: function () {
         var resources = this.resources.items;
+        var game = this;
 
         return this.unlockedCraftables().filter(function (craft) {
             var keep = true;
             if (isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
-                    keep = keep && resources[res[1].id] && resources[res[1].id].has(res[0]);
+                    keep = keep && game.hasEnough(res[1].id, res[0]);
                 });
             }
             return keep;
@@ -457,11 +456,12 @@ GameController.extends(Model, "GameController", {
      */
     possibleBuildings: function () {
         var buildings = [],
-            done = this.buildings;
+            done = this.buildings,
+            inProgress = this.buildingsInProgress;
 
         DataManager.data.buildings.deepBrowse(function (build) {
-            // not already done
-            if (!done.has(build.id)) {
+            // not already done or in progress
+            if (!(done.has(build.id) || inProgress.includes(build.id))) {
                 // no condition or condition meet
                 if (!isFunction(build.condition) || build.condition(build)) {
                     // has the upgraded building

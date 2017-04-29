@@ -144,11 +144,18 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 return this.parentAction.click(this.data);
             }
             else {
+                // Merge data from this and selected option
                 var cherryPick = Object.assign({}, option, this.data);
                 var data = consolidateData(this, cherryPick, ["time", "timeDelta", "consume"]);
-                // Use
+                // Use resources
                 if (isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
+                }
+
+                // Tell the game controller to filter out building in progress
+                if (isFunction(data.build)) {
+                    var build = data.build(this, option);
+                    MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, build.id);
                 }
 
                 this.html.classList.add(Action.RUNNING_CLASS);

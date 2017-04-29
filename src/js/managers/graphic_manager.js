@@ -103,7 +103,7 @@ var GraphicManager = (function () {
             // watch for new buildings
             _buildingsList = new Collection();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
-                if (building.asset) {
+                if (building && building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
                     if (isFunction(building.upgrade)) {
                         var upgradedId = building.upgrade(building);
@@ -116,9 +116,6 @@ var GraphicManager = (function () {
                     }
                 }
             }.bind(this));
-            MessageBus.observe(MessageBus.MSG_TYPES.UNBUILD, function (building) {
-                _buildingsList.pop(building.id);
-            });
 
             // watch for new events
             _eventsList = new Collection();

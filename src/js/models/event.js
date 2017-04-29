@@ -62,7 +62,9 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
 
                 this.timer = TimerManager.timeout(this.end.bind(this), duration);
             }
-            callback && callback(this);
+            if (callback) {
+                callback(this);
+            }
         }.bind(this), "event");
         return !!this.data.time;
     },
