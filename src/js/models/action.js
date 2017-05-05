@@ -146,7 +146,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             else {
                 // Merge data from this and selected option
                 var cherryPick = Object.assign({}, option, this.data);
-                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "consume"]);
+                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "timeBonus", "consume"]);
                 // Use resources
                 if (isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
@@ -167,6 +167,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
                 if (data.timeDelta) {
                     duration += random(-data.timeDelta, data.timeDelta) * GameController.tickLength;
+                }
+                if (data.timeBonus) {
+                    duration = data.timeBonus;
                 }
 
                 this.nameNode.style.animationDuration = duration + "ms";
@@ -297,7 +300,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      */
     applyEffect: function (effect) {
         if (isFunction(effect)) {
-            // TODO
+            effect(this.data);
         }
     },
     /**

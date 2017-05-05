@@ -51,6 +51,8 @@ function People (name, gender) {
 
     this.super();
 }
+People.LST_ID = "peopleList";
+People.usedPerks = [];
 People.extends(Model, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
@@ -260,7 +262,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             var perksList = DataManager.data.perks;
             // browse all perks
             perksList.deepBrowse(function (perk) {
-                // perk not used
+                // perk not already used
                 if (!People.usedPerks.includes(perk.id)) {
                     // perk is compatible
                     var actionsIds = isFunction(perk.actions) && perk.actions();
@@ -311,12 +313,25 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         People.usedPerks.push(perk.id);
     },
     /**
+     * Check for perk
+     * @param {ID} perkId
+     * @returns {Boolean}
+     */
+    hasPerk: function (perkId) {
+        return this.perk && this.perk.id === perkId;
+    },
+    /**
      * Kill it for good
      */
     die: function () {
         if (this.html.classList.contains("arrived")) {
             MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
+
+            if (this.perk) {
+                People.usedPerks.out(this.perk.id);
+            }
+
             this.actions.forEach(function (action) {
                 action.cancel();
                 action.tooltip.remove();
@@ -327,8 +342,6 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         }
     }
 });
-People.LST_ID = "peopleList";
-People.usedPerks = [];
 /**
  * Return a promise for a random name
  * @param {Number} [amount=1] - Number of name to get
