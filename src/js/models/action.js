@@ -280,15 +280,13 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         // Log
-        var logData = (option && option.log) || this.data.log;
-        var rawLog = "";
-        if (logData) {
-            if (isFunction(logData)) {
-                rawLog = logData(effect, this);
-            }
-            else {
-                rawLog = logData;
-            }
+        var logData = (option && option.log) || this.data.log || "";
+        var rawLog;
+        if (isFunction(logData)) {
+            rawLog = logData(effect, this);
+        }
+        else {
+            rawLog = logData;
         }
         var log = LogManager.personify(rawLog, effect);
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));

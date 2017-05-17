@@ -60,6 +60,16 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      */
     _init: function () {
         this.setPronouns();
+        // Tooltip on health bar
+        new Tooltip(this.lifeBar.html, {
+            name: "Health",
+            desc: "The first thing you want is a good health."
+        });
+        // Tooltip on energy bar
+        new Tooltip(this.energyBar.html, {
+            name: "Energy",
+            desc: "Drained faster when busy or hungry."
+        });
     },
     /**
      * Return HTML for display
@@ -73,19 +83,11 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         nameNode.appendChild(this.perkNode);
         html.appendChild(nameNode);
 
-        this.lifeBar = wrap("bar life");
-        new Tooltip(this.lifeBar, {
-            name: "Health",
-            desc: "The first thing you want is a good health."
-        });
+        this.lifeBar = new Bar("life", 25);
+        html.appendChild(this.lifeBar.html);
 
-        html.appendChild(this.lifeBar);
-        this.energyBar = wrap("bar energy");
-        new Tooltip(this.energyBar, {
-            name: "Energy",
-            desc: "Drained faster when busy or hungry."
-        });
-        html.appendChild(this.energyBar);
+        this.energyBar = new Bar("energy");
+        html.appendChild(this.energyBar.html);
 
         this.actionList = wrap("actionList");
         html.appendChild(this.actionList);
@@ -184,7 +186,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             this.energy = 0;
         }
 
-        this.energyBar.style.width = this.energy + "%";
+        this.energyBar.set(this.energy);
 
         return this.energy;
     },
@@ -208,8 +210,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         else if (this.life < 0) {
             this.die();
         }
-        this.lifeBar.style.width = this.life + "%";
-        this.lifeBar.classList[this.life < 25 ? "add" : "remove"]("warning");
+        this.lifeBar.set(this.life);
         return this.life;
     },
     /**

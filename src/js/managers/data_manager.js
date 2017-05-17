@@ -1238,7 +1238,7 @@ var DataManager = (function () {
                     effect: function (isOn) {
                         this.flags.drought = isOn;
                     },
-                    dropRate: 6,
+                    dropRate: 10,
                     log: "A harsh drought has fall, water will be more important than ever."
                 }
             }

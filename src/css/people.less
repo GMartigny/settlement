@@ -42,19 +42,13 @@
             color: #333;
         }
 
-        .bar {
-            transition: width ease-out .5s;
-
+        .Bar {
             &.life {
-                background-color: #f52158;
+                .colorBar(#f52158);
             }
 
             &.energy {
-                background-color: #19f5ba;
-            }
-
-            &.warning {
-                animation: flash .4s infinite alternate;
+                .colorBar(#19f5ba);
             }
         }
 

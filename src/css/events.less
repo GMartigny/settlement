@@ -1,3 +1,5 @@
+@import (reference) "base";
+
 #eventList {
     position: absolute;
     bottom: 0;
@@ -7,13 +9,8 @@
 
     .Event {
 
-        .bar {
-            background-color: #f5eb57;
-        }
-
-        &.ongoing .bar{
-            animation-name: ongoing;
-            animation-timing-function: linear;
+        .Bar.timer {
+            .colorBar(#f5eb57);
         }
     }
 }

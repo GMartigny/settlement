@@ -11,17 +11,19 @@ Collection.prototype = {
      * Add an item
      * @param {String} [id] - ID of the item
      * @param {*} item - The item to insert
-     * @return {number|Boolean} Collection length or false if already included
+     * @return {String|Boolean} The inserted id or false if already included
      */
     push: function (id, item) {
         if (isUndefined(item)) {
             item = id;
             id = item.id || this.length + 1;
         }
+        id = id.toString();
 
         if (!this.has(id)) {
             this.items[id] = item;
-            return ++this.length;
+            ++this.length;
+            return id;
         }
         else {
             return false;

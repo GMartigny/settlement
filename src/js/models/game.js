@@ -280,17 +280,7 @@ GameController.extends(Model, "GameController", {
 
                 // Random event can happen
                 if (!this.flags.popup && random() < DataManager.data.events.dropRate) {
-                    var eventData = this.getRandomEvent();
-                    // in the right conditions
-                    if (eventData) {
-                        var event = new Event(eventData);
-                        this.flags.popup = event.start(function (event) {
-                            if (event.data.time) {
-                                this.eventsList.appendChild(event.html);
-                            }
-                            this.flags.popup = false;
-                        }.bind(this));
-                    }
+                    this.startEvent(this.getRandomEvent());
                 }
             }
 
@@ -509,6 +499,22 @@ GameController.extends(Model, "GameController", {
         }
         else {
             return null;
+        }
+    },
+    /**
+     * Start an event
+     * @param {EventData} eventData - The event's data
+     */
+    startEvent: function (eventData) {
+        // in the right conditions
+        if (eventData) {
+            var event = new Event(eventData);
+            this.flags.popup = event.start(function (event) {
+                if (event.data.time) {
+                    this.eventsList.appendChild(event.html);
+                }
+                this.flags.popup = false;
+            }.bind(this));
         }
     }
 });

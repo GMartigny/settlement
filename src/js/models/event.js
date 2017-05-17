@@ -34,8 +34,9 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
 
         this.nameNode = wrap("name", capitalize(this.data.name));
         html.appendChild(this.nameNode);
-        this.progressBar = wrap("animated bar");
-        html.appendChild(this.progressBar);
+
+        this.progressBar = new Bar("timer animated");
+        html.appendChild(this.progressBar.html);
 
         return html;
     },
@@ -47,7 +48,10 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
     start: function (callback) {
         popup(this.data, function () {
             // Effect
-            this.data.effect(true);
+            var effect = {
+                event: this.data
+            };
+            this.data.effect(true, this, effect);
 
             if (this.data.time) {
                 MessageBus.notify(MessageBus.MSG_TYPES.EVENT_START, this);
@@ -57,22 +61,39 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
                     duration += random(-this.data.deltaTime, this.data.deltaTime);
                 }
 
-                this.progressBar.style.animationDuration = duration + "ms";
-                this.html.classList.add("ongoing");
-
+                this.progressBar.run(duration);
                 this.timer = TimerManager.timeout(this.end.bind(this), duration);
             }
             if (callback) {
                 callback(this);
             }
+
+            var rawLog;
+            if (isFunction(this.data.log)) {
+                rawLog = this.data.log(effect, this);
+            }
+            else {
+                rawLog = this.data.log || "";
+            }
+            var log = LogManager.personify(rawLog, effect);
+            MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(log));
         }.bind(this), "event");
         return !!this.data.time;
+    },
+    /**
+     * Cancel a running event
+     */
+    cancel: function () {
+        if (this.timer) {
+            TimerManager.stop(this.timer);
+            this.end();
+        }
     },
     /**
      * End the event
      */
     end: function () {
-        this.data.effect(false);
+        this.data.effect(false, this);
         this.timer = null;
         MessageBus.notify(MessageBus.MSG_TYPES.EVENT_END, this);
 

@@ -12,7 +12,7 @@ module.exports = function (grunt) {
     });
 
     var sourceDir = {
-        js: ["src/js/utils/**/*.js", "src/js/**/*.js"],
+        js: ["src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
         css: "src/css/**/*.less",
         img: {
             icons: "src/img/icons/**/*.png",

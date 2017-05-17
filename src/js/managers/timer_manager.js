@@ -92,7 +92,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer
-         * @param {Number} timerId
+         * @param {String} timerId
          * @return {*}
          */
         stop: function (timerId) {
@@ -108,7 +108,7 @@ var TimerManager = (function () {
         },
         /**
          * Restart a timer
-         * @param {Number} timerId
+         * @param {String} timerId
          * @return {*}
          */
         restart: function (timerId) {
@@ -125,7 +125,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer and remove it from the list
-         * @param {Number} timerId
+         * @param {String} timerId
          * @return {*}
          */
         clear: function (timerId) {
@@ -141,7 +141,7 @@ var TimerManager = (function () {
         },
         /**
          * Return remaining time on a timer
-         * @param {Number} timerId - Id of a running timer
+         * @param {String} timerId - Id of a running timer
          * @return {Number} Remaining time in ms
          * @throws RangeError
          */
