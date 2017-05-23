@@ -64,7 +64,7 @@ function formatArray (array) {
 
 /**
  * Join an array for human reading
- * @param {Array} array
+ * @param {Array<String>} array
  * @param {String} [final="and"] - The last joiner of the list
  * @return {String}
  */
@@ -162,7 +162,7 @@ function randomize (list, amount) {
 /**
  * Return a random amount of random items
  * @param {Object} list - A list draw from
- * @param {String|Array} amount - Interval for randomness separated by "-" or array
+ * @param {String|Array<Number>} amount - Interval for randomness separated by "-" or array
  * @see randomize
  * @return {Array}
  */
@@ -206,7 +206,7 @@ function log () {
  * Transform data function to their values
  * @param {Object} context - A context passed to each functions
  * @param {Object} object - A collection of functions
- * @param {Array} [fields] - The object's field to consolidate
+ * @param {Array<String>} [fields] - The object's field to consolidate
  * @return {*}
  */
 function consolidateData (context, object, fields) {
@@ -332,7 +332,7 @@ function compactResources (resources) {
 
 /**
  * Load some image with a promise
- * @param {Array} urls - An array of url string
+ * @param {Array<String>} urls - An array of url string
  * @param {Function} action - A function called with each loading
  * @return {Promise}
  */

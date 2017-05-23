@@ -383,7 +383,7 @@ var DataManager = (function () {
                         ];
                     },
                     asset: "forum+1",
-                    log: ""
+                    log: "It'll be nice to have someone else helping."
                 },
                 furnace: {
                     name: "furnace",
@@ -491,11 +491,11 @@ var DataManager = (function () {
                         ];
                     },
                     asset: "forum+2",
-                    log: ""
+                    log: "Another room for someone to join. So far, "
                 },
                 plot1: {
                     name: "field",
-                    desc: "",
+                    desc: "A larger crop field to produce more food.",
                     time: 10,
                     consume: function () {
                         return [
@@ -549,7 +549,7 @@ var DataManager = (function () {
                         ];
                     },
                     asset: "forum+3",
-                    log: ""
+                    log: "All the forum space is now used for sleeping place."
                 },
                 workshop: {
                     name: "workshop",
@@ -874,10 +874,9 @@ var DataManager = (function () {
                 },
                 giveSpan: [7, 10],
                 give: function (action, option, effect) {
-                    var location = option;
                     // remember it for log
-                    effect.location = location;
-                    var give = randomizeMultiple(location.give(), action.data.giveSpan);
+                    effect.location = option;
+                    var give = randomizeMultiple(option.give(), action.data.giveSpan);
                     var quartz = data.resources.gatherables.special.quartz;
                     if (random() < quartz.dropRate) {
                         give.push([1, quartz]);
@@ -1088,13 +1087,14 @@ var DataManager = (function () {
                 time: 12,
                 energy: 30,
                 isOut: 1,
+                unique: true,
                 consume: function () {
                     return [
                         [10, data.resources.gatherables.uncommon.oil]
                     ];
                 },
                 give: function () {
-                    MessageBus.notify(MessageBus.MSG_TYPES.WIN);
+                    MessageBus.notify(MessageBus.MSG_TYPES.WIN, this.getSettledTime());
                     return [];
                 },
                 log: function () {

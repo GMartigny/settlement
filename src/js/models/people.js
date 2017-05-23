@@ -9,8 +9,12 @@
 function peopleFactory (amount) {
     // We don't want to spam the webservice when in dev
     if (IS_DEV) {
-        var code = "Bot-" + random().toString(36).substr(round(random(2, 9)), 3).toUpperCase();
-        return Promise.resolve((new Array(amount || 1)).fill(new People(code)));
+        var res = [];
+        for (var i = 0; i < amount; ++i) {
+            var code = "Bot-" + random().toString(36).substr(round(random(2, 9)), 3).toUpperCase();
+            res.push(new People(code));
+        }
+        return Promise.resolve(res);
     }
     else {
         return People.randomName(amount).then(function (response) {
@@ -282,7 +286,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                             // perk dice roll
                             if (done && random() < perksList.dropRate * done) {
                                 // perk is unlocked
-                                self.gainPerk.call(self, perk);
+                                self.gainPerk(perk);
                                 gotPerk = true;
                             }
                         }

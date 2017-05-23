@@ -46,24 +46,19 @@ GameController.extends(Model, "GameController", {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.resourcesList = wrap();
-        this.resourcesList.id = Resource.LST_ID;
+        this.resourcesList = wrap(Resource.LST_ID);
         html.appendChild(this.resourcesList);
 
-        this.peopleList = wrap();
-        this.peopleList.id = People.LST_ID;
+        this.peopleList = wrap(People.LST_ID);
         html.appendChild(this.peopleList);
 
-        this.visualPane = wrap();
-        this.visualPane.id = "visualPane";
+        this.visualPane = wrap("visualPane");
         html.appendChild(this.visualPane);
 
-        this.eventsList = wrap();
-        this.eventsList.id = Event.LST_ID;
+        this.eventsList = wrap(Event.LST_ID);
         html.appendChild(this.eventsList);
 
-        this.logsList = wrap();
-        this.logsList.id = "logs";
+        this.logsList = wrap("logs");
         html.appendChild(this.logsList);
 
         return html;
@@ -130,7 +125,7 @@ GameController.extends(Model, "GameController", {
             game.people.out(person);
             // The last hope fade away
             if (game.people.length <= 0) {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOOSE, game.getSurvivalDuration());
+                MessageBus.notify(MessageBus.MSG_TYPES.LOOSE, game.getSettledTime());
                 game.flags.paused = true;
             }
         })
@@ -378,7 +373,7 @@ GameController.extends(Model, "GameController", {
                     if (game.people.length === 2) {
                         TimerManager.timeout(function () {
                             var message = person.name + " say that there's other desert-walkers " +
-                                "ready to join you if there's room for them."
+                                "ready to join you if there's room for them.";
                             MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, message);
                         }, 2000);
                     }
@@ -477,13 +472,13 @@ GameController.extends(Model, "GameController", {
      */
     getRandomEvent: function () {
         var list = [],
-            time = this.getSettledTime() / DataManager.time.week;
+            elapsedWeek = this.getSettledTime() / DataManager.time.week;
         // TODO : find better definition
-        if (time > 1) {
+        if (elapsedWeek > 1) {
             list.push.apply(list, DataManager.data.events.easy.values());
-            if (time > 2) {
+            if (elapsedWeek > 2) {
                 list.push.apply(list, DataManager.data.events.medium.values());
-                if (time > 5) {
+                if (elapsedWeek > 5) {
                     list.push.apply(list, DataManager.data.events.hard.values());
                 }
             }

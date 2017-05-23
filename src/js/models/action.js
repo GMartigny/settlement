@@ -1,9 +1,19 @@
 "use strict";
+
+/**
+ * @typedef {Object} ActionEffect
+ * @param {String} name - Action's name
+ * @param {People} people - Action's owner
+ * @param {String} [give] - Resources given by the action
+ * @param {String} [build] - Name of the build building (prefix with "a" or "an")
+ * @param [*] - Can carry any other data put by action's function
+ */
+
 /**
  * Class for actions
  * @extends Model
- * @param {People} owner - THe action owner
- * @param {ActionData} data - The action data
+ * @param {People} owner - Action's owner
+ * @param {ActionData} data - Action's data
  * @param {Action} [parentAction] - If this action has a parent
  * @constructor
  */
@@ -197,86 +207,34 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             people: this.owner
         };
 
-        // Build
-        if (isFunction(this.data.build)) {
-            var build = this.data.build(this, option, effect);
-            effect.build = an(build.name);
-        }
+        var result = this.resolveAction(effect, option);
 
         // Give
-        var give = [];
-        if (isFunction(this.data.give)) {
-            give = this.data.give(this, option, effect);
-        }
-        // Add from constructed building
-        if (build && isFunction(build.give)) {
-            give = give.concat(build.give(this, option, effect));
-        }
-        give = compactResources(give);
-        if (give.length) {
-            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, give);
-            effect.give = formatArray(give);
+        if (result.give.length) {
+            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, result.give);
         }
 
         // Unlock
-        var unlockForOne = [];
-        var unlockForAll = [];
-        if (isFunction(this.data.unlock)) {
-            var unlock = this.data.unlock(this, option, effect).filter(function (action) {
-                return !action.condition || (action.condition && action.condition(this));
-            }.bind(this));
-
-            // Unique actions have to unlock for everyone
-            if (this.data.unique) {
-                unlockForAll = unlock;
-            }
-            else {
-                unlockForOne = unlock;
-            }
-        }
-        // Add from constructed building
-        if (build && isFunction(build.unlock)) {
-            unlockForAll = unlockForAll.concat(build.unlock(this, option, effect));
-        }
-        if (unlockForAll.length) {
+        if (result.unlock.forAll.length) {
             // add to all
-            MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, unlockForAll);
+            MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, result.unlock.forAll);
         }
-        if (unlockForOne.length) {
+        if (result.unlock.forOne.length) {
             // add to owner
-            this.owner.addAction(unlockForOne);
+            this.owner.addAction(result.unlock.forOne);
         }
 
         // Lock
-        var lockForOne = [];
-        var lockForAll = [];
-        if (isFunction(this.data.lock)) {
-            var lock = this.data.lock(this, option, effect);
-
-            // Unique actions have to lock for everyone
-            if (this.data.unique) {
-                lockForAll = lock;
-            }
-            else {
-                lockForOne = lock;
-            }
+        if (result.lock.forAll.length) {
+            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, result.lock.forAll);
         }
-        if (this.data.unique) {
-            lockForAll.push(this.data.id);
-        }
-        // Add from constructed building
-        if (build && isFunction(build.lock)) {
-            lockForAll = lockForAll.concat(build.lock(this, option, effect));
-        }
-        if (lockForAll.length) {
-            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, lockForAll);
-        }
-        if (lockForOne.length) {
-            this.owner.lockAction(lockForOne);
+        if (result.lock.forOne.length) {
+            this.owner.lockAction(result.lock.forOne);
         }
 
-        if (build) {
-            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, build);
+        // Build
+        if (result.build) {
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, result.build);
         }
 
         // Log
@@ -290,7 +248,89 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
         var log = LogManager.personify(rawLog, effect);
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(log));
+
         this.owner.finishAction();
+    },
+    /**
+     * Resolve all function of this action
+     * @param {ActionEffect} effect - An editable object carrying effect for log
+     * @param {CraftableData|BuildingData} [option] - The chosen option
+     * @return {{give: Array, unlock: {forAll: Array, forOne: Array}, lock: {forAll: Array, forOne: Array}}}
+     */
+    resolveAction: function (effect, option) {
+        var result = {
+            give: [],
+            unlock: {
+                forAll: [],
+                forOne: []
+            },
+            lock: {
+                forAll: [],
+                forOne: []
+            }
+        };
+        var data = this.data;
+
+        // Give
+        if (isFunction(data.give)) {
+            result.give = data.give(this, option, effect) || [];
+        }
+
+        // Unlock
+        if (isFunction(data.unlock)) {
+            var unlock = data.unlock(this, option, effect).filter(function (action) {
+                return !action.condition || (action.condition && action.condition(this));
+            }.bind(this));
+
+            // Unique actions have to unlock for everyone
+            if (data.unique) {
+                result.unlock.forAll = unlock;
+            }
+            else {
+                result.unlock.forOne = unlock;
+            }
+        }
+
+        // Lock
+        if (isFunction(data.lock)) {
+            var lock = data.lock(this, option, effect);
+
+            // Unique actions have to lock for everyone
+            if (data.unique) {
+                result.lock.forAll = lock;
+            }
+            else {
+                result.lock.forOne = lock;
+            }
+        }
+        // Unique action lock itself
+        if (data.unique) {
+            result.lock.forAll.push(data.id);
+        }
+
+        // Build
+        if (isFunction(data.build)) {
+            result.build = data.build(this, option, effect);
+            if (result.build) {
+                effect.build = an(result.build.name);
+
+                // Add from building
+                if (isFunction(result.build.give)) {
+                    result.give = result.give.concat(result.build.give(this, option, effect));
+                }
+                if (isFunction(result.build.unlock)) {
+                    result.unlock.forAll = result.unlock.forAll.concat(result.build.unlock(this, option, effect));
+                }
+                if (isFunction(result.build.lock)) {
+                    result.lock.forAll = result.lock.forAll.concat(result.build.lock(this, option, effect));
+                }
+            }
+        }
+
+        result.give = compactResources(result.give);
+        effect.give = formatArray(result.give);
+
+        return result;
     },
     /**
      * Change the action according to an effect

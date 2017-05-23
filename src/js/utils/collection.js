@@ -118,7 +118,7 @@ Collection.prototype = {
     },
     /**
      * Return all keys in the collection
-     * @return {Array}
+     * @return {Array<String>}
      */
     keys: function () {
         return Object.keys(this.items);

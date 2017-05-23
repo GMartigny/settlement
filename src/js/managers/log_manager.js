@@ -37,7 +37,8 @@ var LogManager = (function () {
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
-                var message = "We held up for " + survivalDuration + ", but all is lost now.";
+                sendEvent("death", "survival duration", survivalDuration);
+                var message = "We held up for " + formatTime(survivalDuration) + ", but all is lost now.";
                 self.log(message, self.LOG_TYPES.FLAVOR);
             })
 
@@ -50,6 +51,12 @@ var LogManager = (function () {
             .observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
                 var message = people.name + " is now known as the \"" + capitalize(people.perk.name) + "\".";
                 self.log(message, self.LOG_TYPES.EVENT);
+            })
+
+            .observe(MessageBus.MSG_TYPES.WIN, function (survivalDuration) {
+                sendEvent("win", "survival duration", survivalDuration);
+                var message = "It took " + formatTime(survivalDuration) + " to escape.";
+                self.log(message, self.LOG_TYPES.FLAVOR);
             });
         },
         /**
