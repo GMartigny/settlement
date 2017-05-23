@@ -154,7 +154,7 @@ GameController.extends(Model, "GameController", {
         if (!IS_DEV) {
             // early access warning
             popup({
-                name: "Early access",
+                name: "Early access [" + VERSION + "]",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
                 "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
