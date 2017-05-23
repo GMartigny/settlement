@@ -77,14 +77,13 @@ module.exports = function (grunt) {
             },
             prod: {
                 options: {
-                    preserveComments: false,
+                    wrap: "G",
                     compress: {
                         global_defs: {
                             IS_DEV: false,
                             VERSION: VERSION
                         }
-                    },
-                    enclose: {}
+                    }
                 },
                 files: {
                     "dist/js/script.js": [sourceDir.js]
