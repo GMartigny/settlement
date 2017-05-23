@@ -13,7 +13,13 @@ Luckily, human strength is to learn and act fast. So keep moving and you may liv
 
 ## Changelog
 
-### [v0.3](https://github.com/GMartigny/settlement/releases/tag/v0.3.0) WIP
+### v0.4 WIP
+
+Add events and make them more interesting.
+
+...
+
+### [v0.3](https://github.com/GMartigny/settlement/releases/tag/v0.3.0)
 
 Drop randomisation for crafting and building.
 
