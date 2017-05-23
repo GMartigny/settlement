@@ -80,8 +80,6 @@ GameController.extends(Model, "GameController", {
 
         this.initialActions.push(DataManager.data.actions.wakeUp);
 
-        KeyManager.attach(KeyManager.KEYS.SPACE, this.togglePause.bind(this));
-
         // Start managers
         GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
         LogManager.start(this.logsList);
@@ -149,6 +147,12 @@ GameController.extends(Model, "GameController", {
         // End of the game
         .observe(MessageBus.MSG_TYPES.WIN, function () {
             this.flags.paused = true;
+        })
+
+        .observe(MessageBus.MSG_TYPES.KEYS.SPACE, function (direction) {
+            if (direction === "up") {
+                game.togglePause();
+            }
         });
 
         if (!IS_DEV) {

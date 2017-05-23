@@ -31,8 +31,8 @@ var MessageBus = (function () {
          */
         notify: function (type, message, silent) {
             var typeDesc = this.SWAP_MSG_TYPE[type];
-            if (typeDesc && !silent) {
-                log("Message ", typeDesc, message);
+            if (!silent) {
+                log("Message ", typeDesc || type, message);
             }
             if (_observers[type]) {
                 _observers[type].forEach(function (action) {
@@ -62,9 +62,50 @@ var MessageBus = (function () {
             EVENT_CANCEL: 71, // Cancel an event
             EVENT_END: 72, // An event end
             LOOSE: 80, // Game over
-            WIN: 85 // Congratulation
+            WIN: 85, // Congratulation
+            KEYS: {
+                SPACE: 1032,
+                ENTER: 1013,
+                ESCAPE: 1027,
+                UP: 1038,
+                RIGHT: 1039,
+                DOWN: 1040,
+                LEFT: 1037,
+                CTRL: 1017,
+                SHIFT: 1016,
+                BACK: 1008,
+                ONE: 1049,
+                TWO: 1050,
+                THREE: 1051,
+                FOUR: 1052,
+                FIVE: 1053,
+                SIX: 1054,
+                SEVEN: 1055,
+                EIGHT: 1056,
+                NINE: 1057,
+                ZERO: 1048,
+                F5: 1116,
+                F8: 1119
+            }
         }
     };
+
+    window.addEventListener("keydown", function (event) {
+        if (1000 + event.keyCode !== api.MSG_TYPES.KEYS.F5) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            api.notify(1000 + event.keyCode, "down", true);
+        }
+
+    }, true);
+
+    window.addEventListener("keyup", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        api.notify(1000 + event.keyCode, "up");
+    }, true);
 
     api.SWAP_MSG_TYPE = api.MSG_TYPES.swap();
 
