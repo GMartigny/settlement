@@ -2,8 +2,10 @@ engines:
     eslint:
         enabled: true
         checks:
-            wrap-iife: "inside"
-            no-extend-native: ""
+            wrap-iife:
+                - "inside"
+            no-extend-native:
+                enabled: false
 ratings:
     paths:
         - "src/js/**/*.js"
