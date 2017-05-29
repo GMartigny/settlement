@@ -155,7 +155,7 @@ GameController.extends(Model, "GameController", {
             }
         });
 
-        if (!IS_DEV) {
+        if (!IS_DEV) {
             // early access warning
             popup({
                 name: "Early access [" + VERSION + "]",

@@ -941,7 +941,7 @@ var DataManager = (function () {
                             [round(random.apply(null, action.data.giveSpan)), data.resources.gatherables.common.water]
                         ];
                     },
-                    log: "Coming back from the river, @people.name brings @give with @people.accusative.",
+                    log: "Coming back from the river, @people.name brings @give with @people.accusative.",
                     order: 60
                 },
                 well: {

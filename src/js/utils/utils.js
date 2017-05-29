@@ -312,7 +312,7 @@ function an (word) {
  * Compact resources to one item per each
  * @param {Array} resources - An array of resource with amount
  * @example
- * [ [1, {water}], [2, {water}] ] => [ [3, {water}] ]
+ * [ [1, {water}], [2, {water}] ] => [ [3, {water}] ]
  * @return {Array}
  */
 function compactResources (resources) {
