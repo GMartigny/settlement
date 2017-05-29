@@ -1,21 +1,8 @@
 engines:
-    duplication:
-        enabled: true
-    config:
-        languages:
-            - javascript
     eslint:
-        enabled: true
-        checks:
-            wrap-iife:
-                - error
-                - inside
-            no-extend-native:
-                enabled: false
-    fixme:
         enabled: true
 ratings:
     paths:
         - "src/js/**/*.js"
 exclude_paths:
-    - "tools/"
+    - "tools/**/*"
