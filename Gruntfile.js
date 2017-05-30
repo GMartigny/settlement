@@ -110,8 +110,8 @@ module.exports = function (grunt) {
             }
         },
 
-        jscs: {
-            src: sourceDir.js
+        eslint: {
+            target: sourceDir.js
         },
         lesslint: {
             src: sourceDir.css,
@@ -139,7 +139,7 @@ module.exports = function (grunt) {
     });
 
     // JS linting
-    grunt.registerTask("check", ["jscs", "lesslint"]);
+    grunt.registerTask("check", ["eslint", "lesslint"]);
 
     // Sources building
     grunt.registerTask("icons", ["sprite:icons"]);
