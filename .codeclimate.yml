@@ -4,8 +4,6 @@ engines:
         checks:
             wrap-iife:
                 - "inside"
-            no-extend-native:
-                enabled: false
 ratings:
     paths:
         - "src/js/**/*.js"
