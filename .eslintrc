@@ -1,0 +1,5 @@
+rules:
+    wrap-iife:
+        - error
+        - inside
+    no-extend-native: off
