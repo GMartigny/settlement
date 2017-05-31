@@ -48,7 +48,7 @@ Also, I'm looking for a talented pixel-artist for all the game's visuals. Hit me
 
 ## License
 
-Copyright 2016 Guillaume Martigny
+Copyright 2017 Guillaume Martigny
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
