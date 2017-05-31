@@ -1,5 +1,5 @@
 "use strict";
-/* global IS_DEV */
+/* exported peopleFactory People */
 
 /**
  * Factory for people
@@ -279,8 +279,8 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                             }
                             else {
                                 done = actionsIds.reduce(function (sum, id) {
-                                        return sum + (self.stats.actionsDone[id] || 0);
-                                    }, 0) / (perk.iteration || 0);
+                                    return sum + (self.stats.actionsDone[id] || 0);
+                                }, 0) / (perk.iteration || 0);
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
@@ -298,7 +298,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Add a perk
-     * @param {Object} perk - The perk data
+     * @param {Data} perk - The perk data
      */
     gainPerk: function (perk) {
         perk.desc = LogManager.personify(perk.desc, {
@@ -319,7 +319,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Check for perk
-     * @param {ID} perkId
+     * @param {ID} perkId - A perk id
      * @returns {Boolean}
      */
     hasPerk: function (perkId) {
@@ -363,7 +363,7 @@ People.randomName = function (amount) {
                 return response.json().then(resolve);
             }
             else {
-                reject(URIError("[" + response.status + "] " + url + " " + response.statusText));
+                reject(new URIError("[" + response.status + "] " + url + " " + response.statusText));
             }
         });
     });

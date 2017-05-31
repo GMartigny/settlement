@@ -1,6 +1,9 @@
+"use strict";
+/* exported floor round ceil constrain random */
+
 /**
  * Floor a number
- * @param {Number} x
+ * @param {Number} x - Any number
  * @return {Number}
  */
 function floor (x) {
@@ -9,7 +12,7 @@ function floor (x) {
 
 /**
  * Round a number
- * @param {Number} x
+ * @param {Number} x - Any number
  * @return {Number}
  */
 function round (x) {
@@ -18,7 +21,7 @@ function round (x) {
 
 /**
  * Ceil a number
- * @param {Number} x
+ * @param {Number} x - Any number
  * @return {Number}
  */
 function ceil (x) {
@@ -51,7 +54,7 @@ function constrain (x, min, max) {
  * @return {*}
  */
 var random = (function () {
-    var RAND = Math.random;
+    var rand = Math.random;
 
     return function (from, to) {
         if (isUndefined(to)) {
@@ -67,6 +70,6 @@ var random = (function () {
             from = +from || 0;
             to = +to || 1;
         }
-        return RAND() * (to - from) + from;
+        return rand() * (to - from) + from;
     };
 })();

@@ -1,5 +1,5 @@
 "use strict";
-/* global VERSION, IS_DEV, performance */
+/* exported GameController */
 
 /**
  * Main game controller
@@ -38,7 +38,7 @@ function GameController (holder, assets) {
     console.log("Started in " + round(performance.now() - now) + "ms");
 }
 GameController.tickLength = 2000;
-GameController.extends(Model, "GameController", {
+GameController.extends(Model, "GameController", /** @lends GameController.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -426,7 +426,6 @@ GameController.extends(Model, "GameController", {
      * @return {Array<CraftableData>}
      */
     possibleCraftables: function () {
-        var resources = this.resources.items;
         var game = this;
 
         return this.unlockedCraftables().filter(function (craft) {

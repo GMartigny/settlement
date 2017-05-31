@@ -1,4 +1,6 @@
 "use strict";
+/* exported Event */
+
 /**
  * Class for events
  * @param {EventData} data - The event data

@@ -1,18 +1,29 @@
+"use strict";
+/* exported Tooltip */
+
+/**
+ * @typedef {Object} TooltipData
+ * @param {String} name - A bold name
+ * @param {String} [desc] - An italic description
+ * @param {Number} [time] - Time in game hour
+ * @param {Array<[Number, String]>} [consume] - An array of resources consumption
+ */
+
 /**
  * Add a tooltip to an HTMLElement
  * @param {HTMLElement} container - The element
- * @param {Object} data - Some data for the tooltip
- * @returns {Object} Some functions
+ * @param {TooltipData} data - Some data for the tooltip
  */
+
 function Tooltip (container, data) {
     this.container = container;
     this.nodes = {};
     this.resourcesMapper = {};
     this.box = this.toHTML(data);
-    this._mouseOver();
+    this._mouseOver(); //  add to DOM
     this.width = this.box.offsetWidth;
     this.height = this.box.offsetHeight;
-    this._mouseOut();
+    this._mouseOut(); // Clear from DOM
     this._addEvents();
 }
 Tooltip.prototype = {
@@ -31,22 +42,22 @@ Tooltip.prototype = {
         this.box.style.top = top + "px";
     },
     /**
-     * Handle mouse over event
+     * Handle mouse over events
      * @private
      */
     _mouseOver: function () {
         document.body.appendChild(this.box);
     },
     /**
-     * Handle mouse out event
+     * Handle mouse out events
      * @private
      */
     _mouseOut: function () {
         this.box.remove();
     },
     /**
-     *
-     * @param event
+     * Handle mouse move events
+     * @param {MouseEvent} event - The associated event data
      * @private
      */
     _mouseMove: function (event) {
@@ -76,7 +87,8 @@ Tooltip.prototype = {
     },
     /**
      * Update tooltip content
-     * @param data
+     * @param {TooltipData} data - Data to build the tooltip
+     * @return {HTMLElement}
      */
     toHTML: function (data) {
         var html = wrap("tooltip");
@@ -108,10 +120,10 @@ Tooltip.prototype = {
     /**
      * Update consumption on tooltip
      * @param {Collection} resources - The game's resources
-     * @param {Data} data
+     * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
     refresh: function (resources, data) {
-        this.nodes.name = data.name;
+        this.nodes.name.textContent = data.name;
         if (data.desc) {
             this.nodes.desc.textContent = data.desc;
         }

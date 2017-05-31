@@ -1,3 +1,6 @@
+"use strict";
+/* exported Collection */
+
 /**
  * Handle an associative array
  * @constructor

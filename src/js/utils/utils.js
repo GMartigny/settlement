@@ -1,22 +1,21 @@
-"use strict";
-/* global IS_DEV */
+/* exported noop wrap formatTime formatArray formatJoin pluralize capitalize randomize randomizeMultiple log
+            consolidateData pickID isFunction isArray isString isUndefined sanitize camelize an compactResources loadAsync */
 
-var str = "",
-    noop = new Function();
+var noop = new Function();
 
 /**
  * Wrap some text content with html tag
- * @param {String} [CSSClasses]
- * @param {String} [text]
+ * @param {String} [CSSClasses] - A string of CSS classes separated by spaces
+ * @param {String} [innerHTML] - An string of inside content
  * @returns {HTMLElement}
  */
-function wrap (CSSClasses, text) {
+function wrap (CSSClasses, innerHTML) {
     var html = document.createElement("div");
     if (CSSClasses) {
-        html.classList.add.apply(html.classList, CSSClasses.split(" "));
+        html.className = CSSClasses;
     }
-    if (text) {
-        html.innerHTML = text;
+    if (innerHTML) {
+        html.innerHTML = innerHTML;
     }
 
     return html;
@@ -45,7 +44,7 @@ function formatTime (time) {
 
 /**
  * Format an array for human reading
- * @param {Array} array
+ * @param {Array<[Number, String]>} array - An array of resources consumption
  * @return {String}
  */
 function formatArray (array) {
@@ -64,7 +63,7 @@ function formatArray (array) {
 
 /**
  * Join an array for human reading
- * @param {Array<String>} array
+ * @param {Array<String>} array - Any array of strings
  * @param {String} [final="and"] - The last joiner of the list
  * @return {String}
  */
@@ -194,7 +193,7 @@ function randomizeMultiple (list, amount) {
 
 /**
  * Display log while in dev
- * @param {*} message... - Any message
+ * @param {...String} [message] - Any message
  */
 function log () {
     if (IS_DEV) {
@@ -288,9 +287,9 @@ function sanitize (str) {
 }
 
 /**
- *
- * @param str
- * @return {string}
+ * Format a string using camel-case
+ * @param {String} str - Any string
+ * @return {String}
  */
 function camelize (str) {
     return str.toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
@@ -346,7 +345,7 @@ function loadAsync (urls, action) {
                 return response;
             }
             else {
-                throw URIError("[" + response.status + "] " + url + " " + response.statusText);
+                throw new URIError("[" + response.status + "] " + url + " " + response.statusText);
             }
         });
         var promise;

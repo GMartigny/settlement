@@ -1,5 +1,4 @@
 "use strict";
-/* global IS_DEV, performance */
 
 /**
  * Loader
@@ -9,19 +8,25 @@
 
     var _assetsURL = "dist/img/assets.png";
     var _assetsDataURL = "dist/js/assets.json";
+    var _buildingsDataURL = "dist/js/buildingsData.json";
 
+    var loadStart = round(performance.now());
     loadAsync([
-        "dist/img/icons.png",
+        "dist/img/icons.png", // just preload
         _assetsURL,
-        _assetsDataURL
+        _assetsDataURL,
+        _buildingsDataURL
     ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(1) + "% - " + round(performance.now()));
+        console.log(file + " : " + percent.toFixed(1) + "% - " + (round(performance.now()) - loadStart));
     }).then(function (media) {
         console.groupEnd();
         try {
             var Game = new GameController(document.body, {
                 images: media[sanitize(_assetsURL)],
-                data: media[sanitize(_assetsDataURL)]
+                data: {
+                    assets: media[sanitize(_assetsDataURL)],
+                    positions: media[sanitize(_buildingsDataURL)]
+                }
             });
             if (IS_DEV) {
                 window.G = Game;

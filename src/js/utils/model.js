@@ -1,6 +1,9 @@
+"use strict";
+/* exported Model */
+
 /**
  * A base model for all
- * @param {Data} data
+ * @param {Data} data - The object's data
  * @constructor
  */
 function Model (data) {

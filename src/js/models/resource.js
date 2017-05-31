@@ -1,4 +1,6 @@
 "use strict";
+/* exported Resource */
+
 /**
  * Class for resources
  * @param {ResourceData} data - The resource's data

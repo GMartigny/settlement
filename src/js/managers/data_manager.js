@@ -1,6 +1,8 @@
+"use strict";
+/* exported DataManager */
+
 /**
  * Data holder
- * @type {{time, data}}
  */
 var DataManager = (function () {
 
@@ -74,7 +76,7 @@ var DataManager = (function () {
      * @param {String} asset - Id of the graphical asset
      * @param {Number} dropRate - Chance of getting it
      */
-    // jscs:disable jsDoc
+    /* eslint-disable valid-jsdoc */
     var data = {
         /***** RESOURCES *****/
         resources: {
@@ -1376,9 +1378,9 @@ var DataManager = (function () {
             }
         }
     };
-    // jscs:enable jsDoc
+    /* eslint-enable valid-jsdoc */
 
-    return {
+    return /** @lends DataManager */ {
         time: time,
         data: data
     };

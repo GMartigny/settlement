@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /**
  * Define Grunt
  * @param grunt
@@ -13,6 +15,7 @@ module.exports = function (grunt) {
 
     var sourceDir = {
         js: ["src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
+        json: "src/js/**/*.json",
         css: "src/css/**/*.less",
         img: {
             icons: "src/img/icons/**/*.png",
@@ -96,7 +99,7 @@ module.exports = function (grunt) {
                 files: [sourceDir.img.icons],
                 tasks: ["icons"]
             },
-            assetsJSON: {
+            assets: {
                 files: [sourceDir.img.assets],
                 tasks: ["assets"]
             },
@@ -107,6 +110,10 @@ module.exports = function (grunt) {
             jsbuild: {
                 files: [sourceDir.js],
                 tasks: ["js"]
+            },
+            jsonCopy: {
+                files: [sourceDir.json],
+                tasks: ["uglifyJSON"]
             }
         },
 
@@ -138,6 +145,22 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask("uglifyJSON", "Minify and copy json to dist", function () {
+        var origin = "src/";
+        var dest = "dist/js/";
+        var files = grunt.file.expand({
+            matchBase: true,
+            cwd: origin
+        }, "*.json");
+
+        files.forEach(function (filePath) {
+            var name = filePath.substr(filePath.lastIndexOf("/") + 1);
+            var src = JSON.stringify(grunt.file.readJSON(origin + filePath));
+            grunt.file.write(dest + name, src);
+            grunt.log.writeln("Successfully write " + name);
+        });
+    });
+
     // JS linting
     grunt.registerTask("check", ["eslint", "lesslint"]);
 
@@ -145,11 +168,11 @@ module.exports = function (grunt) {
     grunt.registerTask("icons", ["sprite:icons"]);
     grunt.registerTask("assets", ["sprite:assets"]);
     grunt.registerTask("images", ["icons", "assets"]);
-    grunt.registerTask("js", ["uglify:dev"]);
+    grunt.registerTask("js", ["uglify:dev", "uglifyJSON"]);
     grunt.registerTask("css", ["less:dev"]);
 
     grunt.registerTask("build:dev", ["images", "js", "css"]);
-    grunt.registerTask("build:prod", ["images", "uglify:prod", "less:prod"]);
+    grunt.registerTask("build:prod", ["images", "uglify:prod", "uglifyJSON", "less:prod"]);
     grunt.registerTask("build", ["build:dev"]); // (default)
 
     grunt.registerTask("default", ["build", "watch"]);

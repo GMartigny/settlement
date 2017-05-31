@@ -1,3 +1,6 @@
+"use strict";
+/* exported prepareCanvas */
+
 /**
  * Prepare a canvas with its context
  * @param {Number} width - The canvas width

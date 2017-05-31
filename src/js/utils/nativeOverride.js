@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Return the last item of the array
  * @return {*}

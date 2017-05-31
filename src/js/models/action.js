@@ -1,4 +1,5 @@
 "use strict";
+/* exported Action */
 
 /**
  * @typedef {Object} ActionEffect

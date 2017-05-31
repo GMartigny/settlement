@@ -1,3 +1,6 @@
+"use strict";
+/* exported Bar */
+
 /**
  * Define a bar component
  * @param {String} CSSClass - A custom css class to add
@@ -10,7 +13,7 @@ function Bar (CSSClass, warningThreshold) {
     this.super();
     this.html.classList.add.apply(this.html.classList, CSSClass.split(" "));
 }
-Bar.extends(Model, "Bar", {
+Bar.extends(Model, "Bar", /** @lends Bar.prototype */{
     /**
      * Return HTML for display
      * @return {HTMLElement}

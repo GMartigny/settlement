@@ -1,4 +1,5 @@
-/* global performance */
+"use strict";
+/* exported TimerManager */
 
 var TimerManager = (function () {
     /**
@@ -71,7 +72,7 @@ var TimerManager = (function () {
 
     var _timers = new Collection();
 
-    return {
+    return /** @lends TimerManager */ {
         /**
          * Set a timeout
          * @param {Function} action - A callback function called after timeout
@@ -92,7 +93,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer
-         * @param {String} timerId
+         * @param {String} timerId - A timer id
          * @return {*}
          */
         stop: function (timerId) {
@@ -108,7 +109,7 @@ var TimerManager = (function () {
         },
         /**
          * Restart a timer
-         * @param {String} timerId
+         * @param {String} timerId - A timer id
          * @return {*}
          */
         restart: function (timerId) {
@@ -125,7 +126,7 @@ var TimerManager = (function () {
         },
         /**
          * Stop a timer and remove it from the list
-         * @param {String} timerId
+         * @param {String} timerId - A timer id
          * @return {*}
          */
         clear: function (timerId) {

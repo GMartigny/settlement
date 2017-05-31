@@ -1,6 +1,8 @@
-"use strict";
+/* exported MessageBus */
 
 var MessageBus = (function () {
+    "use strict";
+
     var _observers = [];
 
     var api = {

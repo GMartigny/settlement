@@ -14,13 +14,13 @@
             height: 300px;
             overflow: hidden;
         }
-        #planner img {
+        #planner div {
             position: absolute;
             left: 0;
             top: 0;
             image-rendering: pixelated;
         }
-        #planner img.disabled {
+        #planner div.disabled {
             z-index: 0 !important;
             opacity: 0.1;
         }
@@ -35,6 +35,9 @@
             float: left;
             box-sizing: border-box;
         }
+        #imgList .frameCount {
+            width: 40px;
+        }
     </style>
 </head>
 <body>
@@ -44,7 +47,7 @@
 <input type="checkbox" id="all" checked onclick="switchDisplay()"><label for="all">All</label>
 <div id="wrapper">
     <ul id="imgList"></ul>
-    <textarea id="output"></textarea>
+    <textarea id="output" title="ouput"></textarea>
 </div>
 <script>
     var planner = document.getElementById("planner");
@@ -62,17 +65,19 @@
         scaler.value = scale;
     }
 
+    // Enable drag on an image
     var dragged = null;
     function draggable (img) {
         img.addEventListener("mousedown", function (e) {
             e.preventDefault();
             if (!(dragged || img.classList.contains("disabled"))) {
-                dragged = img;
-                dragged.startX = e.offsetX;
-                dragged.startY = e.offsetY;
+                dragged = img.id;
+                data[dragged].startX = e.offsetX;
+                data[dragged].startY = e.offsetY;
             }
         });
     }
+    // Toggle displaying of a sprite (or all with no id)
     function switchDisplay (id) {
         if (!id) {
             var force = document.getElementById("all").checked;
@@ -90,17 +95,44 @@
             dataToString();
         }
     }
+    function changeStepCount (id, value) {
+        if (id) {
+            value = +value;
+            var img = document.getElementById(id);
+            img.style.width = (data[id].width / value) + "px";
+            data[id].steps = value;
+            dataToString();
+        }
+    }
+    // Save current state to output and local storage
     function dataToString () {
-        var filtered = {};
+        var outputed = {};
+        var saved = {};
+        var d;
         for (var id in data) {
-            if (data.hasOwnProperty(id) && !data[id].disabled) {
-                filtered[id] = data[id];
-                delete filtered[id].disabled;
+            if (data.hasOwnProperty(id)) {
+                d = data[id];
+                saved[id] = {
+                    x: d.x,
+                    y: d.y,
+                    disabled: d.disabled,
+                    steps: d.steps
+                };
+                if (!d.disabled) {
+                    outputed[id] = {
+                        x: d.x,
+                        y: d.y
+                    };
+                    if (data[id].steps !== 1) {
+                        outputed[id].steps = d.steps;
+                    }
+                }
             }
         }
-        output.textContent = JSON.stringify(filtered, null, 4);
-        localStorage.save = JSON.stringify(data);
+        output.textContent = JSON.stringify(outputed, null, 4);
+        localStorage.save = JSON.stringify(saved);
     }
+    // Move an image
     function moveTo (img, x, y, height) {
         data[img.id].x = x;
         data[img.id].y = y;
@@ -109,51 +141,88 @@
         img.style.zIndex = y + height;
     }
 
+    // Change of scale
     scaler.addEventListener("change", function () {
         scale = this.value;
         localStorage.scale = scale;
     });
+    // Move mouse
     planner.addEventListener("mousemove", function (e) {
         if (dragged) {
-            var x = Math.floor((e.clientX - dragged.startX) / scale);
-            var y = Math.floor((e.clientY - dragged.startY) / scale);
-            moveTo(dragged, x, y, dragged.height / scale);
+            var d = data[dragged];
+            var x = Math.floor((e.clientX - d.startX) / scale);
+            var y = Math.floor((e.clientY - d.startY) / scale);
+            moveTo(d.node, x, y, d.height / scale);
             dataToString();
         }
     });
+    // Release mouse
     planner.addEventListener("mouseup", function () {
         dragged = null;
     });
 
+    // Fetch all assets
     fetch("../../dist/js/assets.json").then(function (response) {
         if (response.ok) {
             return response.json();
         }
     }).then(function (assetsData) {
+        var html = "";
         for (var name in assetsData) {
             if (assetsData.hasOwnProperty(name)) {
                 var asset = assetsData[name];
-                data[name] = data[name] || {
+                var d = Object.assign({
                     x: 0,
-                    y: 0
-                };
-                data[name].disabled = data[name].disabled || false;
-                var checked = !data[name].disabled;
+                    y: 0,
+                    disabled: false,
+                    steps: 1,
+                    width: asset.width * scale,
+                    height: asset.height * scale,
+                    iteration: 0,
+                    node: null
+                }, data[name]);
+                data[name] = d;
 
-                imgList.innerHTML += `<li><input type="checkbox" ` + (checked ? "checked" : "") + ` id="${name}-chk" onclick="switchDisplay('${name}')"/><label for="${name}-chk">${name}</label></li>`;
+                html += `<li>
+                    <input type="checkbox" ${!d.disabled && "checked"} id="${name}-chk" onclick="switchDisplay('${name}')"/>
+                    <label for="${name}-chk">${name}</label>
+                    <input type="number" class="frameCount" value="${d.steps}" onchange="changeStepCount('${name}', this.value)" min="1" title="Animation's frame count"/>
+                </li>`;
 
-                var img = new Image();
-                img.src = "../../" + asset.source_image;
+                var img = document.createElement("div");
+                img.style.backgroundImage = "url(../../" + asset.source_image + ")";
+                img.style.backgroundSize = d.width + "px";
+                img.style.width = (d.width / d.steps) + "px";
+                img.style.height = d.height + "px";
+
                 img.id = name;
-                img.style.width = asset.width * scale + "px";
-                img.classList.toggle("disabled", !checked);
-                moveTo(img, data[name].x, data[name].y, asset.height);
+                img.classList.toggle("disabled", d.disabled);
+                data[name].node = img;
+                moveTo(img, d.x, d.y, asset.height);
                 draggable(img);
                 planner.appendChild(img);
             }
         }
+        imgList.innerHTML = html;
         dataToString();
     });
+
+    function animate () {
+        var d;
+        for (var id in data) {
+            if (data.hasOwnProperty(id)) {
+                d = data[id];
+                if (d.steps > 1) {
+                    d.iteration++;
+                }
+                else {
+                    d.iteration = 0;
+                }
+                d.node.style.backgroundPosition = -((d.width / d.steps) * (d.iteration)) + "px 0";
+            }
+        }
+    }
+    setInterval(animate, 500);
 </script>
 </body>
 </html>

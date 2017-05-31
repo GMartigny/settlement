@@ -1,3 +1,9 @@
+"use strict";
+/* exported LogManager */
+
+/**
+ * Manager of the logs
+ */
 var LogManager = (function () {
 
     var logTypes = {
@@ -8,7 +14,7 @@ var LogManager = (function () {
     };
     var wrapper = null;
 
-    var self = {
+    var self = /** @lends LogManager */ {
         LOG_TYPES: {
             INFO: 0, // Result from an user action
             WARN: 1, // Something's wrong
@@ -18,6 +24,7 @@ var LogManager = (function () {
         maxLog: 50,
         /**
          * Start the manager
+         * @param {HTMLElement} logWrapper - An element where to put logs
          */
         start: function (logWrapper) {
             wrapper = logWrapper;
@@ -61,8 +68,8 @@ var LogManager = (function () {
         },
         /**
          * Add some log
-         * @param {String} message
-         * @param {Number} type
+         * @param {String} message - Any HTML valid message
+         * @param {Number} type - A log type in LogManager.LOG_TYPES
          */
         log: function (message, type) {
             if (message.length) {

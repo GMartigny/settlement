@@ -1,3 +1,6 @@
+"use strict";
+/* exported popup */
+
 /**
  * Display a popup with choice buttons
  * @param {Object} data - Text for the popup
