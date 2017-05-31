@@ -1,40 +1,67 @@
+# Browser environment
+env:
+    browser: true
+
+# Globals set by grunt
+globals:
+    IS_DEV: false # readonly
+    VERSION: false # readonly
+
+# Default rules
+extends: eslint:recommended
+
+# Rules override
 rules:
-    max-len:
-        - error
-        - 120
-        - 4
-    wrap-iife:
-        - error
-        - inside
-    no-extend-native: off
+    # Possible Errors
+    no-console: off # Will be removed by uglify anyway
     valid-jsdoc:
         - error
-        - requireReturn: false
-          requireReturnDescription: false
-    no-trailing-spaces: error
-    semi: error
-    curly: error
-    quotes: error
+        - requireReturn: false # We can ignore return if void
+          requireReturnDescription: false # We can ignore description sometimes
+    # Best Practices
+    complexity: error # Less than 20
+    curly: error # Always
+    dot-notation: warn # Better but ok
+    eqeqeq: warn # Better but ok
+    no-alert: error
+    no-eval: error
+    no-multi-str: error
     no-with: error
-    no-continue: error
-    no-nested-ternary: error
-    no-irregular-whitespace:
+    wrap-iife:
         - error
-        - skipStrings: false
-          skipTemplates: false
-    no-tabs: error
-    dot-notation: error
-    keyword-spacing: error
-    space-before-blocks: error
-    space-unary-ops: error
-    space-infix-ops: error
-    key-spacing: error
-    comma-spacing: error
-    space-before-function-paren: error
-    object-property-newline: error
+        - inside # (function ())()
+    # Variables
+    no-undef: off # Too many global
+    # Stylistic Issues
     brace-style:
         - error
-        - stroustrup
-    new-cap: error
-    eol-last: error
-    camelcase: error
+        - stroustrup # Brace on same line, else/catch statement on new line
+    camelcase: error # Use camelcase
+    comma-spacing: error # before: false, after: true
+    comma-style: error # Coma on end of a line
+    eol-last: error # Empty line on end of file
+    indent:
+        - error
+        - 4
+        - SwitchCase: 1
+    key-spacing: error # Before color: false, after colon: true
+    keyword-spacing: error # Before and after
+    max-len:
+        - error
+        - 120 # 120 chars per lines
+        - ignoreComments: true
+    max-statements:
+        - error
+        - 20
+    max-statements-per-line: error # Max 1
+    new-cap: error # Class should have capital letter
+    no-continue: error
+    no-nested-ternary: error
+    no-trailing-spaces: error
+    object-property-newline: error
+    quotes: error # Only double quotes
+    semi: error # Semicolon everywhere
+    space-before-blocks: error
+    space-before-function-paren: error
+    space-infix-ops: error
+    space-unary-ops: error
