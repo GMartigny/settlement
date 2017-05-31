@@ -1,4 +1,5 @@
 [![devDependencies Status](https://david-dm.org/GMartigny/settlement/dev-status.svg)](https://david-dm.org/GMartigny/settlement?type=dev)
+[![Code Climate](https://codeclimate.com/github/GMartigny/settlement/badges/gpa.svg)](https://codeclimate.com/github/GMartigny/settlement)
 [![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&maxAge=2592000)](https://twitter.com/settlement_game)
 
 # Settlement
