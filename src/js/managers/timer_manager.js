@@ -70,7 +70,7 @@ var TimerManager = (function () {
         }
     };
 
-    var _timers = new Collection();
+    var _timers = new Map();
 
     return /** @lends TimerManager */ {
         /**
@@ -85,10 +85,10 @@ var TimerManager = (function () {
              * Wrapper for calling action and popping from collection
              */
             var func = function () {
-                _timers.pop(timerId);
+                _timers.delete(timerId);
                 action();
             };
-            timerId = _timers.push(new Timer(func, time));
+            timerId = _timers.push(new Timer(func, time)).size;
             return timerId;
         },
         /**
@@ -130,7 +130,7 @@ var TimerManager = (function () {
          * @return {*}
          */
         clear: function (timerId) {
-            return _timers.pop(timerId).stop();
+            return _timers.delete(timerId).stop();
         },
         /**
          * Clear all known timers

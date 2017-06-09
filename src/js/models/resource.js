@@ -19,7 +19,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @param {Number} count - The resource amount
      * @private
      */
-    _init: function (count) {
+    init: function (count) {
         if (count) {
             this.update(+count);
         }
@@ -45,11 +45,11 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     },
     /**
      * Loop function called every game tick
-     * @param {Collection} [resources] - Game's resources
+     * @param {Map} [resources] - Game's resources
      */
     refresh: function (resources) {
-        this.counter.textContent = floor(this.count);
-        if (resources && isArray(this.data.consume)) {
+        this.counter.textContent = this.get();
+        if (isArray(this.data.consume) && resources) {
             this.tooltip.refresh(resources, this.data.consume);
         }
     },
@@ -62,21 +62,19 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         this.set(this.count + amount);
 
         if (floor(prevAmount) !== floor(this.count)) {
-            var cb;
-            if (amount > 0 && !this.html.classList.contains("more")) {
-                this.html.classList.add("more");
-                cb = function () {
-                    this.html.classList.remove("more");
-                }.bind(this);
+            var node = this.html;
+            var toClear = false;
+            if (amount > 0 && !node.classList.contains("more")) {
+                node.classList.add("more");
+                toClear = true;
             }
-            else if (amount < 0 && !this.html.classList.contains("less")) {
-                this.html.classList.add("less");
-                cb = function () {
-                    this.html.classList.remove("less");
-                }.bind(this);
+            else if (amount < 0 && !node.classList.contains("less")) {
+                node.classList.add("less");
+                toClear = true;
             }
-            if (isFunction(cb)) {
-                TimerManager.timeout(cb, 700);
+            if (toClear) {
+                var animationDuration = 700;
+                TimerManager.timeout(node.classList.remove.bind(node.classList, "more", "less"), animationDuration);
             }
         }
     },
@@ -85,7 +83,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {Number}
      */
     get: function () {
-        return round(this.count);
+        return floor(this.count);
     },
     /**
      * Define this resource amount
@@ -106,6 +104,11 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      */
     has: function (amount) {
         return this.count >= amount;
+    },
+    getStraight: function () {
+        var straight = this._getStraight();
+        straight.count = this.count;
+        return straight;
     },
     /**
      * Format to string

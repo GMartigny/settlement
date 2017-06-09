@@ -3,10 +3,9 @@
 
 /**
  * @typedef {Object} TooltipData
- * @param {String} name - A bold name
- * @param {String} [desc] - An italic description
- * @param {Number} [time] - Time in game hour
- * @param {Array<[Number, String]>} [consume] - An array of resources consumption
+ * @extends Data
+ * @prop {Number} [time] - Time in game hour
+ * @prop {Array<[Number, String]>} [consume] - An array of resources consumption
  */
 
 /**
@@ -112,14 +111,14 @@ Tooltip.prototype = {
                 var item = wrap("resource not-enough", resource[0] + " " + resource[1].name);
                 this.resourcesMapper[resource[1].id] = item;
                 resourcesContainer.appendChild(item);
-            }.bind(this));
+            }, this);
             html.appendChild(resourcesContainer);
         }
         return html;
     },
     /**
      * Update consumption on tooltip
-     * @param {Collection} resources - The game's resources
+     * @param {Map} resources - The game's resources
      * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
     refresh: function (resources, data) {
@@ -135,7 +134,7 @@ Tooltip.prototype = {
                 var id = resource[1].id;
                 var hasEnougth = resources.has(id) && resources.get(id).has(resource[0]);
                 this.resourcesMapper[id].classList.toggle("not-enough", !hasEnougth);
-            }.bind(this));
+            }, this);
         }
     },
     /**

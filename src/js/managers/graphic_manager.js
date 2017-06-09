@@ -36,7 +36,7 @@ var GraphicManager = (function () {
         this.destination.x = floor(+destData.x * Asset.ENLARGE);
         this.destination.y = floor(+destData.y * Asset.ENLARGE);
     }
-    Asset.ANIMATION_INC = 2 / 60; // 2 animations per seconds at 60fps
+    Asset.ANIMATION_INC = 8 / 60; // 8 animations per seconds at 60fps
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.prototype = {
         /**
@@ -117,7 +117,7 @@ var GraphicManager = (function () {
             wrapper.appendChild(layer.cnv);
 
             // watch for new buildings
-            _buildingsList = new Collection();
+            _buildingsList = new Map();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building && building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
@@ -134,14 +134,14 @@ var GraphicManager = (function () {
             }.bind(this));
 
             // watch for new events
-            _eventsList = new Collection();
+            _eventsList = new Map();
             MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
                 if (event.asset) {
                     _eventsList.push(event.id, null); // FIXME
                 }
             });
             MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-                _eventsList.pop(event.id);
+                _eventsList.delete(event.id);
             });
 
             // watch for food and water level
@@ -165,17 +165,17 @@ var GraphicManager = (function () {
         render: function () {
             requestAnimationFrame(this.render.bind(this));
 
-            if (_buildingsList.length) {
+            if (_buildingsList.size) {
                 _buildingsLayer.clear();
                 // TODO : optimize to not sort each loop
-                _buildingsList.values().sort(function (a, b) {
+                _buildingsList.getValues().sort(function (a, b) {
                     return a.compare(b);
                 }).forEach(function (asset) {
                     asset.render(_combinedImage, _buildingsLayer);
                 });
             }
 
-            if (_eventsList.length) {
+            if (_eventsList.size) {
                 _eventsLayer.clear();
                 _eventsList.forEach(function (asset) {
                     asset.render(_combinedImage, _eventsLayer);

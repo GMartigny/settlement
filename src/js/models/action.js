@@ -3,11 +3,11 @@
 
 /**
  * @typedef {Object} ActionEffect
- * @param {String} name - Action's name
- * @param {People} people - Action's owner
- * @param {String} [give] - Resources given by the action
- * @param {String} [build] - Name of the build building (prefix with "a" or "an")
- * @param [*] - Can carry any other data put by action's function
+ * @prop {String} name - Action's name
+ * @prop {People} people - Action's owner
+ * @prop {String} [give] - Resources given by the action
+ * @prop {String} [build] - Name of the build building (prefix with "a" or "an")
+ * @prop [*] - Can carry any other data put by action's function
  */
 
 /**
@@ -39,7 +39,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Initialise object
      * @private
      */
-    _init: function () {
+    init: function () {
         var data = consolidateData(this, this.data, ["time", "energy", "consume"]);
         if (isUndefined(this.data.energy) && data.time) {
             this.data.energy = data.time * 5;
@@ -66,7 +66,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             html.appendChild(this.optionsWrapper);
         }
         else {
-            html.addEventListener("click", this.click.bind(this));
+            html.addEventListener("click", this.click.bind(this), true);
         }
 
         html.style.order = this.data.order;
@@ -80,7 +80,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     manageOptions: function () {
         if (isFunction(this.data.options)) {
             if (!this.options) {
-                this.options = new Collection();
+                this.options = new Map();
             }
             var newOptions = this.data.options(this);
             // Looks for options not available anymore
@@ -106,7 +106,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     },
     /**
      * Loop function called every game tick
-     * @param {Collection} resources - Game resources
+     * @param {Map} resources - Game resources
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
@@ -126,7 +126,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                     if (!resources.has(id) || !resources.get(id).has(r[0])) {
                         this.locked = true;
                     }
-                }.bind(this));
+                }, this);
             }
         }
         this.manageOptions();
@@ -354,9 +354,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 option.lock();
             });
         }
-        else if (this.parentAction) {
-            this.parentAction.options.pop(this.data.id);
-        }
+        // else if (this.parentAction) {
+        //     this.parentAction.options.pop(this.data.id);
+        // }
 
         this.html.remove();
     },
@@ -370,5 +370,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.html.classList.remove(Action.RUNNING_CLASS);
             this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
         }
+    },
+    getStraight: function () {
+        var straight = this._getStraight();
+        straight.repeated = this.repeated;
+        return straight;
     }
 });

@@ -38,7 +38,7 @@ function peopleFactory (amount) {
 function People (name, gender) {
     this.name = name;
     this.gender = gender || "other";
-    this.actions = new Collection();
+    this.actions = new Map();
 
     this.busy = false;
     this.energy = 100;
@@ -47,7 +47,6 @@ function People (name, gender) {
     this.thirsty = false;
 
     this.stats = {
-        actionsDone: {}, // FIXME duplicate for action.repeated
         idle: 0,
         age: 0
     };
@@ -62,7 +61,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * Initialise object
      * @private
      */
-    _init: function () {
+    init: function () {
         this.setPronouns();
         // Tooltip on health bar
         new Tooltip(this.lifeBar.html, {
@@ -100,7 +99,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Loop function called every game tick
-     * @param {Collection} resources - Resources list
+     * @param {Map} resources - Resources list
      * @param {Number} elapse - Elapse tick since last call
      * @param {Object} flags - Game flags
      */
@@ -165,12 +164,6 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * Free from busy state
      */
     finishAction: function () {
-        if (this.stats.actionsDone[this.busy.id]) {
-            ++this.stats.actionsDone[this.busy.id];
-        }
-        else {
-            this.stats.actionsDone[this.busy.id] = 1;
-        }
         this.rollForPerk(this.busy);
         this.setBusy(null);
     },
@@ -228,17 +221,15 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                 this.addAction(actions[i]);
             }
         }
-        else {
-            if (!this.actions.has(actions.id)) {
-                var action = new Action(this, actions);
-                if (this.perk && isFunction(this.perk.effect)) {
-                    if (!this.perk.actions || this.perk.actions().includes(actions.id)) {
-                        action.applyEffect(this.perk.effect);
-                    }
+        else if (!this.actions.has(actions.id)) {
+            var action = new Action(this, actions);
+            if (this.perk && isFunction(this.perk.effect)) {
+                if (!this.perk.actions || this.perk.actions().includes(actions.id)) {
+                    action.applyEffect(this.perk.effect);
                 }
-                this.actions.push(actions.id, action);
-                this.actionList.appendChild(action.html);
             }
+            this.actions.push(actions.id, action);
+            this.actionList.appendChild(action.html);
         }
     },
     /**
@@ -252,7 +243,8 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             }
         }
         else if (this.actions.has(actions)) {
-            this.actions.pop(actions).lock();
+            this.actions.get(actions).lock();
+            this.actions.delete(actions);
         }
     },
     /**
@@ -279,12 +271,13 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                             }
                             else {
                                 done = actionsIds.reduce(function (sum, id) {
-                                    return sum + (self.stats.actionsDone[id] || 0);
+                                    var action = self.actions.get(id);
+                                    return sum + (action ? action.repeated : 0);
                                 }, 0) / (perk.iteration || 0);
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
-                            if (done && random() < perksList.dropRate * done) {
+                            if (done && random() < done) {
                                 // perk is unlocked
                                 self.gainPerk(perk);
                                 gotPerk = true;
@@ -298,7 +291,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Add a perk
-     * @param {Data} perk - The perk data
+     * @param {PerkData} perk - The perk data
      */
     gainPerk: function (perk) {
         perk.desc = LogManager.personify(perk.desc, {
@@ -309,6 +302,9 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         new Tooltip(this.perkNode, perk);
 
         MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
+        if (isFunction(perk.effect) && false) { // TODO: define effect
+            perk.effect(this);
+        }
         if (isFunction(perk.unlock)) {
             this.addAction(perk.unlock());
         }
@@ -345,6 +341,20 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                 this.html.remove();
             }.bind(this), 400);
         }
+    },
+    getStraight: function () {
+        var straight = {
+            name: this.name,
+            gender: this.gender,
+            energy: this.energy,
+            life: this.life,
+            stats: this.stats,
+            actions: []
+        };
+        this.actions.forEach(function (action) {
+            straight.actions.push(action.getStraight());
+        });
+        return straight;
     }
 });
 /**

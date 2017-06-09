@@ -14,7 +14,7 @@ module.exports = function (grunt) {
     });
 
     var sourceDir = {
-        js: ["src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
+        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
         json: "src/js/**/*.json",
         css: "src/css/**/*.less",
         img: {

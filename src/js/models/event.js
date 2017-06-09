@@ -19,7 +19,7 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
      * Initialize object
      * @private
      */
-    _init: function () {
+    init: function () {
         var data = consolidateData(this, this.data, ["time", "consume"]);
 
         if (this.tooltip) {
@@ -100,6 +100,11 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
         MessageBus.notify(MessageBus.MSG_TYPES.EVENT_END, this);
 
         this.html.remove();
+    },
+    getStraight: function () {
+        var straight = this._getStraight();
+        straight.remains = TimerManager.getRemaining(this.timer);
+        return straight;
     }
 });
 Event.LST_ID = "eventList";

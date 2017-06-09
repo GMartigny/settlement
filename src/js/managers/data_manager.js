@@ -25,20 +25,24 @@ var DataManager = (function () {
      */
     /**
      * @typedef {Object} Data
-     * @param {ID} id - unique ID
-     * @param {String|function} name - The displayed name
-     * @param {String|Function} desc - A description for tooltip
-     * @param {Number} [order] - Order for display
+     * @prop {String|Function} name - The displayed name
+     * @prop {String|Function} [desc] - A description for tooltip
+     */
+    /**
+     * @typedef {Object} UniqueData
+     * @extends Data
+     * @prop {ID} id - unique ID
+     * @prop {Number} [order] - Order for display
      */
     /**
      * @typedef {Object} ConsumerData
-     * @param {Function} [consume] - Return consumed resources
+     * @prop {Function} consume - Return consumed resources
      */
     /**
      * @typedef {Object} ResourceData
-     * @extends Data
-     * @param {String} icon - Icon image of the resource
-     * @param {Number} dropRate - Chance of getting it
+     * @extends UniqueData
+     * @prop {String} icon - Icon image of the resource
+     * @prop {Number} dropRate - Chance of getting it
      */
     /**
      * @typedef {Object} CraftableData
@@ -47,34 +51,41 @@ var DataManager = (function () {
      */
     /**
      * @typedef {Object} ActionData
-     * @extends Data
+     * @extends UniqueData
      * @extends ConsumerData
-     * @param {Function} [options] - Return an array of options for this action
-     * @param {Function} [condition] - Return true if can be done
-     * @params {Function} [give] - Return an array of given resources
-     * @param {Function} [unlock] - Return an array of unlocked action for this person
-     * @param {Function} [lock] - Return an array of locked action for this person
-     * @param {Function} [build] - Return an array of built buildings id
-     * @param {Number|Function} [time=0] - In game time to do
-     * @param {Number} [timeDelta=0] - Added randomness to time
-     * @param {Number} [timeBonus=0] - From 0 to 1, a ratio for action duration (
-     * @param {Number|Function} [energy=time*5] - Energy taken to do
-     * @param {Array<Number>} [giveSpan] - Span of randomness for give
-     * @param {String} log - A log string to display when done
+     * @prop {Function} [options] - Return an array of options for this action
+     * @prop {Function} [condition] - Return true if can be done
+     * @prop {Function} [give] - Return an array of given resources
+     * @prop {Function} [unlock] - Return an array of unlocked action for this person
+     * @prop {Function} [lock] - Return an array of locked action for this person
+     * @prop {Function} [build] - Return an array of built buildings id
+     * @prop {Number|Function} [time=0] - In game time to do
+     * @prop {Number} [timeDelta=0] - Added randomness to time
+     * @prop {Number} [timeBonus=0] - From 0 to 1, a ratio for action duration (set to 1 and action time is 0)
+     * @prop {Number|Function} [energy=time*5] - Energy taken to do
+     * @prop {Array<Number>} [giveSpan] - Span of randomness for give
+     * @prop {String} log - A log string to display when done
      */
     /**
      * @typedef {Object} BuildingData
      * @extends ActionData
-     * @param {Function} [unlock] - Return an array of unlocked action for all people
-     * @param {Function} [lock] - Return an array of locked action for all people
-     * @param {Function} [upgrade] - Return a building ID to upgrade
-     * @param {String} asset - Id of the graphical asset
+     * @prop {Function} [unlock] - Return an array of unlocked action for all people
+     * @prop {Function} [lock] - Return an array of locked action for all people
+     * @prop {Function} [upgrade] - Return a building ID to upgrade
+     * @prop {String} asset - Id of the graphical asset
      */
     /**
      * @typedef {Object} EventData
      * @extends ActionData
-     * @param {String} asset - Id of the graphical asset
-     * @param {Number} dropRate - Chance of getting it
+     * @prop {String} asset - Id of the graphical asset
+     * @prop {Number} dropRate - Chance of getting it
+     */
+    /**
+     * @typedef {Object} PerkData
+     * @extends UniqueData
+     * @prop {Function} actions - Return the list of actions
+     * @prop {Number} [iteration=0] - Number of time it take to have a 100% chance to get the perk
+     * @prop {Function} [effect] -
      */
     /* eslint-disable valid-jsdoc */
     var data = {
@@ -1247,7 +1258,6 @@ var DataManager = (function () {
         },
         /***** PERKS *****/
         perks: {
-            dropRate: 0.1,
             first: {
                 name: "first-one",
                 desc: "The very first one to install the settlement.",

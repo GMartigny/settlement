@@ -15,12 +15,12 @@ function GameController (holder, assets) {
 
     this.assets = assets;
 
-    this.resources = new Collection();
-    this.buildings = new Collection();
-    this.events = new Collection();
+    this.resources = new Map();
+    this.buildings = new Map();
+    this.events = new Map();
     this.people = [];
-    this.initialActions = new Collection();
-    this.knownLocations = new Collection();
+    this.initialActions = new Map();
+    this.knownLocations = new Map();
     this.buildingsInProgress = [];
 
     this.flags = {
@@ -67,7 +67,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * Start a new adventure
      * @private
      */
-    _init: function () {
+    init: function () {
         var game = this;
         DataManager.data.deepBrowse(function (item) {
             item.id = pickID();
@@ -133,7 +133,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             game.events.push(event.data.id, event);
         })
         .observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-            game.events.pop(event.data.id);
+            game.events.delete(event.data.id);
         })
 
         // Lock or unlock actions for all
@@ -163,9 +163,14 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
                 "Thanks for playing !"
-            }, function () {
-                this.flags.ready = true;
-            }.bind(this));
+            }, {
+                yes: {
+                    name: "Got it !",
+                    action: function () {
+                        game.flags.ready = true;
+                    }
+                }
+            });
         }
         // Start the refresh loop
         this.refresh();
@@ -181,7 +186,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         actions.forEach(function (action) {
             this.initialActions.push(action);
-        }.bind(this));
+        }, this);
         this.people.forEach(function (people) {
             people.addAction(actions);
         });
@@ -196,8 +201,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         }
 
         actions.forEach(function (action) {
-            this.initialActions.pop(action);
-        }.bind(this));
+            this.initialActions.delete(action);
+        }, this);
         this.people.forEach(function (people) {
             people.lockAction(actions);
         });
@@ -271,7 +276,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                         instance.warnLack = false;
                         this.flags[lacking] = 0;
                     }
-                }.bind(this));
+                }, this);
 
                 if (this.canSomeoneArrive() && random() < DataManager.data.people.dropRate) {
                     this.welcome();
@@ -290,7 +295,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
             this.people.forEach(function (people) {
                 people.refresh(this.resources, elapse, this.flags);
-            }.bind(this));
+            }, this);
         }
     },
     /**
@@ -322,7 +327,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 instance.warnLack = false;
             }
             else if (isFunction(lack)) {
-                var diff = amount - instance.get();
+                var diff = amount - instance.count;
                 instance.set(0);
                 lack.call(this, diff, resource);
 
@@ -358,7 +363,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         var game = this;
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
-                person.addAction(game.initialActions.values());
+                person.addAction(game.initialActions.getValues());
 
                 game.people.push(person);
                 game.peopleList.appendChild(person.html);
@@ -514,6 +519,38 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 this.flags.popup = false;
             }.bind(this));
         }
+    },
+    /**
+     *
+     */
+    saveGame: function () {
+        var n = performance.now();
+        var data = {
+            resources: [],
+            people: [],
+            buildings: [],
+            events: [],
+            locations: this.knownLocations.getValues()
+        };
+        this.resources.forEach(function (resource) {
+            data.resources.push(resource.getStraight());
+        });
+
+        this.people.forEach(function (person) {
+            data.people.push(person.getStraight());
+        });
+
+        this.buildings.forEach(function (build) {
+            data.buildings.push(build.getStraight());
+        });
+
+        this.events.forEach(function (event) {
+            data.events.push(event.getStraight());
+        });
+
+        SaveManager.persist(data);
+
+        console.debug(round(performance.now() - n));
     }
 });
 if (IS_DEV) {

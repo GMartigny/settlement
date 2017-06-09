@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 /**
  * Return the last item of the array
@@ -24,6 +24,35 @@ Array.prototype.random = function () {
 Array.prototype.out = function (item) {
     this.splice(this.indexOf(item), 1);
     return this.length;
+};
+
+/**
+ * Try to use the object id as key
+ * @param {*} [key] - Can be omitted, will use value.id then
+ * @param {*} value -
+ * @return {Map}
+ */
+Map.prototype.push = function (key, value) {
+    if (isUndefined(value)) {
+        value = key;
+        key = value.id || (this.size + 1).toString(36);
+    }
+    return this.set(key, value);
+};
+
+/**
+ * Return the array of inserted values
+ * @return {Array}
+ */
+Map.prototype.getValues = function () {
+    var iterator = this.values();
+    var values = [];
+    var entry = iterator.next();
+    while (!entry.done) {
+        values.push(entry.value);
+        entry = iterator.next();
+    }
+    return values;
 };
 
 /**

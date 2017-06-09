@@ -3,25 +3,29 @@
 
 /**
  * A base model for all
- * @param {Data} data - The object's data
+ * @param {UniqueData} data - The object's data
  * @constructor
  */
 function Model (data) {
     this.data = data;
     this.html = this.toHTML();
-    this._init.apply(this, Array.prototype.splice.call(arguments, 1));
+    this.init.apply(this, Array.prototype.splice.call(arguments, 1));
 }
 Model.prototype = {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */
-    _init: function () {
-    },
+    init: noop,
     /**
      * Return HTML for display
      * @return {HTMLElement}
      */
     toHTML: function () {
         return wrap(this.modelName);
+    },
+    getStraight: function () {
+        return {
+            data: this.data
+        };
     }
 };

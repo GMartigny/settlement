@@ -2,15 +2,25 @@
 /* exported popup */
 
 /**
+ * @typedef {Object} ButtonData
+ * @prop {String} name - Text of the button
+ * @para {Function} [action] - A function to call
+ */
+/**
+ * @typedef {Object} PopupData
+ * @prop {ButtonData} [yes={name: "Ok"}] - The validate button data
+ * @prop {ButtonData} [no] - The cancel button data
+ */
+
+
+/**
  * Display a popup with choice buttons
- * @param {Object} data - Text for the popup
- * @param {Function} [onYes] - Action to do on validate
+ * @param {Data} data - Text for the popup
+ * @param {PopupData} buttons - Text for the popup
  * @param {String} [CSSClasses] - Additional classes for the popup
  * @returns {Object} Some functions
  */
-function popup (data, onYes, CSSClasses) {
-    onYes = onYes || noop;
-
+function popup (data, buttons, CSSClasses) {
     var holder = document.body;
 
     CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
@@ -29,21 +39,26 @@ function popup (data, onYes, CSSClasses) {
         }
     };
 
-    var yesButton = wrap("yes clickable", data.yes || "Ok");
+    var yesButton = wrap("yes clickable", (buttons.yes && buttons.yes.name) || "Ok");
+    var onYes = (buttons.yes && buttons.yes.action) || noop;
     yesButton.addEventListener("click", function () {
         onYes();
         api.remove();
-    });
+    }, true);
     box.appendChild(yesButton);
 
-    if (data.no) {
-        var noButton = wrap("no clickable", data.no);
-        noButton.addEventListener("click", api.remove);
+    if (buttons.no) {
+        var noButton = wrap("no clickable", buttons.no.name || "Cancel");
+        var onNo = buttons.no.action || noop;
+        noButton.addEventListener("click", function () {
+            onNo();
+            api.remove();
+        }, true);
         box.appendChild(noButton);
     }
 
-    holder.appendChild(box);
     holder.classList.add("backdrop");
+    holder.appendChild(box);
 
     box.style.top = floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
 
