@@ -35,15 +35,17 @@
             float: left;
             box-sizing: border-box;
         }
-        #imgList .frameCount {
+        #imgList .frameCount, #imgList .animationSpeed {
             width: 40px;
         }
     </style>
 </head>
 <body>
 <div id="planner"></div>
-<label for="scaler">Scale ratio</label>
-<input type="number" id="scaler" value="4" min="1" max="10" step="1"><br>
+<div class="options">
+    <label for="scaler">Scale ratio</label>
+    <input type="number" id="scaler" value="4" min="1" max="10" step="1"><br>
+</div>
 <input type="checkbox" id="all" checked onclick="switchDisplay()"><label for="all">All</label>
 <div id="wrapper">
     <ul id="imgList"></ul>
@@ -104,6 +106,13 @@
             dataToString();
         }
     }
+    function changeAnimationSpeed (id, value) {
+        if (id) {
+            value = +value;
+            data[id].speed = value;
+            dataToString();
+        }
+    }
     // Save current state to output and local storage
     function dataToString () {
         var outputed = {};
@@ -116,7 +125,8 @@
                     x: d.x,
                     y: d.y,
                     disabled: d.disabled,
-                    steps: d.steps
+                    steps: d.steps,
+                    speed: d.speed
                 };
                 if (!d.disabled) {
                     outputed[id] = {
@@ -125,6 +135,7 @@
                     };
                     if (data[id].steps !== 1) {
                         outputed[id].steps = d.steps;
+                        outputed[id].speed = d.speed;
                     }
                 }
             }
@@ -176,6 +187,7 @@
                     y: 0,
                     disabled: false,
                     steps: 1,
+                    speed: 8,
                     width: asset.width * scale,
                     height: asset.height * scale,
                     iteration: 0,
@@ -187,6 +199,7 @@
                     <input type="checkbox" ${!d.disabled && "checked"} id="${name}-chk" onclick="switchDisplay('${name}')"/>
                     <label for="${name}-chk">${name}</label>
                     <input type="number" class="frameCount" value="${d.steps}" onchange="changeStepCount('${name}', this.value)" min="1" title="Animation's frame count"/>
+                    <input type="number" class="animationSpeed" value="${d.speed}" onchange="changeAnimationSpeed('${name}', this.value)" min="0" title="Animation's speed (fps)"/>
                 </li>`;
 
                 var img = document.createElement("div");
@@ -205,24 +218,28 @@
         }
         imgList.innerHTML = html;
         dataToString();
+        animate();
     });
 
     function animate () {
+        requestAnimationFrame(animate);
         var d;
         for (var id in data) {
             if (data.hasOwnProperty(id)) {
                 d = data[id];
+                var prev = d.iteration <<0;
                 if (d.steps > 1) {
-                    d.iteration++;
+                    d.iteration = (d.iteration + (d.speed / 60)) % d.steps;
                 }
                 else {
                     d.iteration = 0;
                 }
-                d.node.style.backgroundPosition = -((d.width / d.steps) * (d.iteration)) + "px 0";
+                if ((d.iteration <<0) !== prev) {
+                    d.node.style.backgroundPosition = -((d.width / d.steps) * (d.iteration) <<0) + "px 0";
+                }
             }
         }
     }
-    setInterval(animate, 1000 / 8);
 </script>
 </body>
 </html>
