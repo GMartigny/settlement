@@ -10,14 +10,14 @@
     var _assetsDataURL = "dist/js/assets.json";
     var _buildingsDataURL = "dist/js/buildingsData.json";
 
-    var loadStart = round(performance.now());
+    var loadStart = getNow();
     loadAsync([
         "dist/img/icons.png", // just preload
         _assetsURL,
         _assetsDataURL,
         _buildingsDataURL
     ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(1) + "% - " + (round(performance.now()) - loadStart));
+        console.log(file + " : " + percent.toFixed(1) + "% - " + (getNow() - loadStart));
     }).then(function (media) {
         console.groupEnd();
         try {

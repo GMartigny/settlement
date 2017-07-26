@@ -5,7 +5,7 @@ var MessageBus = (function () {
 
     var _observers = [];
 
-    var api = {
+    var api = /** @lends MessageBus */ {
         /**
          * Observe an event
          * @param {Number|Array} type - One or more event type to observe
@@ -87,19 +87,19 @@ var MessageBus = (function () {
                 NINE: 1057,
                 ZERO: 1048,
                 F5: 1116,
-                F8: 1119
+                F8: 1119,
+                F12: 1123
             }
         }
     };
 
     window.addEventListener("keydown", function (event) {
-        if (1000 + event.keyCode !== api.MSG_TYPES.KEYS.F5) {
+        var code = 1000 + event.keyCode;
+        if (code !== api.MSG_TYPES.KEYS.F5 && code !== api.MSG_TYPES.KEYS.F12) {
             event.preventDefault();
             event.stopPropagation();
-
-            api.notify(1000 + event.keyCode, "down", true);
         }
-
+        api.notify(1000 + event.keyCode, "down", true);
     }, true);
 
     window.addEventListener("keyup", function (event) {

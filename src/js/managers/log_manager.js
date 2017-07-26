@@ -34,8 +34,8 @@ var LogManager = (function () {
                 self.log(message, type);
             })
 
-            .observe(MessageBus.MSG_TYPES.ARRIVAL, function (name) {
-                self.log(name + " has arrived.", MessageBus.MSG_TYPES.LOGS.EVENT);
+            .observe(MessageBus.MSG_TYPES.ARRIVAL, function (person) {
+                self.log(person.name + " has arrived.", MessageBus.MSG_TYPES.LOGS.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {

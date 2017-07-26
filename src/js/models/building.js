@@ -10,5 +10,8 @@ function Building (data) {
     this.super(data);
 }
 Building.extends(Model, "Building", /** @lends Building.prototype */ {
-    toHTML: noop
+    toHTML: noop,
+    getStraight: function () {
+        return this.data;
+    }
 });

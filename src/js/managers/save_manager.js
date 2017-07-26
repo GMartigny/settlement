@@ -7,25 +7,40 @@ var SaveManager = (function () {
 
     var key = storage.getItem("k");
     if (!key) {
-        key = pickID();
+        key = randomStr();
         storage.setItem("k", key);
     }
+    var salt = randomStr();
 
-    return {
+    function compress (str) {
+        return btoa(salt + str);
+    }
+
+    function unCompress (compressed) {
+        return atob(compressed.substr(salt.length));
+    }
+
+    return /** @lends SaveManager */ {
         /**
          * Put data into memory
          * @param {Object} data - Any data to save
          */
         persist: function (data) {
-            var str = btoa(JSON.stringify(data));
-            storage.setItem(key, str);
+            storage.setItem(key, compress(JSON.stringify(data)));
+        },
+        /**
+         * Return true if some data are stored
+         * @return {boolean}
+         */
+        hasData: function () {
+            return Object.keys(storage).includes(key);
         },
         /**
          * Read data from memory
          * @return {Object}
          */
         load: function () {
-            return JSON.parse(atob(storage.getItem(key)));
+            return JSON.parse(unCompress(storage.getItem(key)));
         },
         /**
          * Clear whole storage

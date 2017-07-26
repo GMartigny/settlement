@@ -9,7 +9,7 @@
  * @constructor
  */
 function GameController (holder, assets) {
-    var now = round(performance.now());
+    var now = getNow();
     console.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
@@ -20,7 +20,7 @@ function GameController (holder, assets) {
     this.events = new Map();
     this.people = [];
     this.initialActions = new Map();
-    this.knownLocations = new Map();
+    this.knownLocations = [];
     this.buildingsInProgress = [];
 
     this.flags = {
@@ -35,7 +35,7 @@ function GameController (holder, assets) {
 
     this.super();
     holder.appendChild(this.html);
-    console.log("Started in " + round(performance.now() - now) + "ms");
+    console.log("Started in " + (getNow() - now) + "ms");
 }
 GameController.tickLength = 2000;
 GameController.extends(Model, "GameController", /** @lends GameController.prototype */ {
@@ -69,8 +69,18 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      */
     init: function () {
         var game = this;
+        var ids = {};
         DataManager.data.deepBrowse(function (item) {
-            item.id = pickID();
+            if (IS_DEV) {
+                if (!item.id) {
+                    console.warn("Item with no id ", item);
+                }
+                if (ids[item.id]) {
+                    console.warn("Two items have the same id ", item);
+                }
+                ids[item.id] = 1;
+            }
+            item.id = btoa(item.id);
             item.browse(function (attr, attrName) {
                 if (isFunction(attr)) {
                     item[attrName] = attr.bind(game);
@@ -78,82 +88,44 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             });
         });
 
-        this.initialActions.push(DataManager.data.actions.wakeUp);
-
         // Start managers
         GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
         LogManager.start(this.logsList);
 
-        // First person arrives
-        TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
+        this.registerObservers();
 
-        // We may find resources
-        MessageBus.observe(MessageBus.MSG_TYPES.GIVE, function (given) {
-            if (isArray(given)) {
-                given.forEach(function (r) {
-                    game.earn.apply(game, r);
+        if (SaveManager.hasData()) {
+            var data = SaveManager.load();
+
+            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);
+            data.plp.forEach(function (personData) {
+                var person = new People(personData.nam, personData.gnd);
+                person.life = personData.lif;
+                person.energy = personData.ene;
+                person.stats = personData.stt;
+                if (personData.prk) {
+                    person.gainPerk(personData.prk);
+                }
+                personData.act.forEach(function (action) {
+                    person.addAction(action.data);
+                    person.actions.get(action.data.id).repeated = action.repeated;
                 });
-            }
-        })
-        // We may use resources
-        .observe(MessageBus.MSG_TYPES.USE, function (use) {
-            if (isArray(use)) {
-                compactResources(use).forEach(function (resource) {
-                    game.consume.apply(game, resource);
-                });
-            }
-        })
-        // Keep track of building in progress
-        .observe(MessageBus.MSG_TYPES.START_BUILD, function (buildingId) {
-            if (buildingId) {
-                game.buildingsInProgress.push(buildingId);
-            }
-        })
-        // We may build
-        .observe(MessageBus.MSG_TYPES.BUILD, function (building) {
-            if (building) {
-                game.build(building);
-            }
-        })
-        // Put the ships wreckage into play
-        .notify(MessageBus.MSG_TYPES.BUILD, DataManager.data.buildings.special.wreckage)
+                MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
+            });
+            game.addToInitialActions(data.iac);
+            data.bld.forEach(MessageBus.notify.bind(MessageBus, MessageBus.MSG_TYPES.BUILD));
+            // events
+            game.knownLocations = data.lct;
+            game.buildingsInProgress = data.bip;
+        }
+        else {
+            // Put the ships wreckage into play
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, DataManager.data.buildings.special.wreckage);
+            this.initialActions.push(DataManager.data.actions.wakeUp);
 
-        // And we may die :'(
-        .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-            game.people.out(person);
-            // The last hope fade away
-            if (game.people.length <= 0) {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOOSE, game.getSettledTime());
-                game.flags.paused = true;
-            }
-        })
-
-        // Keep track of running events
-        .observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
-            game.events.push(event.data.id, event);
-        })
-        .observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-            game.events.delete(event.data.id);
-        })
-
-        // Lock or unlock actions for all
-        .observe(MessageBus.MSG_TYPES.LOCK, function (actions) {
-            game.removeFromInitialActions(actions);
-        })
-        .observe(MessageBus.MSG_TYPES.UNLOCK, function (actions) {
-            game.addToInitialActions(actions);
-        })
-
-        // End of the game
-        .observe(MessageBus.MSG_TYPES.WIN, function () {
-            this.flags.paused = true;
-        })
-
-        .observe(MessageBus.MSG_TYPES.KEYS.SPACE, function (direction) {
-            if (direction === "up") {
-                game.togglePause();
-            }
-        });
+            // First person arrives
+            TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
+        }
 
         if (!IS_DEV) {
             // early access warning
@@ -174,6 +146,67 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         }
         // Start the refresh loop
         this.refresh();
+    },
+    registerObservers: function () {
+        var game = this;
+        var msgType = MessageBus.MSG_TYPES;
+
+        // We may find resources
+        MessageBus.observe(msgType.GIVE, function (given) {
+            if (isArray(given)) {
+                given.forEach(function (r) {
+                    game.earn.apply(game, r);
+                });
+            }
+        })
+        // We may use resources
+        .observe(msgType.USE, function (use) {
+            if (isArray(use)) {
+                compactResources(use).forEach(function (resource) {
+                    game.consume.apply(game, resource);
+                });
+            }
+        })
+        // Keep track of building in progress
+        .observe(msgType.START_BUILD, function (buildingId) {
+            game.buildingsInProgress.push(buildingId);
+        })
+        // We may build
+        .observe(msgType.BUILD, this.build.bind(this))
+        // Some may arrive
+        .observe(msgType.ARRIVAL, this.arrive.bind(this))
+        // And we may die :'(
+        .observe(msgType.LOOSE_SOMEONE, function (person) {
+            game.people.out(person);
+            // The last hope fade away
+            if (game.people.length <= 0) {
+                MessageBus.notify(msgType.LOOSE, game.getSettledTime());
+                game.flags.paused = true;
+            }
+        })
+
+        // Keep track of running events
+        .observe(msgType.EVENT_START, function (event) {
+            game.events.push(event.data.id, event);
+        })
+        .observe(msgType.EVENT_END, function (event) {
+            game.events.delete(event.data.id);
+        })
+
+        // Lock or unlock actions for all
+        .observe(msgType.LOCK, this.removeFromInitialActions.bind(this))
+        .observe(msgType.UNLOCK, this.addToInitialActions.bind(this))
+
+        // End of the game
+        .observe(msgType.WIN, function () {
+            this.flags.paused = true;
+        })
+
+        .observe(msgType.KEYS.SPACE, function (direction) {
+            if (direction === "up") {
+                game.togglePause();
+            }
+        });
     },
     /**
      * Add actions to initial actions list
@@ -239,8 +272,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * Loop function called every game tick
      */
     refresh: function () {
-        var now = performance.now(),
-            elapse = floor((now - this.lastTick) / GameController.tickLength);
+        var now = getNow();
+        var elapse = floor((now - this.lastTick) / GameController.tickLength);
         this.lastTick += elapse * GameController.tickLength;
 
         if (this.flags.paused) {
@@ -253,7 +286,10 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             if (this.flags.settled) {
                 this.flags.survived += elapse * GameController.tickLength;
                 // People consume resources to survive
-                var peopleConsumption = DataManager.data.people.needs(this.flags);
+                var peopleConsumption = DataManager.data.people.needs;
+                if (this.flags.drought) {
+                    peopleConsumption[0][0] *= 2;
+                }
                 MessageBus.notify(MessageBus.MSG_TYPES.USE, peopleConsumption, true);
                 peopleConsumption.forEach(function (need) {
                     var amount = need[0];
@@ -357,28 +393,21 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     /**
      * Welcome people to the camp
      * @param {Number} [amount=1] - Number of person that rejoin
-     * @param {Boolean} [first=false] - First person
+     * @param {Boolean} [firstOne=false] - First person
      */
-    welcome: function (amount, first) {
+    welcome: function (amount, firstOne) {
         var game = this;
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(game.initialActions.getValues());
 
-                game.people.push(person);
-                game.peopleList.appendChild(person.html);
-
-                if (first) {
+                if (firstOne) {
                     person.life = 0;
                     person.energy = 0;
                     person.updateLife(0);
                     person.updateEnergy(0);
                 }
                 else {
-                    //noinspection BadExpressionStatementJS - force redraw
-                    person.html.offsetHeight;
-                    MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person.name);
-
                     if (game.people.length === 2) {
                         TimerManager.timeout(function () {
                             var message = person.name + " say that there's other desert-walkers " +
@@ -387,10 +416,27 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                         }, 2000);
                     }
                 }
+                MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
 
-                person.html.classList.add("arrived");
             });
         });
+    },
+    /**
+     * Add someone to the camp
+     * @param {Array<People>|People} people - A people or an array of people instance
+     */
+    arrive: function (people) {
+        if (isArray(people)) {
+            people.forEach(this.arrive.bind(this));
+        }
+        else {
+            this.people.push(people);
+            this.peopleList.appendChild(people.html);
+
+            //noinspection BadExpressionStatementJS - force redraw
+            people.html.offsetHeight;
+            people.html.classList.add("arrived");
+        }
     },
     /**
      * Build something
@@ -458,7 +504,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 // no condition or condition meet
                 if (!isFunction(build.condition) || build.condition(build)) {
                     // has the upgraded building
-                    if (!isFunction(build.upgrade) || done.has(build.upgrade())) {
+                    if (!build.upgrade || done.has(build.upgrade.id)) {
                         buildings.push(build);
                     }
                 }
@@ -512,7 +558,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         // in the right conditions
         if (eventData) {
             var event = new Event(eventData);
-            this.flags.popup = event.start(function (event) {
+            this.flags.popup = !!event.start(function (event) {
                 if (event.data.time) {
                     this.eventsList.appendChild(event.html);
                 }
@@ -521,36 +567,28 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         }
     },
     /**
-     *
+     * Save the whole game state
      */
     saveGame: function () {
-        var n = performance.now();
-        var data = {
-            resources: [],
-            people: [],
-            buildings: [],
-            events: [],
-            locations: this.knownLocations.getValues()
+        var gameData = {
+            res: this.resources.getValues().map(function (resource) {
+                return resource.getStraight();
+            }),
+            plp: this.people.map(function (people) {
+                return people.getStraight();
+            }),
+            iac: this.initialActions.getValues(),
+            bld: this.buildings.getValues().map(function (building) {
+                return building.getStraight();
+            }),
+            evt: this.events.getValues().map(function (event) {
+                return event.getStraight();
+            }),
+            lct: this.knownLocations,
+            bip: this.buildingsInProgress
         };
-        this.resources.forEach(function (resource) {
-            data.resources.push(resource.getStraight());
-        });
 
-        this.people.forEach(function (person) {
-            data.people.push(person.getStraight());
-        });
-
-        this.buildings.forEach(function (build) {
-            data.buildings.push(build.getStraight());
-        });
-
-        this.events.forEach(function (event) {
-            data.events.push(event.getStraight());
-        });
-
-        SaveManager.persist(data);
-
-        console.debug(round(performance.now() - n));
+        SaveManager.persist(gameData);
     }
 });
 if (IS_DEV) {

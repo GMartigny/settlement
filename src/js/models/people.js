@@ -11,7 +11,7 @@ function peopleFactory (amount) {
     if (IS_DEV) {
         var res = [];
         for (var i = 0; i < amount; ++i) {
-            var code = "Bot-" + random().toString(36).substr(round(random(2, 9)), 3).toUpperCase();
+            var code = "Bot-" + randomStr(3).toUpperCase();
             res.push(new People(code));
         }
         return Promise.resolve(res);
@@ -217,9 +217,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      */
     addAction: function (actions) {
         if (isArray(actions)) {
-            for (var i = 0, l = actions.length; i < l; ++i) {
-                this.addAction(actions[i]);
-            }
+            actions.forEach(this.addAction.bind(this));
         }
         else if (!this.actions.has(actions.id)) {
             var action = new Action(this, actions);
@@ -264,7 +262,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                     // perk is compatible
                     var actionsIds = isFunction(perk.actions) && perk.actions();
                     if (!actionsIds || actionsIds.includes(action.id)) {
-                        if (!isFunction(perk.condition) || perk.condition(action)) {
+                        if (!isFunction(perk.condition) || perk.condition(self)) {
                             var done = 0;
                             if (!actionsIds) {
                                 done = 1 / (perk.iteration || 0);
@@ -301,17 +299,17 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         this.perkNode.textContent = "the \"" + capitalize(perk.name) + "\"";
         new Tooltip(this.perkNode, perk);
 
-        MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
-        if (isFunction(perk.effect) && false) { // TODO: define effect
+        if (isFunction(perk.effect)) { // TODO: define effect
             perk.effect(this);
         }
-        if (isFunction(perk.unlock)) {
-            this.addAction(perk.unlock());
+        if (isArray(perk.unlock)) {
+            this.addAction(perk.unlock);
         }
-        if (isFunction(perk.lock)) {
-            this.lockAction(perk.lock());
+        if (isArray(perk.lock)) {
+            this.lockAction(perk.lock);
         }
         People.usedPerks.push(perk.id);
+        MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
     },
     /**
      * Check for perk
@@ -344,15 +342,16 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     getStraight: function () {
         var straight = {
-            name: this.name,
-            gender: this.gender,
-            energy: this.energy,
-            life: this.life,
-            stats: this.stats,
-            actions: []
+            nam: this.name,
+            gnd: this.gender,
+            lif: this.life,
+            ene: this.energy,
+            stt: this.stats,
+            prk: this.perk,
+            act: []
         };
         this.actions.forEach(function (action) {
-            straight.actions.push(action.getStraight());
+            straight.act.push(action.getStraight());
         });
         return straight;
     }

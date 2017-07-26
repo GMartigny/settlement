@@ -106,9 +106,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         return this.count >= amount;
     },
     getStraight: function () {
-        var straight = this._getStraight();
-        straight.count = this.count;
-        return straight;
+        return [this.count, this.data];
     },
     /**
      * Format to string

@@ -25,7 +25,7 @@ Model.prototype = {
     },
     getStraight: function () {
         return {
-            data: this.data
+            id: this.data.id
         };
     }
 };

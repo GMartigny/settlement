@@ -1,5 +1,8 @@
 /* exported noop wrap formatTime formatArray formatJoin pluralize capitalize randomize randomizeMultiple log
-            consolidateData pickID isFunction isArray isString isUndefined sanitize camelize an compactResources loadAsync */
+            consolidateData pickID isFunction isArray isString isUndefined sanitize camelize an compactResources
+            getNow loadAsync */
+
+// TODO: put all utils in a single object
 
 var noop = new Function();
 
@@ -203,40 +206,53 @@ function log () {
 
 /**
  * Transform data function to their values
- * @param {Object} context - A context passed to each functions
+ * @param {Array} params - A list of params for each functions
  * @param {Object} object - A collection of functions
- * @param {Array<String>} [fields] - The object's field to consolidate
+ * @param {Array<String>} [fields] - The object's field to consolidate (all of object's by default)
  * @return {*}
  */
-function consolidateData (context, object, fields) {
+function consolidateData (params, object, fields) {
+    if (!isArray(params)) {
+        params = [params];
+    }
     fields = fields || Object.keys(object);
 
     var data = object.clone();
     fields.forEach(function (field) {
         if (data[field] && isFunction(data[field])) {
-            data[field] = data[field](context);
+            data[field] = data[field].apply(null, params);
         }
     });
     return data;
 }
 
 /**
+ * Return a random string
+ * @param {Number} [length=6] - The string's length
+ * @return {String}
+ */
+function randomStr (length) {
+    length = length || 6;
+    return (new Array(length)).fill("-").join("").replace(/-/g, function () {
+        return floor(random(37)).toString(36);
+    });
+}
+
+/**
  * Give a random unique ID without collision
  * @returns {string}
  */
-var pickID = (function () {
+var pickUniqueID = (function () {
     var IDS = [];
 
     return function () {
-        var ID = "------".replace(/-/g, function () {
-            return round(random(36)).toString(36);
-        });
+        var ID = randomStr();
         if (!IDS.includes(ID)) {
             IDS.push(ID);
             return ID;
         }
         else {
-            return pickID();
+            return pickUniqueID();
         }
     };
 })();
@@ -327,6 +343,14 @@ function compactResources (resources) {
         }
         return reduced;
     }, []);
+}
+
+/**
+ * Get a precise timestamp (it's not now)
+ * @return {Number}
+ */
+function getNow () {
+    return floor(performance.now());
 }
 
 /**

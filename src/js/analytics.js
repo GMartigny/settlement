@@ -24,7 +24,7 @@ if (!IS_DEV) {
  * @param {Number} [value] - Any value
  */
 function sendEvent (category, label, value) {
-    if (ga) {
+    if (isFunction(ga)) {
         ga("send", "event", "Game", category, label, value);
     }
 }

@@ -157,7 +157,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             else {
                 // Merge data from this and selected option
                 var cherryPick = Object.assign({}, option, this.data);
-                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "timeBonus", "consume"]);
+                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "timeBonus"]);
                 // Use resources
                 if (isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
@@ -180,7 +180,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                     duration += random(-data.timeDelta, data.timeDelta) * GameController.tickLength;
                 }
                 if (data.timeBonus) {
-                    duration = data.timeBonus;
+                    duration -= duration * data.timeBonus;
                 }
 
                 this.nameNode.style.animationDuration = duration + "ms";
@@ -207,6 +207,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             name: this.data.name,
             people: this.owner
         };
+
+        if (isFunction(this.data.effect)) {
+            this.data.effect(this, option, effect);
+        }
 
         var result = this.resolveAction(effect, option);
 
@@ -270,16 +274,19 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 forOne: []
             }
         };
-        var data = this.data;
+        var data = consolidateData([this, option, effect], this.data, ["give", "unlock", "lock", "build"]);
 
         // Give
-        if (isFunction(data.give)) {
-            result.give = data.give(this, option, effect) || [];
+        if (isArray(data.give)) {
+            result.give = data.give;
+        }
+        else if (data.giveSpan && data.giveList) {
+            result.give = randomizeMultiple(data.giveList, data.giveSpan);
         }
 
         // Unlock
-        if (isFunction(data.unlock)) {
-            var unlock = data.unlock(this, option, effect).filter(function (action) {
+        if (isArray(data.unlock)) {
+            var unlock = data.unlock.filter(function (action) {
                 return !action.condition || (action.condition && action.condition(this));
             }.bind(this));
 
@@ -293,8 +300,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         // Lock
-        if (isFunction(data.lock)) {
-            var lock = data.lock(this, option, effect);
+        if (isArray(data.lock)) {
+            var lock = data.lock;
 
             // Unique actions have to lock for everyone
             if (data.unique) {
@@ -310,21 +317,20 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         // Build
-        if (isFunction(data.build)) {
-            result.build = data.build(this, option, effect);
-            if (result.build) {
-                effect.build = an(result.build.name);
+        if (data.build) {
+            result.build = data.build;
+            effect.build = an(result.build.name);
 
-                // Add from building
-                if (isFunction(result.build.give)) {
-                    result.give = result.give.concat(result.build.give(this, option, effect));
-                }
-                if (isFunction(result.build.unlock)) {
-                    result.unlock.forAll = result.unlock.forAll.concat(result.build.unlock(this, option, effect));
-                }
-                if (isFunction(result.build.lock)) {
-                    result.lock.forAll = result.lock.forAll.concat(result.build.lock(this, option, effect));
-                }
+            // Add from building
+            var moreData = consolidateData([this, option, effect], data.build, ["give", "unlock", "lock"]);
+            if (isArray(moreData.give)) {
+                result.give = result.give.concat(moreData.give);
+            }
+            if (isArray(moreData.unlock)) {
+                result.unlock.forAll = result.unlock.forAll.concat(moreData.unlock);
+            }
+            if (isArray(moreData.lock)) {
+                result.lock.forAll = result.lock.forAll.concat(moreData.lock);
             }
         }
 

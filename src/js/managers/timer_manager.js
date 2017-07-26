@@ -9,7 +9,7 @@ var TimerManager = (function () {
      * @constructor
      */
     function Timer (action, time) {
-        this.startTime = performance.now();
+        this.startTime = getNow();
         this.action = action;
         this.time = time;
         this.isRunning = true;
@@ -28,7 +28,7 @@ var TimerManager = (function () {
          * @return {number}
          */
         getElapsed: function () {
-            return performance.now() - this.startTime;
+            return getNow() - this.startTime;
         },
         /**
          * Get remaining time on the timer
@@ -88,7 +88,7 @@ var TimerManager = (function () {
                 _timers.delete(timerId);
                 action();
             };
-            timerId = _timers.push(new Timer(func, time)).size;
+            timerId = _timers.push(new Timer(func, time));
             return timerId;
         },
         /**
@@ -113,13 +113,13 @@ var TimerManager = (function () {
          * @return {*}
          */
         restart: function (timerId) {
-            return _timers.get(timerId).restart(performance.now());
+            return _timers.get(timerId).restart(getNow());
         },
         /**
          * Restart all known timers
          */
         restartAll: function () {
-            var now = performance.now();
+            var now = getNow();
             _timers.forEach(function (timer) {
                 timer.restart(now);
             });

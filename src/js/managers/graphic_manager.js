@@ -27,7 +27,8 @@ var GraphicManager = (function () {
             throw new TypeError("Can't draw asset without destination");
         }
         this.animationState = 0;
-        this.animationSteps = destData.animationSteps || 1;
+        this.animationSteps = destData.steps || 1;
+        this.animationSpeed = (destData.speed || 0) / 60;
 
         this.source = {};
         this.destination = {};
@@ -36,7 +37,6 @@ var GraphicManager = (function () {
         this.destination.x = floor(+destData.x * Asset.ENLARGE);
         this.destination.y = floor(+destData.y * Asset.ENLARGE);
     }
-    Asset.ANIMATION_INC = 8 / 60; // 8 animations per seconds at 60fps
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.prototype = {
         /**
@@ -59,7 +59,7 @@ var GraphicManager = (function () {
          * @param {CanvasRenderingContext2D} layer - A layer to draw into
          */
         render: function (image, layer) {
-            this.animationState = (this.animationState + Asset.ANIMATION_INC) % this.animationSteps;
+            this.animationState = (this.animationState + this.animationSpeed) % this.animationSteps;
             var animationShift = floor(floor(this.animationState) * this.source.width);
             var posX = this.destination.x;
             var posY = this.destination.y;
@@ -121,8 +121,8 @@ var GraphicManager = (function () {
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
                 if (building && building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
-                    if (isFunction(building.upgrade)) {
-                        var upgradedId = building.upgrade(building);
+                    if (building.upgrade) {
+                        var upgradedId = building.upgrade.id;
                         if (_buildingsList.has(upgradedId)) {
                             _buildingsList.set(upgradedId, asset);
                         }

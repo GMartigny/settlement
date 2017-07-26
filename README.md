@@ -18,6 +18,8 @@ Luckily, human strength is to learn and act fast. So keep moving and you may liv
 
 Add events and make them more interesting.
 
+Progression finally saved.
+
 ...
 
 ### [v0.3](https://github.com/GMartigny/settlement/releases/tag/v0.3.0)

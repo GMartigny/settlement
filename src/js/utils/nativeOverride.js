@@ -28,16 +28,17 @@ Array.prototype.out = function (item) {
 
 /**
  * Try to use the object id as key
- * @param {*} [key] - Can be omitted, will use value.id then
- * @param {*} value -
- * @return {Map}
+ * @param {*} [key] - Can be omitted, will use value.id or generate one
+ * @param {*} value - Any value
+ * @return {*} The insertion key
  */
 Map.prototype.push = function (key, value) {
     if (isUndefined(value)) {
         value = key;
         key = value.id || (this.size + 1).toString(36);
     }
-    return this.set(key, value);
+    this.set(key, value);
+    return key;
 };
 
 /**
