@@ -43,7 +43,9 @@ rules:
     indent:
         - error
         - 4
-        - SwitchCase: 1
+        -
+            SwitchCase: 1
+            MemberExpression: 0
     key-spacing: error # Before color: false, after colon: true
     keyword-spacing: error # Before and after
     max-len:

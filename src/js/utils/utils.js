@@ -100,7 +100,7 @@ function pluralize (string, number) {
  */
 function capitalize (string) {
     if (string) {
-        string = string.replace(/([\.!\?]) ([a-z])/g, function (match, punctuation, letter) {
+        string = string.replace(/([.!?]) ([a-z])/g, function (match, punctuation, letter) {
             return punctuation + " " + letter.toUpperCase();
         });
         return string[0].toUpperCase() + string.slice(1);

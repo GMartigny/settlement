@@ -89,7 +89,7 @@ var LogManager = (function () {
          * @return {String}
          */
         personify: function (string, data) {
-            return string.replace(/@([\w\.]+)\b/gi, function (match, capture) {
+            return string.replace(/@([\w.]+)\b/gi, function (match, capture) {
                 var replace = data;
                 capture.split(".").forEach(function (part) {
                     replace = replace[part];

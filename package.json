@@ -15,7 +15,7 @@
     "grunt-contrib-less": "^1.4.0",
     "grunt-contrib-uglify": "^3.0.1",
     "grunt-contrib-watch": "^1.0.0",
-    "grunt-eslint": "^19.0.0",
+    "grunt-eslint": "^20.0.0",
     "grunt-lesslint": "^4.0.0",
     "grunt-spritesmith": "^6.3.1",
     "jit-grunt": "^0.10.0"
