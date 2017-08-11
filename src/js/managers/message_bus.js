@@ -63,8 +63,9 @@ var MessageBus = (function () {
             EVENT_START: 70, // An event start
             EVENT_CANCEL: 71, // Cancel an event
             EVENT_END: 72, // An event end
-            LOOSE: 80, // Game over
-            WIN: 85, // Congratulation
+            SAVE: 80, // Game saved
+            LOOSE: 90, // Game over
+            WIN: 95, // Congratulation
             KEYS: {
                 SPACE: 1032,
                 ENTER: 1013,
@@ -99,7 +100,7 @@ var MessageBus = (function () {
             event.preventDefault();
             event.stopPropagation();
         }
-        api.notify(1000 + event.keyCode, "down", true);
+        api.notify(code, "down", true);
     }, true);
 
     window.addEventListener("keyup", function (event) {

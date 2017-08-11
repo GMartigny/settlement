@@ -13,12 +13,12 @@
 /**
  * Class for actions
  * @extends Model
+ * @param {ID} id - Action's data
  * @param {People} owner - Action's owner
- * @param {ActionData} data - Action's data
  * @param {Action} [parentAction] - If this action has a parent
  * @constructor
  */
-function Action (owner, data, parentAction) {
+function Action (id, owner, parentAction) {
     this.locked = true;
     this.running = false;
     this.nameNode = null;
@@ -29,26 +29,13 @@ function Action (owner, data, parentAction) {
     this.parentAction = parentAction || null;
     this.repeated = 0;
 
+    var data = DataManager.get(id);
     this.super(data);
 }
 Action.COOLDOWN_CLASS = "cooldown";
 Action.RUNNING_CLASS = "running";
 Action.DISABLED_CLASS = "disabled";
 Action.extends(Model, "Action", /** @lends Action.prototype */ {
-    /**
-     * Initialise object
-     * @private
-     */
-    init: function () {
-        var data = consolidateData(this, this.data, ["time", "energy", "consume"]);
-        if (isUndefined(this.data.energy) && data.time) {
-            this.data.energy = data.time * 5;
-        }
-
-        this.tooltip = new Tooltip(this.nameNode, data);
-
-        this.manageOptions();
-    },
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -74,6 +61,20 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         return html;
     },
     /**
+     * Initialise object
+     * @private
+     */
+    init: function () {
+        var data = consolidateData([this], this.data, ["time", "energy", "consume"]);
+        if (isUndefined(this.data.energy) && data.time) {
+            this.data.energy = data.time * 5;
+        }
+
+        this.tooltip = new Tooltip(this.nameNode, data);
+
+        this.manageOptions();
+    },
+    /**
      * If needed, create and maintain options for this action
      * @memberOf Action#
      */
@@ -97,7 +98,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             for (var i = 0, l = newOptions.length; i < l; ++i) {
                 data = newOptions[i];
                 if (!this.options.has(data.id)) {
-                    option = new Action(this.owner, data, this);
+                    option = new Action(data, this.owner, this);
                     this.options.push(data.id, option);
                     this.optionsWrapper.appendChild(option.html);
                 }
@@ -110,7 +111,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        var data = consolidateData(this, this.data, ["time", "energy", "consume"]);
+        var data = consolidateData([this], this.data, ["time", "energy", "consume"]);
 
         this.locked = (this.owner.isTired() && data.energy > 0) ||
             (this.data.isOut && flags.cantGoOut) ||
@@ -157,7 +158,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             else {
                 // Merge data from this and selected option
                 var cherryPick = Object.assign({}, option, this.data);
-                var data = consolidateData(this, cherryPick, ["time", "timeDelta", "timeBonus"]);
+                var data = consolidateData([this], cherryPick, ["time", "timeDelta", "timeBonus"]);
                 // Use resources
                 if (isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
@@ -172,7 +173,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
-                this.owner.setBusy(data);
+                this.owner.setBusy(this.data.id);
 
                 var duration = (data.time || 0) * GameController.tickLength;
 

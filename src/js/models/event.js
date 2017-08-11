@@ -20,7 +20,7 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
      * @private
      */
     init: function () {
-        var data = consolidateData(this, this.data, ["time", "consume"]);
+        var data = consolidateData([this], this.data, ["time", "consume"]);
 
         if (this.tooltip) {
             this.tooltip.remove();

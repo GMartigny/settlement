@@ -1,4 +1,4 @@
-// "use strict";
+"use strict";
 
 /**
  * Return the last item of the array
@@ -87,7 +87,7 @@ Object.prototype.browse = function (action) {
  */
 Object.prototype.deepBrowse = function (action) {
     this.browse(function (value, index, list) {
-        if (value.name) {
+        if (value.constructor.name !== "Object") {
             action(value, index, list);
         }
         else {
@@ -130,7 +130,7 @@ Object.prototype.clone = function () {
 };
 
 /**
- * Make this class extends a parent class
+ * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent functions can be accessed with a leading "_".
  * @param {Function} parent - A parent to draw prototype from
  * @param {String} name - The constructor's name
  * @param {Object} override - A map like object with overrides

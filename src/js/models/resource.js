@@ -23,7 +23,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         if (count) {
             this.update(+count);
         }
-        var data = consolidateData(this, this.data, ["consume"]);
+        var data = consolidateData([this], this.data, ["consume"]);
         this.tooltip = new Tooltip(this.html, data);
     },
     /**
@@ -106,7 +106,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         return this.count >= amount;
     },
     getStraight: function () {
-        return [this.count, this.data];
+        return [this.count, this.data.id];
     },
     /**
      * Format to string

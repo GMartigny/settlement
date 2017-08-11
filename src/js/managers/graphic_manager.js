@@ -10,11 +10,6 @@ var GraphicManager = (function () {
 
     var _buildingsLayer;
     var _buildingsList;
-    var _eventsLayer;
-    var _eventsList;
-
-    var _waterLevel = 0;
-    var _foodLevel = 0;
 
     /**
      * A class for assets
@@ -112,13 +107,13 @@ var GraphicManager = (function () {
             wrapper.appendChild(layer.cnv);
 
             layer = prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
-            _eventsLayer = layer.ctx;
             layer.cnv.classList.add("layer", "events");
             wrapper.appendChild(layer.cnv);
 
             // watch for new buildings
             _buildingsList = new Map();
-            MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (building) {
+            MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (id) {
+                var building = DataManager.get(id);
                 if (building && building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
                     if (building.upgrade) {
@@ -133,31 +128,8 @@ var GraphicManager = (function () {
                 }
             }.bind(this));
 
-            // watch for new events
-            _eventsList = new Map();
-            MessageBus.observe(MessageBus.MSG_TYPES.EVENT_START, function (event) {
-                if (event.asset) {
-                    _eventsList.push(event.id, null); // FIXME
-                }
-            });
-            MessageBus.observe(MessageBus.MSG_TYPES.EVENT_END, function (event) {
-                _eventsList.delete(event.id);
-            });
-
-            // watch for food and water level
-            MessageBus.observe([MessageBus.MSG_TYPES.USE, MessageBus.MSG_TYPES.GIVE], function (resource) {
-                switch (resource.id) {
-                    case DataManager.data.resources.gatherables.common.water:
-                        _waterLevel = resource.get();
-                        break;
-                    case DataManager.data.resources.gatherables.common.food:
-                        _foodLevel = resource.get();
-                        break;
-                }
-            });
-
             // start loopdy loop
-            this.render();
+            // this.render();
         },
         /**
          * Draw everything
@@ -172,13 +144,6 @@ var GraphicManager = (function () {
                     return a.compare(b);
                 }).forEach(function (asset) {
                     asset.render(_combinedImage, _buildingsLayer);
-                });
-            }
-
-            if (_eventsList.size) {
-                _eventsLayer.clear();
-                _eventsList.forEach(function (asset) {
-                    asset.render(_combinedImage, _eventsLayer);
                 });
             }
         }

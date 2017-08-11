@@ -55,7 +55,6 @@ function People (name, gender) {
     this.super();
 }
 People.LST_ID = "peopleList";
-People.usedPerks = [];
 People.extends(Model, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
@@ -77,14 +76,13 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
+     * @memberOf People#
      */
     toHTML: function () {
         var html = this._toHTML();
 
-        var nameNode = wrap("name", capitalize(this.name));
-        this.perkNode = wrap("perk");
-        nameNode.appendChild(this.perkNode);
-        html.appendChild(nameNode);
+        this.nameNode = wrap("name", capitalize(this.name));
+        html.appendChild(this.nameNode);
 
         this.lifeBar = new Bar("life", 25);
         html.appendChild(this.lifeBar.html);
@@ -114,7 +112,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             if (this.busy) {
                 ratio = (this.busy.energy || 0) / this.busy.time;
             }
-            else if (this.perk && this.perk.id === DataManager.data.perks.lounger.id) {
+            else if (this.perk && this.perk.id === DataManager.ids.perks.lounger) {
                 ratio = 0;
             }
             this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
@@ -151,13 +149,13 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Set busy with an action
-     * @param {Object} action - Current action's data
+     * @param {Object} [actionId=false] - Current action's data
      */
-    setBusy: function (action) {
-        if (action && action.id !== DataManager.data.actions.sleep.id) {
+    setBusy: function (actionId) {
+        if (actionId && actionId !== DataManager.ids.actions.sleep) {
             this.stats.idle = 0;
         }
-        this.busy = action || false;
+        this.busy = actionId || false;
         this.html.classList.toggle("busy", this.busy);
     },
     /**
@@ -165,7 +163,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      */
     finishAction: function () {
         this.rollForPerk(this.busy);
-        this.setBusy(null);
+        this.setBusy();
     },
     /**
      * Change energy
@@ -212,72 +210,77 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Add some actions
-     * @param {ActionData|Array<ActionData>} actions - One or more actions to add
+     * @param {ID|Array<ID>} actionsId - One or more actions to add
      * @memberOf People#
      */
-    addAction: function (actions) {
-        if (isArray(actions)) {
-            actions.forEach(this.addAction.bind(this));
+    addAction: function (actionsId) {
+        if (!isArray(actionsId)) {
+            actionsId = [actionsId];
         }
-        else if (!this.actions.has(actions.id)) {
-            var action = new Action(this, actions);
-            if (this.perk && isFunction(this.perk.effect)) {
-                if (!this.perk.actions || this.perk.actions().includes(actions.id)) {
-                    action.applyEffect(this.perk.effect);
-                }
+
+        var self = this;
+        actionsId.forEach(function (id) {
+            if (!self.actions.has(id)) {
+                var action = new Action(id, self);
+                // if (self.perk && isFunction(self.perk.effect)) {
+                //     if (!self.perk.actions || self.perk.actions().includes(id)) {
+                //         action.applyEffect(self.perk.effect);
+                //     }
+                // }
+                self.actions.push(id, action);
+                self.actionList.appendChild(action.html);
             }
-            this.actions.push(actions.id, action);
-            this.actionList.appendChild(action.html);
-        }
+        });
     },
     /**
      * Lock some actions
-     * @param {ID|Array<ID>} actions - One or more actions ID to lock
+     * @param {ID|Array<ID>} actionsId - One or more actions ID to lock
      */
-    lockAction: function (actions) {
-        if (isArray(actions)) {
-            for (var i = 0, l = actions.length; i < l; ++i) {
-                this.lockAction(actions[i]);
-            }
+    lockAction: function (actionsId) {
+        if (!isArray(actionsId)) {
+            actionsId = [actionsId];
         }
-        else if (this.actions.has(actions)) {
-            this.actions.get(actions).lock();
-            this.actions.delete(actions);
-        }
+
+        var self = this;
+        actionsId.forEach(function (id) {
+            self.actions.get(id).lock();
+            self.actions.delete(id);
+        });
     },
     /**
      * Try to obtains a perk
-     * @param {Object} action - Action's data
+     * @param {ID} actionId - Action's data
      * @returns {Boolean} true if got perk
      */
-    rollForPerk: function (action) {
+    rollForPerk: function (actionId) {
         var gotPerk = false;
         if (!this.perk) {
             var self = this;
-            var perksList = DataManager.data.perks;
+            var perksIdList = DataManager.ids.perks;
             // browse all perks
-            perksList.deepBrowse(function (perk) {
+            perksIdList.deepBrowse(function (perkId) {
                 // perk not already used
-                if (!People.usedPerks.includes(perk.id)) {
+                if (!Perk.isUsed(perkId)) {
+                    var perkData = DataManager.get(perkId);
                     // perk is compatible
-                    var actionsIds = isFunction(perk.actions) && perk.actions();
-                    if (!actionsIds || actionsIds.includes(action.id)) {
-                        if (!isFunction(perk.condition) || perk.condition(self)) {
+                    var actionsIds = perkData.actions;
+                    if (!actionsIds || actionsIds.includes(actionId)) {
+                        if (!isFunction(perkData.condition) || perkData.condition(self)) {
                             var done = 0;
                             if (!actionsIds) {
-                                done = 1 / (perk.iteration || 0);
+                                done = 1 / (perkData.iteration || 0);
                             }
                             else {
                                 done = actionsIds.reduce(function (sum, id) {
                                     var action = self.actions.get(id);
                                     return sum + (action ? action.repeated : 0);
-                                }, 0) / (perk.iteration || 0);
+                                }, 0) / (perkData.iteration || 0);
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
                             if (done && random() < done) {
                                 // perk is unlocked
-                                self.gainPerk(perk);
+                                self.gainPerk(perkId);
                                 gotPerk = true;
                             }
                         }
@@ -289,26 +292,14 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Add a perk
-     * @param {PerkData} perk - The perk data
+     * @param {ID} perkId - The perk data
+     * @memberOf People#
      */
-    gainPerk: function (perk) {
-        perk.desc = LogManager.personify(perk.desc, {
-            people: this
-        });
+    gainPerk: function (perkId) {
+        var perk = new Perk(perkId, this);
         this.perk = perk;
-        this.perkNode.textContent = "the \"" + capitalize(perk.name) + "\"";
-        new Tooltip(this.perkNode, perk);
+        this.nameNode.appendChild(perk.html);
 
-        if (isFunction(perk.effect)) { // TODO: define effect
-            perk.effect(this);
-        }
-        if (isArray(perk.unlock)) {
-            this.addAction(perk.unlock);
-        }
-        if (isArray(perk.lock)) {
-            this.lockAction(perk.lock);
-        }
-        People.usedPerks.push(perk.id);
         MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
     },
     /**
@@ -317,7 +308,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @returns {Boolean}
      */
     hasPerk: function (perkId) {
-        return this.perk && this.perk.id === perkId;
+        return this.perk && this.perk.data.id === perkId;
     },
     /**
      * Kill it for good
@@ -326,10 +317,6 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         if (this.html.classList.contains("arrived")) {
             MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
             this.html.classList.remove("arrived");
-
-            if (this.perk) {
-                People.usedPerks.out(this.perk.id);
-            }
 
             this.actions.forEach(function (action) {
                 action.cancel();

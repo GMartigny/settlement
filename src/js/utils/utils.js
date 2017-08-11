@@ -212,9 +212,6 @@ function log () {
  * @return {*}
  */
 function consolidateData (params, object, fields) {
-    if (!isArray(params)) {
-        params = [params];
-    }
     fields = fields || Object.keys(object);
 
     var data = object.clone();

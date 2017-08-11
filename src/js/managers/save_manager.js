@@ -10,7 +10,7 @@ var SaveManager = (function () {
         key = randomStr();
         storage.setItem("k", key);
     }
-    var salt = randomStr();
+    var salt = randomStr(6);
 
     function compress (str) {
         return btoa(salt + str);
