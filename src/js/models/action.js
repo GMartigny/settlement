@@ -65,7 +65,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @private
      */
     init: function () {
-        var data = consolidateData([this], this.data, ["time", "energy", "consume"]);
+        var data = consolidateData([this], this.data, ["time", "energy"]);
         if (isUndefined(this.data.energy) && data.time) {
             this.data.energy = data.time * 5;
         }
@@ -86,20 +86,17 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             var newOptions = this.data.options(this);
             // Looks for options not available anymore
             this.options.forEach(function (option) {
-                var find = newOptions.find(function (item) {
-                    return item.id === option.data.id;
-                });
-                if (!find) {
+                if (!newOptions.includes(option.data.id)) {
                     option.lock();
                 }
             });
             // Add new options
-            var option, data;
+            var option, id;
             for (var i = 0, l = newOptions.length; i < l; ++i) {
-                data = newOptions[i];
-                if (!this.options.has(data.id)) {
-                    option = new Action(data, this.owner, this);
-                    this.options.push(data.id, option);
+                id = newOptions[i];
+                if (!this.options.has(id)) {
+                    option = new Action(id, this.owner, this);
+                    this.options.push(id, option);
                     this.optionsWrapper.appendChild(option.html);
                 }
             }
@@ -111,7 +108,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        var data = consolidateData([this], this.data, ["time", "energy", "consume"]);
+        var data = consolidateData([this], this.data, ["time", "energy"]);
 
         this.locked = (this.owner.isTired() && data.energy > 0) ||
             (this.data.isOut && flags.cantGoOut) ||
@@ -119,16 +116,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         this.tooltip.refresh(resources, data);
 
-        // check consummation
-        if (isArray(data.consume)) {
-            if (!this.locked) {
-                data.consume.forEach(function (r) {
-                    var id = r[1].id;
-                    if (!resources.has(id) || !resources.get(id).has(r[0])) {
-                        this.locked = true;
-                    }
-                }, this);
-            }
+        // check consumption
+        if (isArray(this.data.consume) && !this.locked) {
+            this.data.consume.forEach(function (r) {
+                var id = r[1];
+                if (!resources.has(id) || !resources.get(id).has(r[0])) {
+                    this.locked = true;
+                }
+            }, this);
         }
         this.manageOptions();
         if (this.options) {
@@ -137,16 +132,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             });
         }
 
-        if (this.locked) {
-            this.nameNode.classList.add(Action.DISABLED_CLASS);
-        }
-        else {
-            this.nameNode.classList.remove(Action.DISABLED_CLASS);
-        }
+        this.nameNode.classList.toggle(Action.DISABLED_CLASS, this.locked)
     },
     /**
      * Player click on action
-     * @param {CraftableData|BuildingData} [option] - The chosen option
+     * @param {CraftableData|BuildingData} [option] - The chosen option's data
      * @return {Boolean} Is launched
      */
     click: function (option) {
@@ -155,19 +145,19 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             if (this.parentAction) {
                 return this.parentAction.click(this.data);
             }
-            else {
+            else if (option || !this.options) {
                 // Merge data from this and selected option
-                var cherryPick = Object.assign({}, option, this.data);
+                var cherryPick = Object.assign({}, this.data, option);
                 var data = consolidateData([this], cherryPick, ["time", "timeDelta", "timeBonus"]);
                 // Use resources
-                if (isArray(data.consume)) {
-                    MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
+                if (isArray(cherryPick.consume)) {
+                    MessageBus.notify(MessageBus.MSG_TYPES.USE, cherryPick.consume);
                 }
 
                 // Tell the game controller to filter out building in progress
-                if (isFunction(data.build)) {
-                    var build = data.build(this, option);
-                    MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, build.id);
+                if (cherryPick.build) {
+                    var build = cherryPick.build === DataManager.ids.option ? option : cherryPick.build;
+                    MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, build);
                 }
 
                 this.html.classList.add(Action.RUNNING_CLASS);
@@ -200,7 +190,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {CraftableData|BuildingData} [option] - The chosen option
      */
     end: function (option) {
-        this.timeout = 0;
+        this.timeout = null;
         this.html.classList.remove(Action.RUNNING_CLASS);
         this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
 
@@ -232,9 +222,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // Lock
         if (result.lock.forAll.length) {
+            // lock to all
             MessageBus.notify(MessageBus.MSG_TYPES.LOCK, result.lock.forAll);
         }
         if (result.lock.forOne.length) {
+            // lock to owner
             this.owner.lockAction(result.lock.forOne);
         }
 
@@ -275,37 +267,54 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 forOne: []
             }
         };
-        var data = consolidateData([this, option, effect], this.data, ["give", "unlock", "lock", "build"]);
 
         // Give
-        if (isArray(data.give)) {
-            result.give = data.give;
+        if (isArray(this.data.give)) {
+            result.give = this.data.give;
         }
-        else if (data.giveSpan && data.giveList) {
-            result.give = randomizeMultiple(data.giveList, data.giveSpan);
+        else if (this.data.giveSpan && this.data.giveList) {
+            result.give = randomizeMultiple(this.data.giveList, this.data.giveSpan);
         }
+
+        var self = this;
+        var repeated = this.repeated;
 
         // Unlock
-        if (isArray(data.unlock)) {
-            var unlock = data.unlock.filter(function (action) {
-                return !action.condition || (action.condition && action.condition(this));
-            }.bind(this));
-
-            // Unique actions have to unlock for everyone
-            if (data.unique) {
-                result.unlock.forAll = unlock;
-            }
-            else {
-                result.unlock.forOne = unlock;
-            }
+        var unlock = [];
+        if (isArray(this.data.unlockAfter)) {
+            this.data.unlockAfter.forEach(function (couple) {
+                if (repeated > couple[0]) {
+                    unlock.push(couple[1]);
+                }
+            });
+        }
+        if (isArray(this.data.unlock)) {
+            unlock.push.apply(unlock, this.data.unlock.filter(function (action) {
+                return !action.condition || (action.condition && action.condition(self));
+            }));
+        }
+        // Unique actions have to unlock for everyone
+        if (this.data.unique) {
+            result.unlock.forAll = unlock;
+        }
+        else {
+            result.unlock.forOne = unlock;
         }
 
         // Lock
-        if (isArray(data.lock)) {
-            var lock = data.lock;
+        var lock = [];
+        if (isArray(this.data.lockAfter)) {
+            this.data.lockAfter.forEach(function (couple) {
+                if (repeated > couple[0]) {
+                    unlock.push(couple[1]);
+                }
+            });
+        }
+        if (isArray(this.data.lock)) {
+            lock.push.apply(lock, this.data.lock);
 
             // Unique actions have to lock for everyone
-            if (data.unique) {
+            if (this.data.unique) {
                 result.lock.forAll = lock;
             }
             else {
@@ -313,12 +322,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
         }
         // Unique action lock itself
-        if (data.unique) {
-            result.lock.forAll.push(data.id);
+        if (this.data.unique) {
+            result.lock.forAll.push(this.data.id);
         }
 
         // Build
-        if (data.build) {
+        if (this.data.build) {
             result.build = data.build;
             effect.build = an(result.build.name);
 

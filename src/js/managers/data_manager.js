@@ -149,6 +149,8 @@ var DataManager = (function () {
 
     /* eslint-disable valid-jsdoc */
 
+    ids.option = "opt";
+
     ids.resources.room = insert({
         id: "rom",
         name: "room",
@@ -458,9 +460,7 @@ var DataManager = (function () {
         id: "bui",
         name: "build",
         desc: "Put together some materials to come up with what looks like a building.",
-        build: function (action, option) {
-            return option;
-        },
+        build: ids.option,
         options: function () {
             return this.possibleBuildings();
         },
@@ -476,11 +476,9 @@ var DataManager = (function () {
         options: function () {
             return this.unlockedCraftables();
         },
-        give: function (action, option) {
-            return [
-                [1, option]
-            ];
-        },
+        give: [
+            [1, ids.option]
+        ],
         unlock: [
             ids.actions.build
         ],
@@ -515,11 +513,7 @@ var DataManager = (function () {
             }
             return give;
         },
-        log: function (effect) {
-            // log using location's data
-            var log = effect.location.log || "";
-            return isFunction(log) ? log(effect, action) : log;
-        },
+        log: "All locations should have own log",
         order: 20
     });
     ids.actions.scour = insert({
@@ -572,34 +566,22 @@ var DataManager = (function () {
         condition: function (action) {
             return !action.owner.actions.has(ids.actions.scour.id);
         },
-        unlock: function (action) {
-            var unlock = [
-                ids.actions.explore
-            ];
-            if (action.repeated > 9) {
-                unlock.push(ids.actions.scour);
-            }
-            return unlock;
-        },
-        giveSpan: [1, 3],
-        give: function (action, option, effect) {
-            var give = randomizeMultiple(ids.resources.gatherables, action.data.giveSpan);
-            if (random() < ids.resources.gatherables.special.ruins.dropRate) {
-                give.push([1, ids.resources.gatherables.special.ruins]);
-                var location = randomize(ids.locations.near);
-                this.knownLocations.push(location);
-                effect.location = an(location.name);
-            }
-            return give;
-        },
+        unlock: [
+            ids.actions.explore
+        ],
+        unlockAfter: [
+            [9, ids.actions.scour]
+        ],
+        giveSpan: [ids.resources.gatherables.special.ruins.dropRate, 1],
+        giveList: ids.resources.gatherables.special.ruins,
         log: function (effect) {
             var log;
-            if (effect.location) {
-                log = "Heading @direction, @people.name spots @location, " +
-                    "so @people.nominative brings back @give.";
+            if (effect.give) {
+                this.knownLocations.push(location);
+                log = "Heading @direction, @people.name spots @location.";
             }
             else {
-                log = "Despite nothing special found towards @direction, @people.name brings back @give.";
+                log = "@people.name found nothing special towards @direction.";
             }
             effect.direction = directions.random();
             return log;
