@@ -3,12 +3,20 @@
 
 /**
  * Class for buildings
- * @param {BuildingData} data - The building's data
+ * @param {ID} id - The building's id
  * @constructor
  */
-function Building (data) {
-    this.super(data);
+function Building (id) {
+    this.super(id);
 }
 Building.extends(Model, "Building", /** @lends Building.prototype */ {
-    toHTML: noop
+    toHTML: noop,
+    init: function () {
+        if (this.data.lock) {
+            MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.lock);
+        }
+        if (this.data.unlock) {
+            MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, this.data.unlock);
+        }
+    }
 });

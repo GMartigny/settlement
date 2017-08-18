@@ -55,7 +55,7 @@ var GraphicManager = (function () {
          */
         render: function (image, layer) {
             this.animationState = (this.animationState + this.animationSpeed) % this.animationSteps;
-            var animationShift = floor(floor(this.animationState) * this.source.width);
+            var animationShift = floor(this.animationState) * this.source.width;
             var posX = this.destination.x;
             var posY = this.destination.y;
             layer.drawImage(image,
@@ -117,7 +117,7 @@ var GraphicManager = (function () {
                 if (building && building.asset) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
                     if (building.upgrade) {
-                        var upgradedId = building.upgrade.id;
+                        var upgradedId = building.upgrade;
                         if (_buildingsList.has(upgradedId)) {
                             _buildingsList.set(upgradedId, asset);
                         }

@@ -248,33 +248,16 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             if (this.flags.settled) {
                 this.flags.survived += elapse * GameController.tickLength;
                 // People consume resources to survive
-                var peopleConsumption = DataManager.get(DataManager.ids.people);
+                var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
                 if (this.flags.drought) {
                     peopleConsumption[0][0] *= 2;
                 }
-                MessageBus.notify(MessageBus.MSG_TYPES.USE, peopleConsumption, true);
-                peopleConsumption.forEach(function (need) {
-                    var amount = need[0];
-                    var resource = need[1];
-                    var lacking = need[2];
-
-                    var instance = this.resources.has(resource.id) && this.resources.get(resource.id);
-                    if (!instance) {
-                        instance = new Resource(resource);
-                        this.resources.push(instance);
-                    }
-                    if (instance.count < amount) {
-                        if (!instance.warnLack) {
-                            MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resource);
-                            instance.warnLack = true;
-                        }
-                        this.flags[lacking] += amount - instance.count;
-                    }
-                    else {
-                        instance.warnLack = false;
-                        this.flags[lacking] = 0;
-                    }
+                peopleConsumption.forEach(function (consumption) {
+                    this.consume(consumption[0], consumption[1], function (diff) {
+                        this.flags[consumption[2]] = diff;
+                    });
                 }, this);
+
 
                 var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
                 if (this.canSomeoneArrive() && random() < peopleDropRate) {
@@ -316,12 +299,15 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     /**
      * Need to use a resource
      * @param {Number} amount - Amount to use
-     * @param {ResourceData} resource - Resource data
+     * @param {ID} resourceId - Resource id
      * @param {lackOfResources} lack - A callback function in case of lack
      */
-    consume: function (amount, resource, lack) {
+    consume: function (amount, resourceId, lack) {
         if (amount) {
-            var instance = this.resources.get(resource.id);
+            var instance = this.resources.get(resourceId);
+            if (!instance) {
+                instance = new Resource(resourceId);
+            }
             if (instance && instance.has(amount)) {
                 instance.update(-amount);
                 instance.warnLack = false;
@@ -329,11 +315,11 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             else if (isFunction(lack)) {
                 var diff = amount - instance.count;
                 instance.set(0);
-                lack.call(this, diff, resource);
+                lack.call(this, diff, resourceId);
 
                 if (!instance.warnLack) {
                     instance.warnLack = true;
-                    MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resource.name);
+                    MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
                 }
             }
         }
@@ -344,12 +330,11 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @param {ID} id - Resource id
      */
     earn: function (amount, id) {
-        var resource = DataManager.get(id);
         if (this.resources.has(id)) {
             this.resources.get(id).update(amount);
         }
         else {
-            var res = new Resource(resource, amount);
+            var res = new Resource(id, amount);
             this.resources.push(id, res);
             this.resourcesList.appendChild(res.html);
         }
@@ -391,7 +376,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      */
     arrive: function (people) {
         if (isArray(people)) {
-            people.forEach(this.arrive.bind(this));
+            people.forEach(this.arrive, this);
         }
         else {
             this.people.push(people);
@@ -404,26 +389,18 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     },
     /**
      * Build something
-     * @param {BuildingData} building - Building data
+     * @param {ID} id - Building id
      */
-    build: function (building) {
-        var id = building.id;
+    build: function (id) {
         this.buildingsInProgress.out(id);
         if (!this.buildings.has(id)) {
-            var bld = new Building(building);
+            var bld = new Building(id);
             this.buildings.push(id, bld);
-
-            if (isFunction(building.lock)) {
-                this.removeFromInitialActions(building.lock(bld));
-            }
-            if (isFunction(building.unlock)) {
-                this.addToInitialActions(building.unlock(bld));
-            }
         }
     },
     /**
      * Return all unlocked craftables
-     * @return {Array<CraftableData>}
+     * @return {Array<ID>}
      */
     unlockedCraftables: function () {
         var craftables = [];
@@ -431,7 +408,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         DataManager.ids.resources.craftables.deepBrowse(function (id) {
             var craft = DataManager.get(id);
             if (!craft.condition || (isFunction(craft.condition) && craft.condition())) {
-                craftables.push(craft);
+                craftables.push(id);
             }
         });
 
@@ -439,16 +416,17 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     },
     /**
      * Return all possible craftables according to current resources
-     * @return {Array<CraftableData>}
+     * @return {Array<ID>}
      */
     possibleCraftables: function () {
         var game = this;
 
-        return this.unlockedCraftables().filter(function (craft) {
+        return this.unlockedCraftables().filter(function (id) {
             var keep = true;
+            var craft = DataManager.get(id);
             if (isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
-                    keep = keep && game.hasEnough(res[1].id, res[0]);
+                    keep = keep && game.hasEnough(res[1], res[0]);
                 });
             }
             return keep;
@@ -456,7 +434,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     },
     /**
      * Return all accessible buildings
-     * @return {Array<BuildingData>}
+     * @return {Array<ID>}
      */
     possibleBuildings: function () {
         var buildings = [],
@@ -471,7 +449,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 if (!isFunction(build.condition) || build.condition(build)) {
                     // has the upgraded building
                     if (!build.upgrade || done.has(build.upgrade)) {
-                        buildings.push(build);
+                        buildings.push(id);
                     }
                 }
             }

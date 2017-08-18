@@ -8,14 +8,10 @@
  * @constructor
  */
 function Perk (id, owner) {
-    var data = DataManager.get(id);
-    data.desc = LogManager.personify(data.desc, {
-        people: owner
-    });
     this.owner = owner;
     Perk.usedId.push(id);
 
-    this.super(data);
+    this.super(id);
 }
 Perk.usedId = [];
 Perk.isUsed = function (perkId) {
@@ -23,6 +19,10 @@ Perk.isUsed = function (perkId) {
 };
 Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
     init: function () {
+        this.data.desc = LogManager.personify(this.data.desc, {
+            people: this.owner
+        });
+
         new Tooltip(this.html, this.data);
 
         if (isArray(this.data.unlock)) {

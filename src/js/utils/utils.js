@@ -47,16 +47,17 @@ function formatTime (time) {
 
 /**
  * Format an array for human reading
- * @param {Array<[Number, String]>} array - An array of resources consumption
+ * @param {Array<[Number, ID]>} array - An array of resources consumption
  * @return {String}
  */
 function formatArray (array) {
     var res = [];
 
     array.forEach(function (item) {
-        var name = pluralize(item[1].name, item[0]);
-        if (item[1].icon) {
-            name += " " + Resource.iconAsString(item[1].icon);
+        var resource = DataManager.get(item[1]);
+        var name = pluralize(resource.name, item[0]);
+        if (resource.icon) {
+            name += " " + Resource.iconAsString(resource.icon);
         }
         res.push(item[0] + " " + name);
     });
@@ -128,11 +129,12 @@ function randomize (list, amount) {
     var all = {},
         dropRateScale = [],
         dropRateSum = 0;
-    list.deepBrowse(function (item) {
+    list.deepBrowse(function (id) {
+        var item = DataManager.get(id);
         if (item.dropRate) {
             dropRateSum += item.dropRate;
             dropRateScale.push(dropRateSum);
-            all[dropRateSum] = item;
+            all[dropRateSum] = id;
         }
     });
     var pick = round(random(dropRateSum));
@@ -185,13 +187,11 @@ function randomizeMultiple (list, amount) {
     var total = round(random.apply(null, amount));
     var sum = 0;
 
-    while (sum < total) { // can add 1
-        var pick = round(random(1, total - sum));
-        res.push([pick, randomize(list)]);
-        sum += pick;
+    while (sum++ < total) {
+        res.push([1, randomize(list)]);
     }
 
-    return res;
+    return compactResources(res);
 }
 
 /**
@@ -322,15 +322,15 @@ function an (word) {
 
 /**
  * Compact resources to one item per each
- * @param {Array} resources - An array of resource with amount
+ * @param {Array<[Number, ID]>} resources - An array of resource with amount
  * @example
- * [ [1, {water}], [2, {water}] ] => [ [3, {water}] ]
+ * [ [1, "wtr"], [2, "wtr"] ] => [ [3, "wtr"] ]
  * @return {Array}
  */
 function compactResources (resources) {
     return resources.reduce(function (reduced, item) {
         var known = reduced.find(function (entry) {
-            return entry[1].id === item[1].id;
+            return entry[1] === item[1];
         });
         if (known) {
             known[0] += item[0];

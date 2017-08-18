@@ -27,6 +27,14 @@ Array.prototype.out = function (item) {
 };
 
 /**
+ * Push an array of items into the array
+ * @param {Array} array - An array of item
+ */
+Array.prototype.insert = function (array) {
+    this.push.apply(this, array);
+};
+
+/**
  * Try to use the object id as key
  * @param {*} [key] - Can be omitted, will use value.id or generate one
  * @param {*} value - Any value
@@ -75,10 +83,9 @@ Object.prototype.values = function () {
  * @param {Function} action - A function called on each item
  */
 Object.prototype.browse = function (action) {
-    var self = this;
     Object.keys(this).forEach(function (key) {
-        action(self[key], key, self);
-    });
+        action(this[key], key, this);
+    }, this);
 };
 
 /**

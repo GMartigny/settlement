@@ -3,11 +3,11 @@
 
 /**
  * A base model for all
- * @param {UniqueData} data - The object's data
+ * @param {ID} id - The object's id
  * @constructor
  */
-function Model (data) {
-    this.data = data;
+function Model (id) {
+    this.data = DataManager.get(id);
     this.html = this.toHTML();
     this.init.apply(this, Array.prototype.splice.call(arguments, 1));
 }

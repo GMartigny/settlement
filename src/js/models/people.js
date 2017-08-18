@@ -218,19 +218,13 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             actionsId = [actionsId];
         }
 
-        var self = this;
         actionsId.forEach(function (id) {
-            if (!self.actions.has(id)) {
-                var action = new Action(id, self);
-                // if (self.perk && isFunction(self.perk.effect)) {
-                //     if (!self.perk.actions || self.perk.actions().includes(id)) {
-                //         action.applyEffect(self.perk.effect);
-                //     }
-                // }
-                self.actions.push(id, action);
-                self.actionList.appendChild(action.html);
+            if (!this.actions.has(id)) {
+                var action = new Action(id, this);
+                this.actions.push(id, action);
+                this.actionList.appendChild(action.html);
             }
-        });
+        }, this);
     },
     /**
      * Lock some actions
@@ -241,11 +235,10 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             actionsId = [actionsId];
         }
 
-        var self = this;
         actionsId.forEach(function (id) {
-            self.actions.get(id).lock();
-            self.actions.delete(id);
-        });
+            this.actions.get(id).lock();
+            this.actions.delete(id);
+        }, this);
     },
     /**
      * Try to obtains a perk

@@ -25,8 +25,8 @@ var DataManager = (function () {
      */
     /**
      * @typedef {Object} Data
-     * @prop {String|Function} name - The displayed name
-     * @prop {String|Function} [desc] - A description for tooltip
+     * @prop {String} name - The displayed name
+     * @prop {String} [desc] - A description for tooltip
      */
     /**
      * @typedef {Object} UniqueData
@@ -36,7 +36,7 @@ var DataManager = (function () {
      */
     /**
      * @typedef {Object} ConsumerData
-     * @prop {Function} consume - Return consumed resources
+     * @prop {Array<[Number, ID]>} consume - Return consumed resources
      */
     /**
      * @typedef {Object} ResourceData
@@ -55,24 +55,26 @@ var DataManager = (function () {
      * @extends ConsumerData
      * @prop {Function} [options] - Return an array of options for this action
      * @prop {Function} [condition] - Return true if can be done
-     * @prop {Function} [give] - Return an array of given resources (can be replace by giveSpan and giveList combo)
+     * @prop {Array<[Number, ID]>} [give] - Return an array of given resources (can be replace by giveSpan and giveList combo)
      * @prop {Array<Number>} [giveSpan] - Span of randomness for give
      * @prop {Object} [giveList] - List to draw from for give
-     * @prop {Function} [unlock] - Return an array of unlocked action for this person
-     * @prop {Function} [lock] - Return an array of locked action for this person
-     * @prop {Function} [build] - Return an array of built buildings id
-     * @prop {Number|Function} [time=0] - In game time to do
+     * @prop {Array<ID>} [unlock] - Return an array of unlocked action for this person
+     * @prop {Array<ID>} [lock] - Return an array of locked action for this person
+     * @prop {Array<ID>} [unlockForAll] - Return an array of unlocked action for all
+     * @prop {Array<ID>} [lockForAll] - Return an array of locked action for all
+     * @prop {ID} [build] - Return an array of built buildings id
+     * @prop {Number} [time=0] - In game time to do
      * @prop {Number} [timeDelta=0] - Added randomness to time (from -x to +x)
      * @prop {Number} [timeBonus=0] - From 0 to 1, a ratio for action duration (set to 1 and action time is 0)
-     * @prop {Number|Function} [energy=time*5] - Energy taken to do
+     * @prop {Number} [energy=time*5] - Energy taken to do
      * @prop {String} log - A log string to display when done
      */
     /**
      * @typedef {Object} BuildingData
      * @extends ActionData
-     * @prop {Function} [unlock] - Return an array of unlocked action for all people
-     * @prop {Function} [lock] - Return an array of locked action for all people
-     * @prop {Function} [upgrade] - Return a building ID to upgrade
+     * @prop {Array<ID>} [unlock] - Return an array of unlocked action for all people
+     * @prop {Array<ID>} [lock] - Return an array of locked action for all people
+     * @prop {Array<ID>} [upgrade] - Return a building ID to upgrade
      * @prop {String} asset - Id of the graphical asset
      */
     /**
@@ -84,9 +86,9 @@ var DataManager = (function () {
     /**
      * @typedef {Object} PerkData
      * @extends UniqueData
-     * @prop {Function} actions - Return the list of actions
+     * @prop {Array<ID>} actions - Return the list of actions
      * @prop {Number} [iteration=0] - Number of time it take to have a 100% chance to get the perk
-     * @prop {Function} [effect] -
+     * @prop {Function} [effect] - Need to be defined
      */
 
     var ids = {
@@ -470,9 +472,7 @@ var DataManager = (function () {
         id: "crf",
         name: "craft",
         desc: "Use some resources to tinker something useful.",
-        time: function () {
-            return this.buildings.has(ids.buildings.big.workshop.id) ? 4 : 5;
-        },
+        time: 5,
         options: function () {
             return this.unlockedCraftables();
         },
@@ -503,19 +503,11 @@ var DataManager = (function () {
             return this.knownLocations;
         },
         giveSpan: [7, 10],
-        give: function (action, option, effect) {
-            // remember it for log
-            effect.location = option;
-            var give = randomizeMultiple(option.give, action.data.giveSpan);
-            var quartz = ids.resources.gatherables.special.quartz;
-            if (random() < quartz.dropRate) {
-                give.push([1, quartz]);
-            }
-            return give;
-        },
+        giveList: ids.option,
         log: "All locations should have own log",
         order: 20
     });
+    var ruinsDropRate = ids.resources.gatherables.special.ruins.dropRate;
     ids.actions.scour = insert({
         id: "scr",
         name: "scour",
@@ -525,21 +517,8 @@ var DataManager = (function () {
         consume: [
             [1, ids.resources.gatherables.common.water]
         ],
-        giveSpan: [2, 4],
-        give: function (action, option, effect) {
-            var give = randomize(ids.resources.gatherables, action.data.giveSpan);
-            // Add 50% chance for ruins (or 100% if explorer)
-            var baseDropRate = ids.resources.gatherables.special.ruins.dropRate;
-            var isExplorer = action.owner.hasPerk(ids.perks.explorer.id);
-            var modifier = isExplorer ? 1 : 0.5;
-            if (random() < (baseDropRate + (1 - baseDropRate) * modifier)) {
-                give.push([1, ids.resources.gatherables.special.ruins]);
-                var location = randomize(isExplorer ? ids.locations.epic : ids.locations.far);
-                this.knownLocations.push(location);
-                effect.location = an(location.name);
-            }
-            return give;
-        },
+        giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2],
+        giveList: ids.resources.gatherables.special.ruins,
         log: function (effect) {
             var log;
             if (effect.location) {
@@ -572,7 +551,7 @@ var DataManager = (function () {
         unlockAfter: [
             [9, ids.actions.scour]
         ],
-        giveSpan: [ids.resources.gatherables.special.ruins.dropRate, 1],
+        giveSpan: [ruinsDropRate / 2, (ruinsDropRate + 1) / 2],
         giveList: ids.resources.gatherables.special.ruins,
         log: function (effect) {
             var log;
@@ -607,7 +586,7 @@ var DataManager = (function () {
         id: "fr0",
         name: "forum",
         desc: "The center and start of our settlement.",
-        unlock: [
+        unlockForAll: [
             ids.actions.sleep
         ],
         upgrade: ids.buildings.special.wreckage,
@@ -718,7 +697,7 @@ var DataManager = (function () {
             [5, ids.resources.gatherables.common.food],
             [10, ids.resources.gatherables.uncommon.sand]
         ],
-        unlock: [
+        unlockForAll: [
             ids.actions.harvestPlot
         ],
         asset: "plot",
@@ -751,7 +730,7 @@ var DataManager = (function () {
         give: [
             [5, ids.resources.gatherables.common.water]
         ],
-        unlock: [
+        unlockForAll: [
             ids.actions.drawFromWell
         ],
         lock: [
@@ -826,8 +805,8 @@ var DataManager = (function () {
         name: "field",
         desc: "A larger crop field to produce more food.",
         time: 10,
-        unlock: [
-            ids.actions.harvestPlot
+        unlockForAll: [
+            ids.actions.harvestField
         ],
         consume: [
             [20, ids.resources.gatherables.common.food],
@@ -1018,7 +997,7 @@ var DataManager = (function () {
             [1, ids.resources.craftables.advanced.engine]
         ],
         upgrade: ids.buildings.small.well,
-        unlock: [
+        unlockForAll: [
             ids.actions.drawFromWell
         ],
         asset: "pump",
@@ -1036,7 +1015,7 @@ var DataManager = (function () {
             [10, ids.resources.craftables.complex.brick],
             [2, ids.resources.craftables.complex.furniture]
         ],
-        unlock: [
+        unlockForAll: [
             ids.actions.exchange
         ],
         asset: "trading",
@@ -1055,7 +1034,7 @@ var DataManager = (function () {
             [1, ids.resources.craftables.advanced.computer],
             [2, ids.resources.craftables.advanced.engine]
         ],
-        unlock: [
+        unlockForAll: [
             ids.actions.launch
         ],
         asset: "module",
@@ -1071,11 +1050,11 @@ var DataManager = (function () {
         id: "mnt",
         name: "mountain",
         desc: "A nearby mountain that may contains some basic building resources",
-        give: [
-            ids.resources.gatherables.common.rock,
-            ids.resources.gatherables.common.scrap,
-            ids.resources.craftables.basic.component
-        ],
+        giveList: {
+            rock: ids.resources.gatherables.common.rock,
+            scrap: ids.resources.gatherables.common.scrap,
+            component: ids.resources.craftables.basic.component
+        },
         log: "That was hard to climb those mountains, but at least @people find @give.",
         dropRate: 90
     });
@@ -1083,11 +1062,11 @@ var DataManager = (function () {
         id: "dst",
         name: "desert",
         desc: "Not much to find in a desert, but that's for sure the best place to get sand.",
-        give: [
-            ids.resources.gatherables.common.scrap,
-            ids.resources.gatherables.uncommon.oil,
-            ids.resources.gatherables.uncommon.sand
-        ],
+        giveList: {
+            scrap: ids.resources.gatherables.common.scrap,
+            oil: ids.resources.gatherables.uncommon.oil,
+            sand: ids.resources.gatherables.uncommon.sand
+        },
         log: "Dunes everywhere give a felling of hopelessness. Anyway, here's @give for the stock.",
         dropRate: 100
     });
@@ -1095,11 +1074,11 @@ var DataManager = (function () {
         id: "hng",
         name: "hangar",
         desc: "A huge hangar. It was certainly raided before by others, but you may grab something",
-        give: [
-            ids.resources.gatherables.common.food,
-            ids.resources.gatherables.rare.medication,
-            ids.resources.craftables.basic.glass
-        ],
+        giveList: {
+            food: ids.resources.gatherables.common.food,
+            medication: ids.resources.gatherables.rare.medication,
+            glass: ids.resources.craftables.basic.glass
+        },
         log: "Quite easy to loot, but full of dangers too. Hopefully, @people.name return safely and got @give.",
         dropRate: 80
     });
@@ -1110,14 +1089,14 @@ var DataManager = (function () {
         id: "rvr",
         name: "river",
         desc: "Quite rare to find water around here. This is a valuable location to find.",
-        unlock: [
+        unlockForAll: [
             ids.actions.drawFromRiver
         ],
-        give: [
-            ids.resources.gatherables.common.water,
-            ids.resources.gatherables.uncommon.bolts,
-            ids.resources.craftables.basic.stone
-        ],
+        giveList: {
+            water: ids.resources.gatherables.common.water,
+            bolts: ids.resources.gatherables.uncommon.bolts,
+            stone: ids.resources.craftables.basic.stone
+        },
         log: "It's nice by the river, @people.name found @give.",
         dropRate: 40
     });
@@ -1126,11 +1105,11 @@ var DataManager = (function () {
         name: "old ruin",
         desc: "This is a huge underground network of rooms linked by narrow hallways. " +
         "This should have provided shelter a long time ago.",
-        give: [
-            ids.resources.gatherables.rare.electronic,
-            ids.resources.craftables.basic.component,
-            ids.resources.craftables.basic.tool
-        ],
+        giveList: {
+            electronic: ids.resources.gatherables.rare.electronic,
+            component: ids.resources.craftables.basic.component,
+            tool: ids.resources.craftables.basic.tool
+        },
         log: "Amazing no-one get lost in those caves to get @give.",
         dropRate: 60
     });
@@ -1141,11 +1120,11 @@ var DataManager = (function () {
         id: "bld",
         name: "buried building",
         desc: "By digging up this building, you uncover stuff preserved from looting and environment.",
-        give: [
-            ids.resources.gatherables.rare.medication,
-            ids.resources.craftables.basic.glass,
-            ids.resources.craftables.complex.circuit
-        ],
+        giveList: {
+            medication: ids.resources.gatherables.rare.medication,
+            glass: ids.resources.craftables.basic.glass,
+            circuit: ids.resources.craftables.complex.circuit
+        },
         log: "No-one could guess what that building was, but it sure was interesting. " +
         "@people.name find @give.",
         dropRate: 30
@@ -1154,11 +1133,11 @@ var DataManager = (function () {
         id: "swr",
         name: "spaceship wreck",
         desc: "This wreckage seems to be in a fairly good shape and allow you to find useful part inside.",
-        give: [
-            ids.resources.gatherables.rare.electronic,
-            ids.resources.craftables.basic.tool,
-            ids.resources.craftables.complex.furniture
-        ],
+        giveList: {
+            electronic: ids.resources.gatherables.rare.electronic,
+            tool: ids.resources.craftables.basic.tool,
+            furniture: ids.resources.craftables.complex.furniture
+        },
         log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
         dropRate: 20
     });
@@ -1254,7 +1233,7 @@ var DataManager = (function () {
             actionData.timeBonus = 0.5;
         }
     });
-    ids.perks.healer = ({
+    ids.perks.healer = insert({
         id: "hlr",
         name: "doctor",
         desc: "Knowing enough about medicine make @people.accusative confident to heal others.",

@@ -3,15 +3,15 @@
 
 /**
  * Class for resources
- * @param {ResourceData} data - The resource's data
+ * @param {ID} id - The resource's id
  * @param {Number} [count=0] - The resource amount
  * @constructor
  */
-function Resource (data, count) {
+function Resource (id, count) {
     this.count = 0;
     this.warnLack = false;
 
-    this.super(data, count);
+    this.super(id, count);
 }
 Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     /**
@@ -23,8 +23,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         if (count) {
             this.update(+count);
         }
-        var data = consolidateData([this], this.data, ["consume"]);
-        this.tooltip = new Tooltip(this.html, data);
+        this.tooltip = new Tooltip(this.html, this.data);
     },
     /**
      * Return HTML for display

@@ -3,16 +3,16 @@
 
 /**
  * Class for events
- * @param {EventData} data - The event data
+ * @param {ID} id - The event's id
  * @constructor
  */
-function Event (data) {
+function Event (id) {
     this.timer = null;
     this.nameNode = null;
     this.progressBar = null;
     this.tooltip = null;
 
-    this.super(data);
+    this.super(id);
 }
 Event.extends(Model, "Event", /** @lends Event.prototype */ {
     /**

@@ -11,12 +11,17 @@ The environment is not going to be helpful, challenging you with random events.
 
 Luckily, human strength is to learn and act fast. So keep moving and you may live a little longer.
 
+## Goals
+
+Here's the few rules I try to follow making this game :
+ * Keep it simple (prefer depth)
+ * Value player's time (don't waste it)
+ * Not too bleak (simple art over no art)
+
 
 ## Changelog
 
 ### v0.4 WIP
-
-Add events and make them more interesting.
 
 Progression finally saved.
 

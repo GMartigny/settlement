@@ -108,8 +108,9 @@ Tooltip.prototype = {
         if (isArray(data.consume)) {
             var resourcesContainer = wrap("consumption");
             data.consume.forEach(function (resource) {
-                var item = wrap("resource not-enough", resource[0] + " " + resource[1].name);
-                this.resourcesMapper[resource[1].id] = item;
+                var name = DataManager.get(resource[1]).name;
+                var item = wrap("resource not-enough", resource[0] + " " + name);
+                this.resourcesMapper[resource[1]] = item;
                 resourcesContainer.appendChild(item);
             }, this);
             html.appendChild(resourcesContainer);
@@ -131,7 +132,7 @@ Tooltip.prototype = {
         }
         if (isArray(data.consume)) {
             data.consume.forEach(function (resource) {
-                var id = resource[1].id;
+                var id = resource[1];
                 var hasEnougth = resources.has(id) && resources.get(id).has(resource[0]);
                 this.resourcesMapper[id].classList.toggle("not-enough", !hasEnougth);
             }, this);
