@@ -92,26 +92,26 @@ Tooltip.prototype = {
     toHTML: function (data) {
         var html = wrap("tooltip");
 
-        var name = wrap("title", capitalize(data.name));
-        html.appendChild(name);
-        this.nodes.name = name;
+        var nameNode = wrap("title", capitalize(data.name));
+        html.appendChild(nameNode);
+        this.nodes.name = nameNode;
         if (data.desc) {
-            var desc = wrap("description", data.desc);
-            html.appendChild(desc);
-            this.nodes.desc = desc;
+            var descNode = wrap("description", data.desc);
+            html.appendChild(descNode);
+            this.nodes.desc = descNode;
         }
         if (data.time) {
-            var time = wrap("time", formatTime(data.time));
-            html.appendChild(time);
-            this.nodes.time = time;
+            var timeNode = wrap("time", formatTime(data.time));
+            html.appendChild(timeNode);
+            this.nodes.time = timeNode;
         }
         if (isArray(data.consume)) {
             var resourcesContainer = wrap("consumption");
             data.consume.forEach(function (resource) {
                 var name = DataManager.get(resource[1]).name;
-                var item = wrap("resource not-enough", resource[0] + " " + name);
-                this.resourcesMapper[resource[1]] = item;
-                resourcesContainer.appendChild(item);
+                var resourceNode = wrap("resource not-enough", resource[0] + " " + name);
+                this.resourcesMapper[resource[1]] = resourceNode;
+                resourcesContainer.appendChild(resourceNode);
             }, this);
             html.appendChild(resourcesContainer);
         }
@@ -123,7 +123,7 @@ Tooltip.prototype = {
      * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
     refresh: function (resources, data) {
-        this.nodes.name.textContent = data.name;
+        this.nodes.name.textContent = capitalize(data.name);
         if (data.desc) {
             this.nodes.desc.textContent = data.desc;
         }

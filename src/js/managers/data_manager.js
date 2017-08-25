@@ -626,7 +626,10 @@ var DataManager = (function () {
         give: [
             [10, ids.resources.gatherables.common.water],
             [8, ids.resources.gatherables.common.food],
-            [2, ids.resources.craftables.basic.component]
+            [2, ids.resources.craftables.basic.component],
+            [6, ids.resources.gatherables.uncommon.bolts],
+            [4, ids.resources.gatherables.common.scrap],
+            [3, ids.resources.gatherables.common.rock]
         ],
         unlock: [
             ids.actions.settle
@@ -649,6 +652,44 @@ var DataManager = (function () {
         log: "@people.name gets up painfully.",
         order: 0,
         unique: true
+    });
+
+    /** CRAFTABLES BASIC **/
+
+    ids.resources.craftables.basic.stone = insert({
+        id: "stn",
+        name: "smooth stone",
+        desc: "A round and well polish stone.",
+        icon: "stone",
+        consume: [
+            [3, ids.resources.gatherables.common.rock]
+        ],
+        dropRate: 100,
+        order: 90
+    });
+    ids.resources.craftables.basic.glass = insert({
+        id: "gls",
+        name: "glass pane",
+        desc: "A see-through building component.",
+        icon: "glass-pane",
+        ifHas: ids.buildings.small.furnace,
+        consume: [
+            [4, ids.resources.gatherables.uncommon.sand]
+        ],
+        dropRate: 60,
+        order: 100
+    });
+    ids.resources.craftables.basic.tool = insert({
+        id: "tol",
+        name: "tool",
+        desc: "The base for any tinkerer.",
+        icon: "tools",
+        consume: [
+            [1, ids.resources.craftables.basic.component],
+            [2, ids.resources.gatherables.common.rock]
+        ],
+        dropRate: 90,
+        order: 111
     });
 
     /** BUILDINGS SMALL **/
@@ -738,44 +779,6 @@ var DataManager = (function () {
         ],
         asset: "well",
         log: "Drawing water from the ground should allow to further polish stone into bricks."
-    });
-
-    /** CRAFTABLES BASIC **/
-
-    ids.resources.craftables.basic.stone = insert({
-        id: "stn",
-        name: "smooth stone",
-        desc: "A round and well polish stone.",
-        icon: "stone",
-        consume: [
-            [3, ids.resources.gatherables.common.rock]
-        ],
-        dropRate: 100,
-        order: 90
-    });
-    ids.resources.craftables.basic.glass = insert({
-        id: "gls",
-        name: "glass pane",
-        desc: "A see-through building component.",
-        icon: "glass-pane",
-        ifHas: ids.buildings.small.furnace.id,
-        consume: [
-            [4, ids.resources.gatherables.uncommon.sand]
-        ],
-        dropRate: 60,
-        order: 100
-    });
-    ids.resources.craftables.basic.tool = insert({
-        id: "tol",
-        name: "tool",
-        desc: "The base for any tinkerer.",
-        icon: "tools",
-        consume: [
-            [1, ids.resources.craftables.basic.component],
-            [2, ids.resources.gatherables.common.rock]
-        ],
-        dropRate: 90,
-        order: 111
     });
 
     /** BUILDINGS MEDIUM **/
@@ -1042,9 +1045,7 @@ var DataManager = (function () {
         "Now it's time to end it all !"
     });
 
-    /***** LOCATIONS *****/
-
-    /** NEAR **/
+    /** NEAR LOCATIONS **/
 
     ids.locations.near.mountain = insert({
         id: "mnt",
@@ -1083,7 +1084,7 @@ var DataManager = (function () {
         dropRate: 80
     });
 
-    /** FAR **/
+    /** FAR LOCATIONS **/
 
     ids.locations.far.river = insert({
         id: "rvr",
@@ -1114,7 +1115,7 @@ var DataManager = (function () {
         dropRate: 60
     });
 
-    /** EPIC **/
+    /** EPIC LOCATIONS **/
 
     ids.locations.epic.building = insert({
         id: "bld",
@@ -1142,9 +1143,7 @@ var DataManager = (function () {
         dropRate: 20
     });
 
-    /***** EVENTS *****/
-
-    /** EASY **/
+    /** EASY EVENTS **/
 
     ids.events.easy.sandstorm = insert({
         id: "ssm",
@@ -1159,9 +1158,9 @@ var DataManager = (function () {
         log: "A sandstorm has started and prevent anyone from leaving the camp."
     });
 
-    /** MEDUIM **/
+    /** MEDUIM  EVENTS**/
 
-    /** HARD **/
+    /** HARD EVENTS **/
 
     ids.events.hard.drought = insert({
         id: "drg",

@@ -86,7 +86,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             this.initialActions.push(DataManager.ids.actions.wakeUp);
 
             // First person arrives
-            TimerManager.timeout(this.welcome.bind(this, 1, true), 500);
+            TimerManager.timeout(this.prepareNewcomer.bind(this, 1), 500);
         }
 
         if (!IS_DEV && VERSION.includes("v0.")) {
@@ -234,8 +234,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * Loop function called every game tick
      */
     refresh: function () {
-        var now = getNow();
-        var elapse = floor((now - this.lastTick) / GameController.tickLength);
+        var elapse = floor((getNow() - this.lastTick) / GameController.tickLength);
         this.lastTick += elapse * GameController.tickLength;
 
         if (this.flags.paused) {
@@ -258,10 +257,9 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                     });
                 }, this);
 
-
                 var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
                 if (this.canSomeoneArrive() && random() < peopleDropRate) {
-                    this.welcome();
+                    this.prepareNewcomer();
                 }
 
                 // Random event can happen
@@ -340,34 +338,23 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         }
     },
     /**
-     * Welcome people to the camp
+     * Build a person object and add it to the camp
      * @param {Number} [amount=1] - Number of person that rejoin
-     * @param {Boolean} [firstOne=false] - First person
      */
-    welcome: function (amount, firstOne) {
+    prepareNewcomer: function (amount) {
         var game = this;
         peopleFactory(amount).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(game.initialActions.getValues());
 
-                if (firstOne) {
+                if (!game.people.length) {
                     person.life = 0;
                     person.energy = 0;
                     person.updateLife(0);
                     person.updateEnergy(0);
                 }
-                else {
-                    if (game.people.length === 2) {
-                        TimerManager.timeout(function () {
-                            var message = person.name + " say that there's other desert-walkers " +
-                                "ready to join you if there's room for them.";
-                            MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, message);
-                        }, 2000);
-                    }
-                }
-                MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
-
             });
+            game.arrive(persons);
         });
     },
     /**
@@ -375,17 +362,31 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @param {Array<People>|People} people - A people or an array of people instance
      */
     arrive: function (people) {
-        if (isArray(people)) {
-            people.forEach(this.arrive, this);
+        if (!isArray(people)) {
+            people = [people];
         }
-        else {
-            this.people.push(people);
-            this.peopleList.appendChild(people.html);
+
+        people.forEach(function (person) {
+
+            if (this.people.length) {
+                MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
+
+                if (this.people.length === 2) {
+                    TimerManager.timeout(function () {
+                        var message = person.name + " say that there's other desert-walkers " +
+                            "ready to join you if there's room for them.";
+                        MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, message);
+                    }, 2000);
+                }
+            }
+
+            this.people.push(person);
+            this.peopleList.appendChild(person.html);
 
             //noinspection BadExpressionStatementJS - force redraw
-            people.html.offsetHeight;
-            people.html.classList.add("arrived");
-        }
+            person.html.offsetHeight;
+            person.html.classList.add("arrived");
+        }, this);
     },
     /**
      * Build something
@@ -486,7 +487,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             var event = DataManager.get(id);
             return !this.events.has(id) &&
                 (!event.condition || (isFunction(event.condition) && event.condition(event)));
-        }.bind(this));
+        }, this);
 
         if (list.length) {
             return randomize(list);

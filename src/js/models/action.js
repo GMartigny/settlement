@@ -52,7 +52,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             html.appendChild(this.optionsWrapper);
         }
         else {
-            html.addEventListener("click", this.click.bind(this), true);
+            html.addEventListener("click", function () {
+                this.click();
+            }.bind(this), true);
         }
 
         html.style.order = this.data.order;
@@ -64,12 +66,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @private
      */
     init: function () {
-        var data = consolidateData([this], this.data, ["time", "energy"]);
-        if (isUndefined(this.data.energy) && data.time) {
-            this.data.energy = data.time * 5;
+        this.data.time = this.data.time || 0;
+        if (isUndefined(this.data.energy)) {
+            this.data.energy = this.data.time * 5;
         }
 
-        this.tooltip = new Tooltip(this.nameNode, data);
+        this.tooltip = new Tooltip(this.nameNode, this.data);
 
         this.manageOptions();
     },
@@ -107,13 +109,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        var data = consolidateData([this], this.data, ["time", "energy"]);
-
-        this.locked = (this.owner.isTired() && data.energy > 0) ||
+        this.locked = (this.owner.isTired() && this.data.energy > 0) ||
             (this.data.isOut && flags.cantGoOut) ||
             (this.parentAction && this.parentAction.locked);
 
-        this.tooltip.refresh(resources, data);
+        this.tooltip.refresh(resources, this.data);
 
         // check consumption
         if (isArray(this.data.consume) && !this.locked) {
@@ -161,16 +161,18 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
-                this.owner.setBusy(this.data.id);
-
-                var duration = (data.time || 0) * GameController.tickLength;
+                var duration = (data.time || 0);
 
                 if (data.timeDelta) {
-                    duration += random(-data.timeDelta, data.timeDelta) * GameController.tickLength;
+                    duration += random(-data.timeDelta, data.timeDelta);
                 }
                 if (data.timeBonus) {
                     duration -= duration * data.timeBonus;
                 }
+
+                this.owner.setBusy(this.data.id, data.energy / duration);
+
+                duration *= GameController.tickLength;
 
                 this.nameNode.style.animationDuration = duration + "ms";
                 this.nameNode.classList.add(Action.COOLDOWN_CLASS);
@@ -188,27 +190,45 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         var option = DataManager.get(optionId);
         var data = this.data;
 
-        var fallback = ["name", "desc", "log", "build", "time", "timeDelta", "timeBonus", "energy"];
+        // FIXME: unfinished
+        var buildId = null;
+        if (option.build) {
+            buildId = option.build;
+        }
+        if (!buildId && data.build) {
+            buildId = data.build;
+            if (buildId === DataManager.ids.option) {
+                buildId = null;
+                console.warn("An action try to build the same as the selected option");
+            }
+        }
+
+        var build = buildId ? DataManager.get(buildId) : {};
+        merge.build = buildId;
+
+        var fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy"];
         var concat = ["consume", "give", "unlock", "lock", "unlockForAll", "lockForAll"];
         var mix = ["giveList"];
 
         fallback.forEach(function (prop) {
             if (data[prop] || option[prop]) {
-                merge[prop] = option[prop] || data[prop];
+                merge[prop] = build[prop] || option[prop] || data[prop];
             }
         });
 
         concat.forEach(function (prop) {
             if (data[prop] || option[prop]) {
-                merge[prop] = (data[prop] || []).concat(option[prop] || []);
+                merge[prop] = (build[prop] || []).concat(data[prop] || []).concat(option[prop] || []);
             }
         });
 
         mix.forEach(function (prop) {
             if (data[prop] || option[prop]) {
-                merge[prop] = Object.assign({}, (data[prop] || {}), (option[prop] || {}));
+                merge[prop] = Object.assign({}, (build[prop] || {}), (data[prop] || {}), (option[prop] || {}));
             }
         });
+
+        merge.optionId = optionId;
 
         return merge;
     },
@@ -297,9 +317,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
         result.give.forEach(function (couple) {
             if (couple[1] === specialIdOption) {
-                couple[1] = optionId;
+                couple[1] = data.optionId;
             }
-        });
+        }, this);
 
         var repeated = this.repeated;
 
@@ -315,7 +335,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             var unlock = data.unlock.filter(function (id) {
                 var action = DataManager.get(id);
                 return !action.condition || action.condition(this);
-            });
+            }, this);
             // Unique actions have to unlock for everyone
             if (this.data.unique) {
                 result.unlock.forAll.insert(unlock);
@@ -328,11 +348,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             result.unlock.forAll.insert(data.unlockForAll.filter(function (id) {
                 var action = DataManager.get(id);
                 return !action.condition || action.condition(this);
-            }));
+            }, this));
         }
 
         // Lock
-        var lock = [];
         if (isArray(this.data.lockAfter)) {
             this.data.lockAfter.forEach(function (couple) {
                 if (repeated > couple[0]) {
@@ -358,28 +377,20 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         // Build
-        if (this.data.build) {
-            var build = DataManager.get(this.data.build);
-            result.build = this.data.build;
+        if (data.build) {
+            if (data.build === specialIdOption) {
+                data.build = data.optionId;
+            }
+            var build = DataManager.get(data.build);
+            result.build = data.build;
             effect.build = an(build.name);
-
-            // Add from building
-            if (isArray(build.give)) {
-                result.give = result.give.concat(build.give);
-            }
-            if (isArray(build.unlock)) {
-                result.unlock.forAll = result.unlock.forAll.concat(build.unlock);
-            }
-            if (isArray(build.lock)) {
-                result.lock.forAll = result.lock.forAll.concat(build.lock);
-            }
         }
 
         result.give = compactResources(result.give);
         effect.give = formatArray(result.give);
 
         // Log
-        var logData = (optionId && optionId.log) || this.data.log || "";
+        var logData = data.log || "";
         var rawLog = isFunction(logData) ? logData(effect, this) : logData;
         result.log = LogManager.personify(rawLog, effect);
 
@@ -409,7 +420,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     cancel: function () {
         if (this.timeout) {
             TimerManager.clear(this.timeout);
-            this.owner.setBusy(false);
+            this.owner.setBusy();
             this.html.classList.remove(Action.RUNNING_CLASS);
             this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
         }

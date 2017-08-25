@@ -129,7 +129,7 @@ var GraphicManager = (function () {
             }.bind(this));
 
             // start loopdy loop
-            // this.render();
+            this.render();
         },
         /**
          * Draw everything

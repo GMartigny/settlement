@@ -41,6 +41,7 @@ function People (name, gender) {
     this.actions = new Map();
 
     this.busy = false;
+    this.energyDrain = 0.7;
     this.energy = 100;
     this.starving = false;
     this.life = 100;
@@ -108,13 +109,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         if (flags.settled) {
             this.stats.age += elapse;
             this.stats.idle += elapse;
-            var ratio = 0.7;
-            if (this.busy) {
-                ratio = (this.busy.energy || 0) / this.busy.time;
-            }
-            else if (this.perk && this.perk.id === DataManager.ids.perks.lounger) {
-                ratio = 0;
-            }
+            var ratio = this.perk && this.perk.id === DataManager.ids.perks.lounger ? 0 : this.energyDrain;
             this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
             if (this.thirsty) { // drying
                 this.updateLife(-elapse * this.thirsty * 30);
@@ -149,13 +144,21 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     },
     /**
      * Set busy with an action
-     * @param {Object} [actionId=false] - Current action's data
+     * @param {ID} [actionId=false] - Current action's id or null to set it free
+     * @param {Number} [energyDrain] - How much energy to drain per refresh
      */
-    setBusy: function (actionId) {
-        if (actionId && actionId !== DataManager.ids.actions.sleep) {
-            this.stats.idle = 0;
-        }
+    setBusy: function (actionId, energyDrain) {
         this.busy = actionId || false;
+        if (actionId) {
+            if (actionId !== DataManager.ids.actions.sleep) {
+                this.stats.idle = 0;
+            }
+            // FIXME: energy drain rely on tick which is not precise
+            this.energyDrain = energyDrain;
+        }
+        else {
+            this.energyDrain = 1;
+        }
         this.html.classList.toggle("busy", this.busy);
     },
     /**

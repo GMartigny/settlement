@@ -49,7 +49,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     refresh: function (resources) {
         this.counter.textContent = this.get();
         if (isArray(this.data.consume) && resources) {
-            this.tooltip.refresh(resources, this.data.consume);
+            this.tooltip.refresh(resources, this.data);
         }
     },
     /**
