@@ -24,10 +24,10 @@ function popup (data, buttons, CSSClasses) {
     var holder = document.body;
 
     CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
-    var box = wrap(CSSClasses);
+    var box = Utils.wrap(CSSClasses);
 
-    box.appendChild(wrap("title", capitalize(data.name)));
-    box.appendChild(wrap("description", data.desc));
+    box.appendChild(Utils.wrap("title", Utils.capitalize(data.name)));
+    box.appendChild(Utils.wrap("description", data.desc));
 
     var api = {
         /**
@@ -39,8 +39,8 @@ function popup (data, buttons, CSSClasses) {
         }
     };
 
-    var yesButton = wrap("yes clickable", (buttons.yes && buttons.yes.name) || "Ok");
-    var onYes = (buttons.yes && buttons.yes.action) || noop;
+    var yesButton = Utils.wrap("yes clickable", (buttons.yes && buttons.yes.name) || "Ok");
+    var onYes = (buttons.yes && buttons.yes.action) || Utils.noop;
     yesButton.addEventListener("click", function () {
         onYes();
         api.remove();
@@ -48,8 +48,8 @@ function popup (data, buttons, CSSClasses) {
     box.appendChild(yesButton);
 
     if (buttons.no) {
-        var noButton = wrap("no clickable", buttons.no.name || "Cancel");
-        var onNo = buttons.no.action || noop;
+        var noButton = Utils.wrap("no clickable", buttons.no.name || "Cancel");
+        var onNo = buttons.no.action || Utils.noop;
         noButton.addEventListener("click", function () {
             onNo();
             api.remove();
@@ -60,7 +60,7 @@ function popup (data, buttons, CSSClasses) {
     holder.classList.add("backdrop");
     holder.appendChild(box);
 
-    box.style.top = floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
+    box.style.top = MathUtils.floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
 
     return api;
 }

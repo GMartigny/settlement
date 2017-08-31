@@ -4,7 +4,7 @@
 /**
  * Manager of the logs
  */
-var LogManager = (function () {
+var LogManager = (function iife () {
 
     var logTypes = {
         0: "info",
@@ -45,7 +45,7 @@ var LogManager = (function () {
 
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 sendEvent("death", "survival duration", survivalDuration);
-                var message = "We held up for " + formatTime(survivalDuration) + ", but all is lost now.";
+                var message = "We held up for " + Utils.formatTime(survivalDuration) + ", but all is lost now.";
                 self.log(message, self.LOG_TYPES.FLAVOR);
             })
 
@@ -56,13 +56,13 @@ var LogManager = (function () {
             })
 
             .observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
-                var message = people.name + " is now known as the \"" + capitalize(people.perk.name) + "\".";
+                var message = people.name + " is now known as the \"" + Utils.capitalize(people.perk.name) + "\".";
                 self.log(message, self.LOG_TYPES.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.WIN, function (survivalDuration) {
                 sendEvent("win", "survival duration", survivalDuration);
-                var message = "It took " + formatTime(survivalDuration) + " to escape.";
+                var message = "It took " + Utils.formatTime(survivalDuration) + " to escape.";
                 self.log(message, self.LOG_TYPES.FLAVOR);
             });
         },
@@ -74,7 +74,7 @@ var LogManager = (function () {
         log: function (message, type) {
             if (message.length) {
                 type = type || 0;
-                wrapper.insertBefore(wrap("log " + logTypes[type], message), wrapper.firstChild);
+                wrapper.insertBefore(Utils.wrap("log " + logTypes[type], message), wrapper.firstChild);
                 var logs = Array.prototype.slice.call(wrapper.children);
                 if (logs.length > LogManager.maxLog) {
                     logs.last().remove();

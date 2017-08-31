@@ -9,7 +9,7 @@
  * @constructor
  */
 function GameController (holder, assets) {
-    var now = getNow();
+    var now = Utils.getNow();
     console.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
@@ -33,9 +33,8 @@ function GameController (holder, assets) {
     };
     this.lastTick = now;
 
-    this.super();
-    holder.appendChild(this.html);
-    console.log("Started in " + (getNow() - now) + "ms");
+    this.super(null, holder);
+    console.log("Started in " + (Utils.getNow() - now) + "ms");
 }
 GameController.tickLength = 2000;
 GameController.extends(Model, "GameController", /** @lends GameController.prototype */ {
@@ -46,19 +45,19 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     toHTML: function () {
         var html = this._toHTML();
 
-        this.resourcesList = wrap(Resource.LST_ID);
+        this.resourcesList = Utils.wrap(Resource.LST_ID);
         html.appendChild(this.resourcesList);
 
-        this.peopleList = wrap(People.LST_ID);
+        this.peopleList = Utils.wrap(People.LST_ID);
         html.appendChild(this.peopleList);
 
-        this.visualPane = wrap("visualPane");
+        this.visualPane = Utils.wrap("visualPane");
         html.appendChild(this.visualPane);
 
-        this.eventsList = wrap(Event.LST_ID);
+        this.eventsList = Utils.wrap(Event.LST_ID);
         html.appendChild(this.eventsList);
 
-        this.logsList = wrap("logs");
+        this.logsList = Utils.wrap("logs");
         html.appendChild(this.logsList);
 
         return html;
@@ -67,9 +66,11 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * Start a new adventure
      * @private
      */
-    init: function () {
+    init: function (holder) {
         var game = this;
         DataManager.bindAll(this);
+
+        holder.appendChild(this.html);
 
         // Start managers
         GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
@@ -115,7 +116,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         // We may find resources
         MessageBus.observe(msgType.GIVE, function (given) {
-            if (isArray(given)) {
+            if (Utils.isArray(given)) {
                 given.forEach(function (r) {
                     game.earn.apply(game, r);
                 });
@@ -123,8 +124,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         })
         // We may use resources
         .observe(msgType.USE, function (use) {
-            if (isArray(use)) {
-                compactResources(use).forEach(function (resource) {
+            if (Utils.isArray(use)) {
+                Utils.compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
                 });
             }
@@ -175,7 +176,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @param {ID|Array<ID>} actions - One or more actionId
      */
     addToInitialActions: function (actions) {
-        if (!isArray(actions)) {
+        if (!Utils.isArray(actions)) {
             actions = [actions];
         }
 
@@ -191,7 +192,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @param {ID|Array<ID>} actions - One or more action ID
      */
     removeFromInitialActions: function (actions) {
-        if (!isArray(actions)) {
+        if (!Utils.isArray(actions)) {
             actions = [actions];
         }
 
@@ -214,7 +215,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @return {String}
      */
     getSurvivalDuration: function () {
-        return formatTime(this.getSettledTime());
+        return Utils.formatTime(this.getSettledTime());
     },
     /**
      * Toggle pause state
@@ -234,7 +235,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * Loop function called every game tick
      */
     refresh: function () {
-        var elapse = floor((getNow() - this.lastTick) / GameController.tickLength);
+        var elapse = MathUtils.floor((Utils.getNow() - this.lastTick) / GameController.tickLength);
         this.lastTick += elapse * GameController.tickLength;
 
         if (this.flags.paused) {
@@ -258,13 +259,13 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 }, this);
 
                 var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
-                if (this.canSomeoneArrive() && random() < peopleDropRate) {
+                if (this.canSomeoneArrive() && MathUtils.random() < peopleDropRate) {
                     this.prepareNewcomer();
                 }
 
                 // Random event can happen
                 var eventDropRate = 0.01; // FIXME: No magic number
-                if (!this.flags.popup && random() < eventDropRate) {
+                if (!this.flags.popup && MathUtils.random() < eventDropRate) {
                     this.startEvent(this.getRandomEvent());
                 }
             }
@@ -310,7 +311,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 instance.update(-amount);
                 instance.warnLack = false;
             }
-            else if (isFunction(lack)) {
+            else if (Utils.isFunction(lack)) {
                 var diff = amount - instance.count;
                 instance.set(0);
                 lack.call(this, diff, resourceId);
@@ -362,7 +363,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @param {Array<People>|People} people - A people or an array of people instance
      */
     arrive: function (people) {
-        if (!isArray(people)) {
+        if (!Utils.isArray(people)) {
             people = [people];
         }
 
@@ -408,10 +409,11 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         DataManager.ids.resources.craftables.deepBrowse(function (id) {
             var craft = DataManager.get(id);
-            if (!craft.condition || (isFunction(craft.condition) && craft.condition())) {
+            if ((!craft.ifHas || this.buildings.has(craft.ifHas)) &&
+                (!craft.condition || (Utils.isFunction(craft.condition) && craft.condition()))) {
                 craftables.push(id);
             }
-        });
+        }, this);
 
         return craftables;
     },
@@ -423,9 +425,9 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         var game = this;
 
         return this.unlockedCraftables().filter(function (id) {
-            var keep = true;
             var craft = DataManager.get(id);
-            if (isFunction(craft.consume)) {
+            var keep = true;
+            if (Utils.isFunction(craft.consume)) {
                 craft.consume(craft).forEach(function (res) {
                     keep = keep && game.hasEnough(res[1], res[0]);
                 });
@@ -438,25 +440,36 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      * @return {Array<ID>}
      */
     possibleBuildings: function () {
-        var buildings = [],
-            done = this.buildings,
-            inProgress = this.buildingsInProgress;
+        var buildings = [];
 
         DataManager.ids.buildings.deepBrowse(function (id) {
-            var build = DataManager.get(id);
-            // not already done or in progress
-            if (!(done.has(id) || inProgress.includes(id))) {
-                // no condition or condition meet
-                if (!isFunction(build.condition) || build.condition(build)) {
-                    // has the upgraded building
-                    if (!build.upgrade || done.has(build.upgrade)) {
-                        buildings.push(id);
-                    }
-                }
+            var building = DataManager.get(id);
+            if (!this.isBuildingInProgress(id) &&
+                !this.isBuildingDone(id) &&
+                (!building.upgrade || this.buildings.has(building.upgrade)) &&
+                (!building.ifHas || this.isBuildingDone(building.ifHas))) {
+                buildings.push(id);
             }
-        });
+        }, this);
 
         return buildings;
+    },
+    isBuildingInProgress: function (buildingId) {
+        return this.buildingsInProgress.includes(buildingId);
+    },
+    isBuildingDone: function (buildingId) {
+        var isDone = false;
+        this.buildings.forEach(function (building) {
+            var data = building.data;
+            isDone = isDone || data.id === buildingId;
+            if (!isDone) {
+                while (data.upgrade && !isDone) {
+                    data = DataManager.get(data.upgrade);
+                    isDone = isDone || data.id === buildingId;
+                }
+            }
+        }, this);
+        return isDone;
     },
     /**
      * Decide if someone can join the colony
@@ -486,11 +499,11 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         list = list.filter(function (id) {
             var event = DataManager.get(id);
             return !this.events.has(id) &&
-                (!event.condition || (isFunction(event.condition) && event.condition(event)));
+                (!event.condition || (Utils.isFunction(event.condition) && event.condition(event)));
         }, this);
 
         if (list.length) {
-            return randomize(list);
+            return Utils.randomize(list);
         }
         else {
             return null;

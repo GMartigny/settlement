@@ -1,6 +1,7 @@
 # Browser environment
 env:
     browser: true
+    es6: true
 
 # Globals set by grunt
 globals:
@@ -14,6 +15,12 @@ extends: eslint:recommended
 rules:
     # Possible Errors
     no-console: off # Will be removed by uglify anyway
+    require-jsdoc:
+        - error
+        - require:
+            FunctionDeclaration: true
+            MethodDefinition: true
+            ClassDeclaration: true
     valid-jsdoc:
         - error
         - requireReturn: false # We can ignore return if void
@@ -23,6 +30,9 @@ rules:
     curly: error # Always
     dot-notation: warn # Better but ok
     eqeqeq: warn # Better but ok
+    func-names:
+        - warn # Better but ok
+        - as-needed
     no-alert: error
     no-eval: error
     no-multi-str: error

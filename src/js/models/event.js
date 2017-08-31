@@ -20,12 +20,10 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
      * @private
      */
     init: function () {
-        var data = consolidateData([this], this.data, ["time", "consume"]);
-
         if (this.tooltip) {
             this.tooltip.remove();
         }
-        this.tooltip = new Tooltip(this.html, data);
+        this.tooltip = new Tooltip(this.html, this.data);
     },
     /**
      * Return HTML for display
@@ -34,7 +32,7 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.nameNode = wrap("name", capitalize(this.data.name));
+        this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name));
         html.appendChild(this.nameNode);
 
         this.progressBar = new Bar("timer animated");
@@ -60,7 +58,7 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
                 var duration = this.data.time * GameController.tickLength;
 
                 if (this.data.deltaTime) {
-                    duration += random(-this.data.deltaTime, this.data.deltaTime);
+                    duration += MathUtils.random(-this.data.deltaTime, this.data.deltaTime);
                 }
 
                 this.progressBar.run(duration);
@@ -71,14 +69,14 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
             }
 
             var rawLog;
-            if (isFunction(this.data.log)) {
+            if (Utils.isFunction(this.data.log)) {
                 rawLog = this.data.log(effect, this);
             }
             else {
                 rawLog = this.data.log || "";
             }
             var log = LogManager.personify(rawLog, effect);
-            MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, capitalize(log));
+            MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, Utils.capitalize(log));
         }.bind(this), "event");
         return !!this.data.time;
     },

@@ -15,13 +15,13 @@ Model.prototype = {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */
-    init: noop,
+    init: Utils.noop,
     /**
      * Return HTML for display
      * @return {HTMLElement}
      */
     toHTML: function () {
-        return wrap(this.modelName);
+        return Utils.wrap(this.modelName);
     },
     getStraight: function () {
         return {

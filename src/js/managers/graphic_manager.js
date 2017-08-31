@@ -1,7 +1,7 @@
 "use strict";
 /* exported GraphicManager */
 
-var GraphicManager = (function () {
+var GraphicManager = (function iife () {
 
     var _combinedImage;
     var _imageData;
@@ -29,8 +29,8 @@ var GraphicManager = (function () {
         this.destination = {};
         this.defineSource(sourceData);
 
-        this.destination.x = floor(+destData.x * Asset.ENLARGE);
-        this.destination.y = floor(+destData.y * Asset.ENLARGE);
+        this.destination.x = MathUtils.floor(+destData.x * Asset.ENLARGE);
+        this.destination.y = MathUtils.floor(+destData.y * Asset.ENLARGE);
     }
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.prototype = {
@@ -42,7 +42,7 @@ var GraphicManager = (function () {
             this.source = {
                 x: sourceData.x,
                 y: sourceData.y,
-                width: floor(sourceData.width / this.animationSteps),
+                width: MathUtils.floor(sourceData.width / this.animationSteps),
                 height: sourceData.height
             };
             this.destination.width = this.source.width * Asset.ENLARGE;
@@ -55,7 +55,7 @@ var GraphicManager = (function () {
          */
         render: function (image, layer) {
             this.animationState = (this.animationState + this.animationSpeed) % this.animationSteps;
-            var animationShift = floor(this.animationState) * this.source.width;
+            var animationShift = MathUtils.floor(this.animationState) * this.source.width;
             var posX = this.destination.x;
             var posY = this.destination.y;
             layer.drawImage(image,
@@ -100,13 +100,13 @@ var GraphicManager = (function () {
             _imageData = data.assets;
             _buildingsPosition = data.positions;
 
-            var layer = prepareCanvas(800, 300);
+            var layer = CanvasUtils.prepareCanvas(800, 300);
             _buildingsLayer = layer.ctx;
             _buildingsLayer.imageSmoothingEnabled = 0;
             layer.cnv.classList.add("layer", "buildings");
             wrapper.appendChild(layer.cnv);
 
-            layer = prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
+            layer = CanvasUtils.prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
             layer.cnv.classList.add("layer", "events");
             wrapper.appendChild(layer.cnv);
 

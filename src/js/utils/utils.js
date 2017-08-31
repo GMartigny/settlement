@@ -1,401 +1,380 @@
-/* exported noop wrap formatTime formatArray formatJoin pluralize capitalize randomize randomizeMultiple log
-            consolidateData pickID isFunction isArray isString isUndefined sanitize camelize an compactResources
-            getNow loadAsync */
+/* exported Utils */
 
-// TODO: put all utils in a single object
+var Utils = {
+    noop: new Function(),
 
-var noop = new Function();
-
-/**
- * Wrap some text content with html tag
- * @param {String} [CSSClasses] - A string of CSS classes separated by spaces
- * @param {String} [innerHTML] - An string of inside content
- * @returns {HTMLElement}
- */
-function wrap (CSSClasses, innerHTML) {
-    var html = document.createElement("div");
-    if (CSSClasses) {
-        html.className = CSSClasses;
-    }
-    if (innerHTML) {
-        html.innerHTML = innerHTML;
-    }
-
-    return html;
-}
-
-/**
- * Format a time with multiple units
- * @param {Number} time - Number of hour
- * @returns {string}
- */
-function formatTime (time) {
-    var units = ["year", "month", "day", "hour", "minute"],
-        res = [],
-        timeMatch = DataManager.time;
-
-    units.forEach(function (unit) {
-        if (time >= timeMatch[unit]) {
-            var y = floor(time / timeMatch[unit]);
-            time = time % timeMatch[unit];
-            res.push(y + " " + pluralize(unit, y));
+    /**
+     * Wrap some text content with html tag
+     * @param {String} [CSSClasses] - A string of CSS classes separated by spaces
+     * @param {String} [innerHTML] - An string of inside content
+     * @returns {HTMLElement}
+     */
+    wrap: function (CSSClasses, innerHTML) {
+        var html = document.createElement("div");
+        if (CSSClasses) {
+            html.className = CSSClasses;
         }
-    });
-
-    return formatJoin(res);
-}
-
-/**
- * Format an array for human reading
- * @param {Array<[Number, ID]>} array - An array of resources consumption
- * @return {String}
- */
-function formatArray (array) {
-    var res = [];
-
-    array.forEach(function (item) {
-        var resource = DataManager.get(item[1]);
-        var name = pluralize(resource.name, item[0]);
-        if (resource.icon) {
-            name += " " + Resource.iconAsString(resource.icon);
+        if (innerHTML) {
+            html.innerHTML = innerHTML;
         }
-        res.push(item[0] + " " + name);
-    });
 
-    return formatJoin(res);
-}
+        return html;
+    },
 
-/**
- * Join an array for human reading
- * @param {Array<String>} array - Any array of strings
- * @param {String} [final="and"] - The last joiner of the list
- * @return {String}
- */
-function formatJoin (array, final) {
-    if (array.length > 1) {
-        array[array.length - 2] += " " + (final || "and") + " " + array.pop();
-        return array.join(", ");
-    }
-    else if (array.length) {
-        return array[0];
-    }
-    else {
-        return "";
-    }
-}
+    /**
+     * Format a time with multiple units
+     * @param {Number} time - Number of hour
+     * @returns {string}
+     */
+    formatTime: function (time) {
+        var units = ["year", "month", "day", "hour", "minute"],
+            res = [],
+            timeMatch = DataManager.time;
 
-/**
- * Add "s" when plural
- * @param {String} string - Origin string
- * @param {Number} number - How many
- * @returns {string}
- */
-function pluralize (string, number) {
-    return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
-}
-
-/**
- * Start every sentence with a capital letter
- * @param {String} string - Origin string
- * @returns {String}
- */
-function capitalize (string) {
-    if (string) {
-        string = string.replace(/([.!?]) ([a-z])/g, function (match, punctuation, letter) {
-            return punctuation + " " + letter.toUpperCase();
+        units.forEach(function (unit) {
+            if (time >= timeMatch[unit]) {
+                var y = MathUtils.floor(time / timeMatch[unit]);
+                time = time % timeMatch[unit];
+                res.push(y + " " + Utils.pluralize(unit, y));
+            }
         });
-        return string[0].toUpperCase() + string.slice(1);
-    }
-    else {
-        return "";
-    }
-}
 
-/**
- * Pick a random item from nested object
- * @param {Object} list - A potentially nested object
- * @param {String|Array} [amount=1] - Interval for random "-" separated or array
- * @example
- * randomize(data, "2-5") // between 2 and 5
- * randomize(data, [2, 5]) // between 2 and 5
- * randomize(data, "5") // between 0 and 5
- * randomize(data) // 1 result
- * @returns {Array|Object} An array of Object or one Object if no amount requested
- */
-function randomize (list, amount) {
-    if (!list.values().length) {
-        throw new TypeError("Can't pick from empty list");
-    }
-    var all = {},
-        dropRateScale = [],
-        dropRateSum = 0;
-    list.deepBrowse(function (id) {
-        var item = DataManager.get(id);
-        if (item.dropRate) {
-            dropRateSum += item.dropRate;
-            dropRateScale.push(dropRateSum);
-            all[dropRateSum] = id;
+        return Utils.formatJoin(res);
+    },
+
+    /**
+     * Format an array for human reading
+     * @param {Array<[Number, ID]>} array - An array of resources consumption
+     * @return {String}
+     */
+    formatArray: function (array) {
+        var res = [];
+
+        array.forEach(function (item) {
+            var resource = DataManager.get(item[1]);
+            var name = Utils.pluralize(resource.name, item[0]);
+            if (resource.icon) {
+                name += " " + Resource.iconAsString(resource.icon);
+            }
+            res.push(item[0] + " " + name);
+        });
+
+        return Utils.formatJoin(res);
+    },
+
+    /**
+     * Join an array for human reading
+     * @param {Array<String>} array - Any array of strings
+     * @param {String} [final="and"] - The last joiner of the list
+     * @return {String}
+     */
+    formatJoin: function (array, final) {
+        if (array.length > 1) {
+            array[array.length - 2] += " " + (final || "and") + " " + array.pop();
+            return array.join(", ");
         }
-    });
-    var pick = round(random(dropRateSum));
-    dropRateScale.sort();
-
-    for (var i = 0, l = dropRateScale.length; i < l; ++i) {
-        if (dropRateScale[i] > pick) {
-            pick = dropRateScale[i];
-            break;
+        else if (array.length) {
+            return array[0];
         }
-    }
+        else {
+            return "";
+        }
+    },
 
-    if (amount) {
-        if (!isArray(amount)) {
-            if (isString(amount)) {
+    /**
+     * Add "s" when plural
+     * @param {String} string - Origin string
+     * @param {Number} number - How many
+     * @returns {string}
+     */
+    pluralize: function (string, number) {
+        return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
+    },
+
+    /**
+     * Start every sentence with a capital letter
+     * @param {String} string - Origin string
+     * @returns {String}
+     */
+    capitalize: function (string) {
+        if (string) {
+            string = string.replace(/([.!?]) ([a-z])/g, function (match, punctuation, letter) {
+                return punctuation + " " + letter.toUpperCase();
+            });
+            return string[0].toUpperCase() + string.slice(1);
+        }
+        else {
+            return "";
+        }
+    },
+
+    /**
+     * Pick a random item from nested object
+     * @param {Object} list - A potentially nested object
+     * @param {String|Array} [amount=1] - Interval for random "-" separated or array
+     * @example
+     * Utils.randomize(data, "2-5") // between 2 and 5
+     * Utils.randomize(data, [2, 5]) // between 2 and 5
+     * Utils.randomize(data, "5") // between 0 and 5
+     * Utils.randomize(data) // 1 result
+     * @returns {Array|Object} An array of Object or one Object if no amount requested
+     */
+    randomize: function (list, amount) {
+        if (!list.values().length) {
+            throw new TypeError("Can't pick from empty list");
+        }
+        var all = {},
+            dropRateScale = [],
+            dropRateSum = 0;
+        list.deepBrowse(function (id) {
+            var item = DataManager.get(id);
+            if (item.dropRate) {
+                dropRateSum += item.dropRate;
+                dropRateScale.push(dropRateSum);
+                all[dropRateSum] = id;
+            }
+        });
+        var pick = MathUtils.floor(MathUtils.random(dropRateSum));
+        dropRateScale.sort();
+
+        for (var i = 0, l = dropRateScale.length; i < l; ++i) {
+            if (dropRateScale[i] > pick) {
+                pick = dropRateScale[i];
+                break;
+            }
+        }
+
+        if (amount) {
+            if (!Utils.isArray(amount)) {
+                if (Utils.isString(amount)) {
+                    amount = amount.split("-");
+                }
+                else {
+                    amount = [+amount];
+                }
+            }
+            return [MathUtils.round(random.apply(null, amount)), all[pick]];
+        }
+        else {
+            return all[pick];
+        }
+    },
+
+    /**
+     * Return a random amount of random items
+     * @param {Object} list - A list draw from
+     * @param {String|Array<Number>} amount - Interval for randomness separated by "-" or array
+     * @see randomize
+     * @return {Array}
+     */
+    randomizeMultiple: function (list, amount) {
+        if (!amount) {
+            throw new TypeError("Need an amount");
+        }
+        var res = [];
+
+        if (!Utils.isArray(amount)) {
+            if (Utils.isString(amount)) {
                 amount = amount.split("-");
             }
             else {
                 amount = [+amount];
             }
         }
-        return [round(random.apply(null, amount)), all[pick]];
-    }
-    else {
-        return all[pick];
-    }
-}
+        var total = MathUtils.round(random.apply(null, amount));
+        var sum = 0;
 
-/**
- * Return a random amount of random items
- * @param {Object} list - A list draw from
- * @param {String|Array<Number>} amount - Interval for randomness separated by "-" or array
- * @see randomize
- * @return {Array}
- */
-function randomizeMultiple (list, amount) {
-    if (!amount) {
-        throw new TypeError("Need an amount");
-    }
-    var res = [];
-
-    if (!isArray(amount)) {
-        if (isString(amount)) {
-            amount = amount.split("-");
+        while (sum++ < total) {
+            res.push([1, Utils.randomize(list)]);
         }
-        else {
-            amount = [+amount];
+
+        return Utils.compactResources(res);
+    },
+
+    /**
+     * Display log while in dev
+     * @param {...String} [message] - Any message
+     */
+    log: function () {
+        if (IS_DEV) {
+            console.log.apply(console, arguments);
         }
-    }
-    var total = round(random.apply(null, amount));
-    var sum = 0;
+    },
 
-    while (sum++ < total) {
-        res.push([1, randomize(list)]);
-    }
-
-    return compactResources(res);
-}
-
-/**
- * Display log while in dev
- * @param {...String} [message] - Any message
- */
-function log () {
-    if (IS_DEV) {
-        console.log.apply(console, arguments);
-    }
-}
-
-/**
- * Transform data function to their values
- * @param {Array} params - A list of params for each functions
- * @param {Object} object - A collection of functions
- * @param {Array<String>} [fields] - The object's field to consolidate (all of object's by default)
- * @return {*}
- */
-function consolidateData (params, object, fields) {
-    fields = fields || Object.keys(object);
-
-    var data = object.clone();
-    fields.forEach(function (field) {
-        if (data[field] && isFunction(data[field])) {
-            data[field] = data[field].apply(null, params);
-        }
-    });
-    return data;
-}
-
-/**
- * Return a random string
- * @param {Number} [length=6] - The string's length
- * @return {String}
- */
-function randomStr (length) {
-    length = length || 6;
-    return (new Array(length)).fill("-").join("").replace(/-/g, function () {
-        return floor(random(37)).toString(36);
-    });
-}
-
-/**
- * Give a random unique ID without collision
- * @returns {string}
- */
-var pickUniqueID = (function () {
-    var IDS = [];
-
-    return function () {
-        var ID = randomStr();
-        if (!IDS.includes(ID)) {
-            IDS.push(ID);
-            return ID;
-        }
-        else {
-            return pickUniqueID();
-        }
-    };
-})();
-
-/**
- * Test if is a function
- * @param {*} func - Anything to test
- * @returns {Boolean}
- */
-function isFunction (func) {
-    return func instanceof Function;
-}
-
-/**
- * Test if is an array
- * @param {*} array - Anything to test
- * @return {Boolean}
- */
-function isArray (array) {
-    return Array.isArray(array);
-}
-
-/**
- * Test if is a string
- * @param {*} string - Anything to test
- * @return {Boolean}
- */
-function isString (string) {
-    return typeof string === "string";
-}
-
-/**
- * Test if is undefined
- * @param {*} value - Anything to test
- * @return {Boolean}
- */
-function isUndefined (value) {
-    return value === undefined;
-}
-
-/**
- * Make a string usable everywhere
- * @param {String} str - Any string
- * @return {String}
- */
-function sanitize (str) {
-    return str.toLowerCase().replace(/(\W)+/g, "_");
-}
-
-/**
- * Format a string using camel-case
- * @param {String} str - Any string
- * @return {String}
- */
-function camelize (str) {
-    return str.toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
-        return capture && capture[0].toUpperCase() + capture.slice(1);
-    });
-}
-
-/**
- * Add "a" or "an" according to the following word
- * @param {String} word - Any word
- * @return {String}
- */
-function an (word) {
-    var vowels = "aeiou".split("");
-    return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
-}
-
-/**
- * Compact resources to one item per each
- * @param {Array<[Number, ID]>} resources - An array of resource with amount
- * @example
- * [ [1, "wtr"], [2, "wtr"] ] => [ [3, "wtr"] ]
- * @return {Array}
- */
-function compactResources (resources) {
-    return resources.reduce(function (reduced, item) {
-        var known = reduced.find(function (entry) {
-            return entry[1] === item[1];
+    /**
+     * Return a random string
+     * @param {Number} [length=6] - The string's length
+     * @return {String}
+     */
+    randomStr: function (length) {
+        length = length || 6;
+        return (new Array(length)).fill("-").join("").replace(/-/g, function () {
+            return MathUtils.floor(MathUtils.random(37)).toString(36);
         });
-        if (known) {
-            known[0] += item[0];
-        }
-        else if (item[0] > 0) {
-            reduced.push(item);
-        }
-        return reduced;
-    }, []);
-}
+    },
 
-/**
- * Get a precise timestamp (it's not now)
- * @return {Number}
- */
-function getNow () {
-    return floor(performance.now());
-}
+    /**
+     * Give a random unique ID without collision
+     * @returns {string}
+     */
+    pickUniqueID: (function iife () {
+        var IDS = [];
 
-/**
- * Load some image with a promise
- * @param {Array<String>} urls - An array of url string
- * @param {Function} action - A function called with each loading
- * @return {Promise}
- */
-function loadAsync (urls, action) {
-    var loaded = {};
-    var loadCount = 0;
-    var toLoad = urls.length;
-    return Promise.all(urls.map(function (url) {
-        var request = fetch(url).then(function (response) {
-            if (response.ok) {
-                return response;
+        return function pickUniqueID () {
+            var ID = Utils.randomStr();
+            if (!IDS.includes(ID)) {
+                IDS.push(ID);
+                return ID;
             }
             else {
-                throw new URIError("[" + response.status + "] " + url + " " + response.statusText);
+                return Utils.pickUniqueID();
             }
+        };
+    })(),
+
+    /**
+     * Test if is a function
+     * @param {*} func - Anything to test
+     * @returns {Boolean}
+     */
+    isFunction: function (func) {
+        return func instanceof Function;
+    },
+
+    /**
+     * Test if is an array
+     * @param {*} array - Anything to test
+     * @return {Boolean}
+     */
+    isArray: function (array) {
+        return Array.isArray(array);
+    },
+
+    /**
+     * Test if is a string
+     * @param {*} string - Anything to test
+     * @return {Boolean}
+     */
+    isString: function (string) {
+        return typeof string === "string";
+    },
+
+    /**
+     * Test if is undefined
+     * @param {*} value - Anything to test
+     * @return {Boolean}
+     */
+    isUndefined: function (value) {
+        return value === undefined;
+    },
+
+    /**
+     * Make a string usable everywhere
+     * @param {String} str - Any string
+     * @return {String}
+     */
+    sanitize: function (str) {
+        return str.toLowerCase().replace(/(\W)+/g, "_");
+    },
+
+    /**
+     * Format a string using camel-case
+     * @param {String} str - Any string
+     * @return {String}
+     */
+    camelize: function (str) {
+        return str.toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
+            return capture && capture[0].toUpperCase() + capture.slice(1);
         });
-        var promise;
-        switch (url.substr(url.lastIndexOf(".") + 1)) {
-            case "png":
-            case "jpg":
-            case "gif":
-                promise = request.then(function (response) {
-                    var img = new Image();
-                    return response.blob().then(function (blob) {
-                        img.src = URL.createObjectURL(blob);
-                        return img;
+    },
+
+    /**
+     * Add "a" or "an" according to the following word
+     * @param {String} word - Any word
+     * @return {String}
+     */
+    an: function an (word) {
+        var vowels = "aeiou".split("");
+        return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
+    },
+
+    /**
+     * Compact resources to one item per each
+     * @param {Array<[Number, ID]>} resources - An array of resource with amount
+     * @example
+     * [ [1, "wtr"], [2, "wtr"] ] => [ [3, "wtr"] ]
+     * @return {Array}
+     */
+    compactResources: function (resources) {
+        return resources.reduce(function (reduced, item) {
+            var known = reduced.find(function (entry) {
+                return entry[1] === item[1];
+            });
+            if (known) {
+                known[0] += item[0];
+            }
+            else if (item[0] > 0) {
+                reduced.push(item);
+            }
+            return reduced;
+        }, []);
+    },
+
+    /**
+     * Get a precise timestamp (it's not now)
+     * @return {Number}
+     */
+    getNow: function getNow () {
+        return MathUtils.floor(performance.now());
+    },
+
+    /**
+     * Load some image with a promise
+     * @param {Array<String>} urls - An array of url string
+     * @param {Function} action - A function called with each loading
+     * @return {Promise}
+     */
+    loadAsync: function loadAsync (urls, action) {
+        var loaded = {};
+        var loadCount = 0;
+        var toLoad = urls.length;
+        return Promise.all(urls.map(function (url) {
+            var request = fetch(url).then(function (response) {
+                if (response.ok) {
+                    return response;
+                }
+                else {
+                    throw new URIError("[" + response.status + "] " + url + " " + response.statusText);
+                }
+            });
+            var promise;
+            switch (url.substr(url.lastIndexOf(".") + 1)) {
+                case "png":
+                case "jpg":
+                case "gif":
+                    promise = request.then(function (response) {
+                        var img = new Image();
+                        return response.blob().then(function (blob) {
+                            img.src = URL.createObjectURL(blob);
+                            return img;
+                        });
                     });
-                });
-                break;
-            case "json":
-                promise = request.then(function (response) {
-                    return response.json();
-                });
-                break;
-            default :
-                promise = Promise.resolve();
-        }
-        return promise.then(function (file) {
-            // Each step
-            loaded[sanitize(url)] = file;
-            action(++loadCount / toLoad * 100, url);
+                    break;
+                case "json":
+                    promise = request.then(function (response) {
+                        return response.json();
+                    });
+                    break;
+                default :
+                    promise = Promise.resolve();
+            }
+            return promise.then(function (file) {
+                // Each step
+                loaded[Utils.sanitize(url)] = file;
+                action(++loadCount / toLoad * 100, url);
+            });
+        })).then(function () {
+            return loaded;
         });
-    })).then(function () {
-        return loaded;
-    });
-}
+    }
+};

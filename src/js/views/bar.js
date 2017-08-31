@@ -21,7 +21,7 @@ Bar.extends(Model, "Bar", /** @lends Bar.prototype */{
     toHTML: function () {
         var html = this._toHTML();
 
-        this.valueBar = wrap("value");
+        this.valueBar = Utils.wrap("value");
         html.appendChild(this.valueBar);
 
         return html;

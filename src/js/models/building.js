@@ -10,7 +10,7 @@ function Building (id) {
     this.super(id);
 }
 Building.extends(Model, "Building", /** @lends Building.prototype */ {
-    toHTML: noop,
+    toHTML: Utils.noop,
     init: function () {
         if (this.data.lock) {
             MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.lock);

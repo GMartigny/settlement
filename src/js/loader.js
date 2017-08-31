@@ -10,22 +10,22 @@
     var _assetsDataURL = "dist/js/assets.json";
     var _buildingsDataURL = "dist/js/buildingsData.json";
 
-    var loadStart = getNow();
-    loadAsync([
+    var loadStart = Utils.getNow();
+    Utils.loadAsync([
         "dist/img/icons.png", // just preload
         _assetsURL,
         _assetsDataURL,
         _buildingsDataURL
     ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(1) + "% - " + (getNow() - loadStart));
+        console.log(file + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart));
     }).then(function (media) {
         console.groupEnd();
         try {
             var Game = new GameController(document.body, {
-                images: media[sanitize(_assetsURL)],
+                images: media[Utils.sanitize(_assetsURL)],
                 data: {
-                    assets: media[sanitize(_assetsDataURL)],
-                    positions: media[sanitize(_buildingsDataURL)]
+                    assets: media[Utils.sanitize(_assetsDataURL)],
+                    positions: media[Utils.sanitize(_buildingsDataURL)]
                 }
             });
             if (IS_DEV) {

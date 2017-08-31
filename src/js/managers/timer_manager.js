@@ -1,7 +1,7 @@
 "use strict";
 /* exported TimerManager */
 
-var TimerManager = (function () {
+var TimerManager = (function iife () {
     /**
      * Class for timers
      * @param {Function} action - Callback function after timeout
@@ -9,7 +9,7 @@ var TimerManager = (function () {
      * @constructor
      */
     function Timer (action, time) {
-        this.startTime = getNow();
+        this.startTime = Utils.getNow();
         this.action = action;
         this.time = time;
         this.isRunning = true;
@@ -28,7 +28,7 @@ var TimerManager = (function () {
          * @return {number}
          */
         getElapsed: function () {
-            return getNow() - this.startTime;
+            return Utils.getNow() - this.startTime;
         },
         /**
          * Get remaining time on the timer
@@ -113,13 +113,13 @@ var TimerManager = (function () {
          * @return {*}
          */
         restart: function (timerId) {
-            return _timers.get(timerId).restart(getNow());
+            return _timers.get(timerId).restart(Utils.getNow());
         },
         /**
          * Restart all known timers
          */
         restartAll: function () {
-            var now = getNow();
+            var now = Utils.getNow();
             _timers.forEach(function (timer) {
                 timer.restart(now);
             });

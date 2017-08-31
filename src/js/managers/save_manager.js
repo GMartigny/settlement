@@ -1,16 +1,16 @@
 "use strict";
 /* exported SaveManager */
 
-var SaveManager = (function () {
+var SaveManager = (function iife () {
 
     var storage = localStorage;
 
     var key = storage.getItem("k");
     if (!key) {
-        key = randomStr();
+        key = Utils.randomStr();
         storage.setItem("k", key);
     }
-    var salt = randomStr(6);
+    var salt = Utils.randomStr();
 
     function compress (str) {
         return btoa(salt + str);

@@ -11,7 +11,7 @@ function peopleFactory (amount) {
     if (IS_DEV) {
         var res = [];
         for (var i = 0; i < amount; ++i) {
-            var code = "Bot-" + randomStr(3).toUpperCase();
+            var code = "Bot-" + Utils.randomStr(3).toUpperCase();
             res.push(new People(code));
         }
         return Promise.resolve(res);
@@ -20,7 +20,7 @@ function peopleFactory (amount) {
         return People.randomName(amount).then(function (response) {
             var people = [];
             response.results.forEach(function (data) {
-                var name = capitalize(data.name.first + "")/* + " " + capitalize(data.name.last)*/;
+                var name = Utils.capitalize(data.name.first + "")/* + " " + Utils.capitalize(data.name.last)*/;
                 var person = new People(name, data.gender);
                 people.push(person);
             });
@@ -82,7 +82,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.nameNode = wrap("name", capitalize(this.name));
+        this.nameNode = Utils.wrap("name", Utils.capitalize(this.name));
         html.appendChild(this.nameNode);
 
         this.lifeBar = new Bar("life", 25);
@@ -91,7 +91,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         this.energyBar = new Bar("energy");
         html.appendChild(this.energyBar.html);
 
-        this.actionList = wrap("actionList");
+        this.actionList = Utils.wrap("actionList");
         html.appendChild(this.actionList);
 
         return html;
@@ -217,7 +217,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @memberOf People#
      */
     addAction: function (actionsId) {
-        if (!isArray(actionsId)) {
+        if (!Utils.isArray(actionsId)) {
             actionsId = [actionsId];
         }
 
@@ -234,7 +234,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @param {ID|Array<ID>} actionsId - One or more actions ID to lock
      */
     lockAction: function (actionsId) {
-        if (!isArray(actionsId)) {
+        if (!Utils.isArray(actionsId)) {
             actionsId = [actionsId];
         }
 
@@ -261,7 +261,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                     // perk is compatible
                     var actionsIds = perkData.actions;
                     if (!actionsIds || actionsIds.includes(actionId)) {
-                        if (!isFunction(perkData.condition) || perkData.condition(self)) {
+                        if (!Utils.isFunction(perkData.condition) || perkData.condition(self)) {
                             var done = 0;
                             if (!actionsIds) {
                                 done = 1 / (perkData.iteration || 0);
@@ -274,7 +274,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
-                            if (done && random() < done) {
+                            if (done && MathUtils.random() < done) {
                                 // perk is unlocked
                                 self.gainPerk(perkId);
                                 gotPerk = true;

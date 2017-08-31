@@ -1,6 +1,6 @@
 /* exported MessageBus */
 
-var MessageBus = (function () {
+var MessageBus = (function iife () {
     "use strict";
 
     var _observers = [];
@@ -13,7 +13,7 @@ var MessageBus = (function () {
          * @return {MessageBus} Itself
          */
         observe: function (type, action) {
-            if (!isArray(type)) {
+            if (!Utils.isArray(type)) {
                 type = [type];
             }
             type.forEach(function (oneType) {
@@ -34,7 +34,7 @@ var MessageBus = (function () {
         notify: function (type, message, silent) {
             var typeDesc = this.SWAP_MSG_TYPE[type];
             if (!silent) {
-                log("Message ", typeDesc || type, message);
+                Utils.log("Message ", typeDesc || type, message);
             }
             if (_observers[type]) {
                 _observers[type].forEach(function (action) {

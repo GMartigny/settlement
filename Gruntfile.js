@@ -68,6 +68,7 @@ module.exports = function (grunt) {
                     compress: {
                         sequences: false,
                         drop_debugger: false,
+                        keep_fnames: true,
                         global_defs: {
                             IS_DEV: true,
                             VERSION: VERSION

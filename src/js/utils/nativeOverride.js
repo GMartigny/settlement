@@ -4,7 +4,7 @@
  * Return the last item of the array
  * @return {*}
  */
-Array.prototype.last = function () {
+Array.prototype.last = function last () {
     return this[this.length - 1];
 };
 
@@ -12,8 +12,9 @@ Array.prototype.last = function () {
  * Get a random item from an array
  * @return {*}
  */
-Array.prototype.random = function () {
-    return this[floor(random(0, this.length))];
+Array.prototype.random = function random () {
+    console.debug(this);
+    return this[MathUtils.floor(MathUtils.random(0, this.length))];
 };
 
 /**
@@ -21,7 +22,7 @@ Array.prototype.random = function () {
  * @param {*} item - Any item of the array
  * @return {Number} The array length
  */
-Array.prototype.out = function (item) {
+Array.prototype.out = function out (item) {
     this.splice(this.indexOf(item), 1);
     return this.length;
 };
@@ -30,7 +31,7 @@ Array.prototype.out = function (item) {
  * Push an array of items into the array
  * @param {Array} array - An array of item
  */
-Array.prototype.insert = function (array) {
+Array.prototype.insert = function insert (array) {
     this.push.apply(this, array);
 };
 
@@ -40,8 +41,8 @@ Array.prototype.insert = function (array) {
  * @param {*} value - Any value
  * @return {*} The insertion key
  */
-Map.prototype.push = function (key, value) {
-    if (isUndefined(value)) {
+Map.prototype.push = function push (key, value) {
+    if (Utils.isUndefined(value)) {
         value = key;
         key = value.id || (this.size + 1).toString(36);
     }
@@ -53,7 +54,7 @@ Map.prototype.push = function (key, value) {
  * Return the array of inserted values
  * @return {Array}
  */
-Map.prototype.getValues = function () {
+Map.prototype.getValues = function getValues () {
     var iterator = this.values();
     var values = [];
     var entry = iterator.next();
@@ -68,7 +69,7 @@ Map.prototype.getValues = function () {
  * Return all value of an object as array
  * @return {Array}
  */
-Object.prototype.values = function () {
+Object.prototype.values = function values () {
     var values = [];
 
     this.browse(function (value) {
@@ -81,33 +82,35 @@ Object.prototype.values = function () {
 /**
  * Browse all item in an object
  * @param {Function} action - A function called on each item
+ * @param {Object} [thisArg] - A context for the callback
  */
-Object.prototype.browse = function (action) {
+Object.prototype.browse = function browse (action, thisArg) {
     Object.keys(this).forEach(function (key) {
-        action(this[key], key, this);
+        action.call(thisArg, this[key], key, this);
     }, this);
 };
 
 /**
  * Browse all item in a nested tree
  * @param {Function} action - A function called on each item
+ * @param {Object} [thisArg] - A context for the callback
  */
-Object.prototype.deepBrowse = function (action) {
-    this.browse(function (value, index, list) {
-        if (value.constructor.name !== "Object") {
-            action(value, index, list);
-        }
-        else {
-            value.deepBrowse(action);
-        }
-    });
+Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
+    if (this.constructor.name !== "Object") {
+        action.call(thisArg, this);
+    }
+    else {
+        this.browse(function (value) {
+            value.deepBrowse(action, thisArg);
+        });
+    }
 },
 
 /**
  * Swap key to value in an object
  * @returns {Object}
  */
-Object.prototype.swap = function () {
+Object.prototype.swap = function swap () {
     var res = {};
     this.browse(function (value, key) {
         res[value] = key;
@@ -119,7 +122,7 @@ Object.prototype.swap = function () {
  * Return a new reference of any object
  * @returns {*}
  */
-Object.prototype.clone = function () {
+Object.prototype.clone = function clone () {
     var clone;
     if (this === undefined || this === null || [Boolean, Number, String].includes(this.constructor)) {
         clone = this;
@@ -142,7 +145,7 @@ Object.prototype.clone = function () {
  * @param {String} name - The constructor's name
  * @param {Object} override - A map like object with overrides
  */
-Function.prototype.extends = function (parent, name, override) {
+Function.prototype.extends = function _extends (parent, name, override) {
     if (parent) {
         this.prototype = Object.create(parent.prototype);
         /**

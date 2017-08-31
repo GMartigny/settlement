@@ -4,7 +4,7 @@
 /**
  * Data holder
  */
-var DataManager = (function () {
+var DataManager = (function iife () {
 
     var time = {
         minute: 1 / 60,
@@ -328,10 +328,10 @@ var DataManager = (function () {
             [2, ids.resources.craftables.complex.jewelry]
         ],
         giveSpan: [2, 3],
-        giveList: {
-            basic: ids.resources.craftables.basic,
-            complex: ids.resources.craftables.complex
-        },
+        giveList: [
+            ids.resources.craftables.basic,
+            ids.resources.craftables.complex
+        ],
         log: "@people.name manage to trade a couple of jewelries for @give.",
         order: 10
     });
@@ -368,9 +368,9 @@ var DataManager = (function () {
         ],
         effect: function (action, option, effect) {
             var lifeChange = 99;
-            var hasPharma = this.buildings.has(ids.buildings.small.pharmacy.id);
-            var isHealer = action.owner.hasPerk(ids.perks.healer.id);
-            if (!hasPharma && !isHealer && random() < 2 / 5) {
+            var hasPharma = this.buildings.has(ids.buildings.small.pharmacy);
+            var isHealer = action.owner.hasPerk(ids.perks.healer);
+            if (!hasPharma && !isHealer && MathUtils.random() < 2 / 5) {
                 lifeChange = -10;
                 // remember for log
                 effect.wasBad = true;
@@ -412,7 +412,9 @@ var DataManager = (function () {
             [2, ids.resources.gatherables.common.water]
         ],
         giveSpan: [1.5, 2],
-        giveList: ids.resources.gatherables.common.food,
+        giveList: [
+            ids.resources.gatherables.common.food
+        ],
         log: "Our crops produce @give.",
         order: 70
     });
@@ -428,7 +430,9 @@ var DataManager = (function () {
             [3, ids.resources.gatherables.common.water]
         ],
         giveSpan: [3, 4],
-        giveList: ids.resources.gatherables.common.food,
+        giveList: [
+            ids.resources.gatherables.common.food
+        ],
         log: "Our crops produce @give.",
         order: 70
     });
@@ -439,7 +443,9 @@ var DataManager = (function () {
         time: 2,
         energy: 15,
         giveSpan: [1, 3],
-        giveList: ids.resources.gatherables.common.water,
+        giveList: [
+            ids.resources.gatherables.common.water
+        ],
         log: "Using our well, @people.name get @give.",
         order: 60
     });
@@ -451,10 +457,12 @@ var DataManager = (function () {
         energy: 50,
         isOut: 1,
         condition: function (action) {
-            return !action.owner.actions.has(ids.actions.drawFromWell.id);
+            return !action.owner.actions.has(ids.actions.drawFromWell);
         },
         giveSpan: [2, 6],
-        giveList: ids.resources.gatherables.common.water,
+        giveList: [
+            ids.resources.gatherables.common.water
+        ],
         log: "Coming back from the river, @people.name brings @give with @people.accusative.",
         order: 60
     });
@@ -503,11 +511,13 @@ var DataManager = (function () {
             return this.knownLocations;
         },
         giveSpan: [7, 10],
-        giveList: ids.option,
+        giveList: [
+            ids.option
+        ],
         log: "All locations should have own log",
         order: 20
     });
-    var ruinsDropRate = ids.resources.gatherables.special.ruins.dropRate;
+    var ruinsDropRate = db[ids.resources.gatherables.special.ruins].dropRate;
     ids.actions.scour = insert({
         id: "scr",
         name: "scour",
@@ -518,7 +528,9 @@ var DataManager = (function () {
             [1, ids.resources.gatherables.common.water]
         ],
         giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2],
-        giveList: ids.resources.gatherables.special.ruins,
+        giveList: [
+            ids.resources.gatherables.special.ruins
+        ],
         log: function (effect) {
             var log;
             if (effect.location) {
@@ -543,7 +555,7 @@ var DataManager = (function () {
             [1, ids.resources.gatherables.common.water]
         ],
         condition: function (action) {
-            return !action.owner.actions.has(ids.actions.scour.id);
+            return !action.owner.actions.has(ids.actions.scour);
         },
         unlock: [
             ids.actions.explore
@@ -552,7 +564,9 @@ var DataManager = (function () {
             [9, ids.actions.scour]
         ],
         giveSpan: [ruinsDropRate / 2, (ruinsDropRate + 1) / 2],
-        giveList: ids.resources.gatherables.special.ruins,
+        giveList: [
+            ids.resources.gatherables.special.ruins
+        ],
         log: function (effect) {
             var log;
             if (effect.give) {
@@ -626,10 +640,7 @@ var DataManager = (function () {
         give: [
             [10, ids.resources.gatherables.common.water],
             [8, ids.resources.gatherables.common.food],
-            [2, ids.resources.craftables.basic.component],
-            [6, ids.resources.gatherables.uncommon.bolts],
-            [4, ids.resources.gatherables.common.scrap],
-            [3, ids.resources.gatherables.common.rock]
+            [2, ids.resources.craftables.basic.component]
         ],
         unlock: [
             ids.actions.settle
@@ -667,18 +678,6 @@ var DataManager = (function () {
         dropRate: 100,
         order: 90
     });
-    ids.resources.craftables.basic.glass = insert({
-        id: "gls",
-        name: "glass pane",
-        desc: "A see-through building component.",
-        icon: "glass-pane",
-        ifHas: ids.buildings.small.furnace,
-        consume: [
-            [4, ids.resources.gatherables.uncommon.sand]
-        ],
-        dropRate: 60,
-        order: 100
-    });
     ids.resources.craftables.basic.tool = insert({
         id: "tol",
         name: "tool",
@@ -706,15 +705,23 @@ var DataManager = (function () {
         asset: "furnace",
         log: "A simple furnace that can smelt small things like sand or little electronics."
     });
+    ids.resources.craftables.basic.glass = insert({
+        id: "gls",
+        name: "glass pane",
+        desc: "A see-through building component.",
+        icon: "glass-pane",
+        ifHas: ids.buildings.small.furnace,
+        consume: [
+            [4, ids.resources.gatherables.uncommon.sand]
+        ],
+        dropRate: 60,
+        order: 100
+    });
     ids.buildings.small.forum1 = insert({
         id: "fr1",
         name: "forum+1",
         desc: "Add one room.",
         time: 2,
-        condition: function () {
-            var done = this.buildings;
-            return !(done.has(ids.buildings.medium.forum2) || done.has(ids.buildings.medium.forum3));
-        },
         upgrade: ids.buildings.special.forum,
         consume: [
             [6, ids.resources.gatherables.uncommon.bolts],
@@ -731,9 +738,6 @@ var DataManager = (function () {
         name: "farm plot",
         desc: "A little arranged plot of soil to grow some food.",
         time: 9,
-        condition: function () {
-            return !this.buildings.has(ids.buildings.medium.plot1);
-        },
         consume: [
             [5, ids.resources.gatherables.common.food],
             [10, ids.resources.gatherables.uncommon.sand]
@@ -762,7 +766,7 @@ var DataManager = (function () {
         desc: "Just a large hole into the ground.",
         time: 16,
         condition: function () {
-            return !this.buildings.has(ids.buildings.big.pump.id);
+            return !this.buildings.has(ids.buildings.big.pump);
         },
         consume: [
             [10, ids.resources.craftables.basic.stone],
@@ -775,7 +779,7 @@ var DataManager = (function () {
             ids.actions.drawFromWell
         ],
         lock: [
-            ids.actions.drawFromRiver.id
+            ids.actions.drawFromRiver
         ],
         asset: "well",
         log: "Drawing water from the ground should allow to further polish stone into bricks."
@@ -788,9 +792,6 @@ var DataManager = (function () {
         name: "forum+2",
         desc: "Add one room.",
         time: 5,
-        condition: function () {
-            return !this.buildings.has(ids.buildings.big.forum3);
-        },
         consume: [
             [10, ids.resources.gatherables.uncommon.sand],
             [2, ids.resources.craftables.basic.stone],
@@ -842,7 +843,7 @@ var DataManager = (function () {
         name: "brick",
         desc: "Bricks will give walls for larger constructions.",
         icon: "brick",
-        ifHas: ids.buildings.small.well.id,
+        ifHas: ids.buildings.small.well,
         consume: [
             [1, ids.resources.craftables.basic.stone],
             [1, ids.resources.craftables.basic.tool]
@@ -868,25 +869,13 @@ var DataManager = (function () {
         name: "metal pipe",
         desc: "Pipes that you forge from junk metal.",
         icon: "pipes-small",
-        ifHas: ids.buildings.medium.forge.id,
+        ifHas: ids.buildings.medium.forge,
         consume: [
             [4, ids.resources.gatherables.common.scrap],
             [1, ids.resources.craftables.basic.tool]
         ],
         dropRate: 80,
         order: 115
-    });
-    ids.resources.craftables.complex.furniture = insert({
-        id: "fnt",
-        name: "furniture",
-        desc: "A proper settlement needs better than pile of trash for table and seats.",
-        icon: "glass-table",
-        consume: [
-            [2, ids.resources.craftables.basic.glass],
-            [2, ids.resources.craftables.complex.metalPipe]
-        ],
-        dropRate: 40,
-        order: 116
     });
 
     /** CRAFTABLES ADVANCED **/
@@ -896,9 +885,7 @@ var DataManager = (function () {
         name: "jewelry",
         desc: "A really beautiful ornament you could use for trading.",
         icon: "jewelry",
-        condition: function () {
-            return this.buildings.has(ids.buildings.small.furnace.id);
-        },
+        ifHas: ids.buildings.small.furnace,
         consume: [
             [4, ids.resources.gatherables.rare.electronic],
             [3, ids.resources.gatherables.special.quartz]
@@ -906,41 +893,38 @@ var DataManager = (function () {
         dropRate: 40,
         order: 117
     });
-    ids.resources.craftables.advanced.engine = insert({
-        id: "egn",
-        name: "engine",
-        desc: "Amazing what you manage to do with all those scraps !",
-        icon: "engine",
-        condition: function () {
-            return this.buildings.has(ids.buildings.big.workshop.id);
-        },
-        consume: [
-            [10, ids.resources.gatherables.uncommon.oil],
-            [5, ids.resources.craftables.basic.tool],
-            [5, ids.resources.craftables.complex.metalPipe]
-        ],
-        dropRate: 30,
-        order: 120
-    });
-    ids.resources.craftables.advanced.computer = insert({
-        id: "cmt",
-        name: "computer",
-        desc: "Well, Internet is down since 2136 but it can still be useful.",
-        icon: "computer",
-        condition: function () {
-            return this.buildings.has(ids.buildings.big.workshop.id);
-        },
-        consume: [
-            [10, ids.resources.craftables.basic.component],
-            [7, ids.resources.craftables.basic.tool],
-            [3, ids.resources.craftables.complex.circuit]
-        ],
-        dropRate: 20,
-        order: 130
-    });
 
     /** BUILDINGS BIG **/
 
+    ids.buildings.big.workshop = insert({
+        id: "wrs",
+        name: "workshop",
+        desc: "Organizing your workforce make them more efficient at crafting.",
+        time: 3 * time.day,
+        energy: 90,
+        ifHas: ids.buildings.medium.forge,
+        consume: [
+            [6, ids.resources.gatherables.common.scrap],
+            [5, ids.resources.craftables.basic.glass],
+            [10, ids.resources.craftables.basic.tool],
+            [15, ids.resources.craftables.complex.brick]
+        ],
+        asset: "workshop",
+        log: "Good organisation allow you to prepare project and do much more complex crafting."
+    });
+    ids.resources.craftables.complex.furniture = insert({
+        id: "fnt",
+        name: "furniture",
+        desc: "A proper settlement needs better than pile of trash for table and seats.",
+        icon: "glass-table",
+        ifHas: ids.buildings.big.workshop,
+        consume: [
+            [2, ids.resources.craftables.basic.glass],
+            [2, ids.resources.craftables.complex.metalPipe]
+        ],
+        dropRate: 40,
+        order: 116
+    });
     ids.buildings.big.forum3 = insert({
         id: "fr3",
         name: "forum+3",
@@ -958,28 +942,40 @@ var DataManager = (function () {
         asset: "forum+3",
         log: "All the forum space is now used for sleeping place."
     });
-    ids.buildings.big.workshop = insert({
-        id: "wrs",
-        name: "workshop",
-        desc: "Organizing your workforce make them more efficient at crafting.",
-        time: 3 * time.day,
-        energy: 90,
-        ifHas: ids.buildings.small.furnace.id,
+    ids.resources.craftables.advanced.engine = insert({
+        id: "egn",
+        name: "engine",
+        desc: "Amazing what you manage to do with all those scraps !",
+        icon: "engine",
+        ifHas: ids.buildings.big.workshop,
         consume: [
-            [6, ids.resources.gatherables.common.scrap],
-            [5, ids.resources.craftables.basic.glass],
-            [10, ids.resources.craftables.basic.tool],
-            [15, ids.resources.craftables.complex.brick]
+            [10, ids.resources.gatherables.uncommon.oil],
+            [5, ids.resources.craftables.basic.tool],
+            [5, ids.resources.craftables.complex.metalPipe]
         ],
-        asset: "workshop",
-        log: "Good organisation allow you to prepare project and do much more complex crafting."
+        dropRate: 30,
+        order: 120
+    });
+    ids.resources.craftables.advanced.computer = insert({
+        id: "cmt",
+        name: "computer",
+        desc: "Well, Internet is down since 2136 but it can still be useful.",
+        icon: "computer",
+        ifHas: ids.buildings.big.workshop,
+        consume: [
+            [10, ids.resources.craftables.basic.component],
+            [7, ids.resources.craftables.basic.tool],
+            [3, ids.resources.craftables.complex.circuit]
+        ],
+        dropRate: 20,
+        order: 130
     });
     ids.buildings.big.radio = insert({
         id: "rdo",
         name: "radio-station",
         desc: "Broadcasting could finally bring us some help.",
         time: 6,
-        ifHas: ids.buildings.big.workshop.id,
+        ifHas: ids.buildings.big.workshop,
         consume: [
             [4, ids.resources.craftables.complex.circuit],
             [1, ids.resources.craftables.advanced.computer]
@@ -1012,7 +1008,7 @@ var DataManager = (function () {
         desc: "Since the radio station bring a handful of merchant, better take advantage of it.",
         time: time.day,
         energy: 70,
-        ifHas: ids.buildings.big.radio.id,
+        ifHas: ids.buildings.big.radio,
         consume: [
             [2, ids.resources.craftables.basic.glass],
             [10, ids.resources.craftables.complex.brick],
@@ -1030,7 +1026,7 @@ var DataManager = (function () {
         desc: "With that, we can finally deliver the cube to security.",
         time: time.week,
         energy: 100,
-        ifHas: ids.buildings.big.radio.id,
+        ifHas: ids.buildings.big.radio,
         consume: [
             [15, ids.resources.gatherables.uncommon.oil],
             [3, ids.resources.craftables.complex.furniture],
@@ -1051,11 +1047,11 @@ var DataManager = (function () {
         id: "mnt",
         name: "mountain",
         desc: "A nearby mountain that may contains some basic building resources",
-        giveList: {
-            rock: ids.resources.gatherables.common.rock,
-            scrap: ids.resources.gatherables.common.scrap,
-            component: ids.resources.craftables.basic.component
-        },
+        giveList: [
+            ids.resources.gatherables.common.rock,
+            ids.resources.gatherables.common.scrap,
+            ids.resources.craftables.basic.component
+        ],
         log: "That was hard to climb those mountains, but at least @people find @give.",
         dropRate: 90
     });
@@ -1063,11 +1059,11 @@ var DataManager = (function () {
         id: "dst",
         name: "desert",
         desc: "Not much to find in a desert, but that's for sure the best place to get sand.",
-        giveList: {
-            scrap: ids.resources.gatherables.common.scrap,
-            oil: ids.resources.gatherables.uncommon.oil,
-            sand: ids.resources.gatherables.uncommon.sand
-        },
+        giveList: [
+            ids.resources.gatherables.common.scrap,
+            ids.resources.gatherables.uncommon.oil,
+            ids.resources.gatherables.uncommon.sand
+        ],
         log: "Dunes everywhere give a felling of hopelessness. Anyway, here's @give for the stock.",
         dropRate: 100
     });
@@ -1075,11 +1071,11 @@ var DataManager = (function () {
         id: "hng",
         name: "hangar",
         desc: "A huge hangar. It was certainly raided before by others, but you may grab something",
-        giveList: {
-            food: ids.resources.gatherables.common.food,
-            medication: ids.resources.gatherables.rare.medication,
-            glass: ids.resources.craftables.basic.glass
-        },
+        giveList: [
+            ids.resources.gatherables.common.food,
+            ids.resources.gatherables.rare.medication,
+            ids.resources.craftables.basic.glass
+        ],
         log: "Quite easy to loot, but full of dangers too. Hopefully, @people.name return safely and got @give.",
         dropRate: 80
     });
@@ -1093,11 +1089,11 @@ var DataManager = (function () {
         unlockForAll: [
             ids.actions.drawFromRiver
         ],
-        giveList: {
-            water: ids.resources.gatherables.common.water,
-            bolts: ids.resources.gatherables.uncommon.bolts,
-            stone: ids.resources.craftables.basic.stone
-        },
+        giveList: [
+            ids.resources.gatherables.common.water,
+            ids.resources.gatherables.uncommon.bolts,
+            ids.resources.craftables.basic.stone
+        ],
         log: "It's nice by the river, @people.name found @give.",
         dropRate: 40
     });
@@ -1106,11 +1102,11 @@ var DataManager = (function () {
         name: "old ruin",
         desc: "This is a huge underground network of rooms linked by narrow hallways. " +
         "This should have provided shelter a long time ago.",
-        giveList: {
-            electronic: ids.resources.gatherables.rare.electronic,
-            component: ids.resources.craftables.basic.component,
-            tool: ids.resources.craftables.basic.tool
-        },
+        giveList: [
+            ids.resources.gatherables.rare.electronic,
+            ids.resources.craftables.basic.component,
+            ids.resources.craftables.basic.tool
+        ],
         log: "Amazing no-one get lost in those caves to get @give.",
         dropRate: 60
     });
@@ -1121,11 +1117,11 @@ var DataManager = (function () {
         id: "bld",
         name: "buried building",
         desc: "By digging up this building, you uncover stuff preserved from looting and environment.",
-        giveList: {
-            medication: ids.resources.gatherables.rare.medication,
-            glass: ids.resources.craftables.basic.glass,
-            circuit: ids.resources.craftables.complex.circuit
-        },
+        giveList: [
+            ids.resources.gatherables.rare.medication,
+            ids.resources.craftables.basic.glass,
+            ids.resources.craftables.complex.circuit
+        ],
         log: "No-one could guess what that building was, but it sure was interesting. " +
         "@people.name find @give.",
         dropRate: 30
@@ -1134,11 +1130,11 @@ var DataManager = (function () {
         id: "swr",
         name: "spaceship wreck",
         desc: "This wreckage seems to be in a fairly good shape and allow you to find useful part inside.",
-        giveList: {
-            electronic: ids.resources.gatherables.rare.electronic,
-            tool: ids.resources.craftables.basic.tool,
-            furniture: ids.resources.craftables.complex.furniture
-        },
+        giveList: [
+            ids.resources.gatherables.rare.electronic,
+            ids.resources.craftables.basic.tool,
+            ids.resources.craftables.complex.furniture
+        ],
         log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
         dropRate: 20
     });
@@ -1182,7 +1178,7 @@ var DataManager = (function () {
         name: "first-one",
         desc: "The very first one to install the settlement.",
         actions: [
-            ids.actions.settle.id
+            ids.actions.settle
         ],
         iteration: 0
     });
@@ -1203,15 +1199,15 @@ var DataManager = (function () {
         desc: "The veteran of the camp and leader of the exploration. " +
         "@people.nominative knows the best spot of resources.",
         actions: [
-            ids.actions.roam.id,
-            ids.actions.scour.id,
-            ids.actions.explore.id
+            ids.actions.roam,
+            ids.actions.scour,
+            ids.actions.explore
         ],
         iteration: 30,
         effect: function (actionData) {
             // Always find epic locations
             // And get an extras when exploring
-            if (actionData.id === ids.actions.explore.id) {
+            if (actionData.id === ids.actions.explore) {
                 var extra = 2;
                 actionData.giveSpan = actionData.giveSpan.map(function (value) {
                     return value + extra;
@@ -1224,8 +1220,8 @@ var DataManager = (function () {
         name: "tinkerer",
         desc: "Everyone is amazed by how quickly @people.nominative can put together any contraption.",
         actions: [
-            ids.actions.craft.id,
-            ids.actions.build.id
+            ids.actions.craft,
+            ids.actions.build
         ],
         iteration: 30,
         effect: function (actionData) {
@@ -1237,9 +1233,9 @@ var DataManager = (function () {
         name: "doctor",
         desc: "Knowing enough about medicine make @people.accusative confident to heal others.",
         actions: [
-            ids.actions.heal.id
+            ids.actions.heal
         ],
-        ifHas: ids.buildings.small.pharmacy.id,
+        ifHas: ids.buildings.small.pharmacy,
         iteration: 5,
         unlock: [
             ids.actions.nurse
@@ -1250,11 +1246,11 @@ var DataManager = (function () {
         name: "harvester",
         desc: "A real eagle eye that can spot goods twice as fast as anyone.",
         actions: [
-            ids.actions.gather.id,
-            ids.actions.harvestField.id,
-            ids.actions.harvestPlot.id,
-            ids.actions.drawFromRiver.id,
-            ids.actions.drawFromWell.id
+            ids.actions.gather,
+            ids.actions.harvestField,
+            ids.actions.harvestPlot,
+            ids.actions.drawFromRiver,
+            ids.actions.drawFromWell
         ],
         iteration: 40,
         effect: function (actionData) {
@@ -1309,7 +1305,7 @@ var DataManager = (function () {
         bindAll: function (context) {
             db.browse(function (data) {
                 data.browse(function (field, key) {
-                    if (isFunction(field)) {
+                    if (Utils.isFunction(field)) {
                         data[key] = field.bind(context);
                     }
                 });

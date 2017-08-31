@@ -42,13 +42,13 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        var name = wrap("name clickable disabled animated", capitalize(this.data.name));
+        var name = Utils.wrap("name clickable disabled animated", Utils.capitalize(this.data.name));
         this.nameNode = name;
         html.appendChild(name);
 
-        if (isFunction(this.data.options)) {
+        if (Utils.isFunction(this.data.options)) {
             html.classList.add("withOptions");
-            this.optionsWrapper = wrap("options");
+            this.optionsWrapper = Utils.wrap("options");
             html.appendChild(this.optionsWrapper);
         }
         else {
@@ -67,7 +67,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      */
     init: function () {
         this.data.time = this.data.time || 0;
-        if (isUndefined(this.data.energy)) {
+        if (Utils.isUndefined(this.data.energy)) {
             this.data.energy = this.data.time * 5;
         }
 
@@ -80,7 +80,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @memberOf Action#
      */
     manageOptions: function () {
-        if (isFunction(this.data.options)) {
+        if (Utils.isFunction(this.data.options)) {
             if (!this.options) {
                 this.options = new Map();
             }
@@ -116,7 +116,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         this.tooltip.refresh(resources, this.data);
 
         // check consumption
-        if (isArray(this.data.consume) && !this.locked) {
+        if (Utils.isArray(this.data.consume) && !this.locked) {
             this.data.consume.forEach(function (r) {
                 var id = r[1];
                 if (!resources.has(id) || !resources.get(id).has(r[0])) {
@@ -146,38 +146,27 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
             else if (optionId || !this.options) {
                 // Merge data from this and selected option
-                var data = optionId ? this.mergeWithOption(optionId) : this.data;
+                var data = this.mergeWithOption(optionId);
                 // Use resources
-                if (isArray(data.consume)) {
+                if (Utils.isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
                 }
 
                 // Tell the game controller to filter out building in progress
                 if (data.build) {
-                    var build = data.build === DataManager.ids.option ? optionId : data.build;
-                    MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, build);
+                    MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, data.build);
                 }
 
                 this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
-                var duration = (data.time || 0);
-
-                if (data.timeDelta) {
-                    duration += random(-data.timeDelta, data.timeDelta);
-                }
-                if (data.timeBonus) {
-                    duration -= duration * data.timeBonus;
-                }
+                var duration = this.defineDuration(data);
 
                 this.owner.setBusy(this.data.id, data.energy / duration);
 
-                duration *= GameController.tickLength;
+                this.setCoolDown(duration);
 
-                this.nameNode.style.animationDuration = duration + "ms";
-                this.nameNode.classList.add(Action.COOLDOWN_CLASS);
-
-                this.timeout = TimerManager.timeout(this.end.bind(this, data), duration);
+                this.timeout = TimerManager.timeout(this.end.bind(this, data), duration * GameController.tickLength);
                 return true;
             }
         }
@@ -185,50 +174,64 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             return false;
         }
     },
+    defineDuration: function (data) {
+        var duration = (data.time || 0);
+
+        if (data.timeDelta) {
+            duration += MathUtils.random(-data.timeDelta, data.timeDelta);
+        }
+        if (data.timeBonus) {
+            duration -= duration * data.timeBonus;
+        }
+        return duration;
+    },
+    setCoolDown: function (duration) {
+        this.nameNode.style.animationDuration = (duration * GameController.tickLength) + "ms";
+        this.nameNode.classList.add(Action.COOLDOWN_CLASS);
+    },
     mergeWithOption: function (optionId) {
         var merge = {};
-        var option = DataManager.get(optionId);
         var data = this.data;
+        var option = {};
 
-        // FIXME: unfinished
-        var buildId = null;
-        if (option.build) {
-            buildId = option.build;
+        if (optionId) {
+            option = DataManager.get(optionId);
         }
-        if (!buildId && data.build) {
-            buildId = data.build;
+
+        var build = {};
+        var buildId = option.build || data.build;
+
+        if (buildId) {
             if (buildId === DataManager.ids.option) {
-                buildId = null;
-                console.warn("An action try to build the same as the selected option");
+                buildId = optionId;
+            }
+            else {
+                build = DataManager.get(buildId);
             }
         }
 
-        var build = buildId ? DataManager.get(buildId) : {};
         merge.build = buildId;
+        merge.optionId = optionId;
 
-        var fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy"];
-        var concat = ["consume", "give", "unlock", "lock", "unlockForAll", "lockForAll"];
-        var mix = ["giveList"];
+        var fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy", "giveSpan"]; // Others
+        var concat = ["consume", "give", "unlock", "lock", "unlockForAll", "lockForAll"]; // Array
+        var mix = ["giveList"]; // Object
 
         fallback.forEach(function (prop) {
-            if (data[prop] || option[prop]) {
-                merge[prop] = build[prop] || option[prop] || data[prop];
-            }
+            merge[prop] = build[prop] || option[prop] || data[prop];
         });
 
         concat.forEach(function (prop) {
-            if (data[prop] || option[prop]) {
-                merge[prop] = (build[prop] || []).concat(data[prop] || []).concat(option[prop] || []);
+            if (data[prop] || option[prop] || build[prop]) {
+                merge[prop] = (data[prop] || []).concat(option[prop] || []).concat(build[prop] || []);
             }
         });
 
         mix.forEach(function (prop) {
-            if (data[prop] || option[prop]) {
-                merge[prop] = Object.assign({}, (build[prop] || {}), (data[prop] || {}), (option[prop] || {}));
+            if (build[prop] || data[prop] || option[prop]) {
+                merge[prop] = Object.assign({}, (data[prop] || {}), (option[prop] || {}), (build[prop] || {}));
             }
         });
-
-        merge.optionId = optionId;
 
         return merge;
     },
@@ -246,7 +249,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             people: this.owner
         };
 
-        if (isFunction(this.data.effect)) {
+        if (Utils.isFunction(this.data.effect)) {
             this.data.effect(this, data, effect);
         }
 
@@ -282,7 +285,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             MessageBus.notify(MessageBus.MSG_TYPES.BUILD, result.build);
         }
 
-        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, capitalize(result.log));
+        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, Utils.capitalize(result.log));
 
         this.owner.finishAction();
     },
@@ -306,32 +309,30 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             log: ""
         };
 
-        var specialIdOption = DataManager.ids.option;
-
         // Give
-        if (isArray(data.give)) {
+        if (Utils.isArray(data.give)) {
             result.give = data.give;
         }
         else if (data.giveSpan && data.giveList) {
-            result.give = randomizeMultiple(data.giveList, data.giveSpan);
+            result.give = Utils.randomizeMultiple(data.giveList, data.giveSpan);
         }
-        result.give.forEach(function (couple) {
-            if (couple[1] === specialIdOption) {
-                couple[1] = data.optionId;
+        result.give.forEach(function (couple, index, array) {
+            if (couple[1] === DataManager.ids.option) {
+                array[index] = [couple[0], data.optionId];
             }
-        }, this);
+        });
 
         var repeated = this.repeated;
 
         // Unlock
-        if (isArray(this.data.unlockAfter)) {
+        if (Utils.isArray(this.data.unlockAfter)) {
             this.data.unlockAfter.forEach(function (couple) {
                 if (repeated > couple[0]) {
                     result.unlock.forOne.push(couple[1]);
                 }
             });
         }
-        if (isArray(data.unlock)) {
+        if (Utils.isArray(data.unlock)) {
             var unlock = data.unlock.filter(function (id) {
                 var action = DataManager.get(id);
                 return !action.condition || action.condition(this);
@@ -344,7 +345,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 result.unlock.forOne.insert(unlock);
             }
         }
-        if (isArray(data.unlockForAll)) {
+        if (Utils.isArray(data.unlockForAll)) {
             result.unlock.forAll.insert(data.unlockForAll.filter(function (id) {
                 var action = DataManager.get(id);
                 return !action.condition || action.condition(this);
@@ -352,14 +353,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         // Lock
-        if (isArray(this.data.lockAfter)) {
+        if (Utils.isArray(this.data.lockAfter)) {
             this.data.lockAfter.forEach(function (couple) {
                 if (repeated > couple[0]) {
                     result.lock.forOne.push(couple[1]);
                 }
             });
         }
-        if (isArray(data.lock)) {
+        if (Utils.isArray(data.lock)) {
             // Unique actions have to lock for everyone
             if (this.data.unique) {
                 result.lock.forAll = data.lock;
@@ -368,7 +369,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 result.lock.forOne = data.lock;
             }
         }
-        if (isArray(data.lockForAll)) {
+        if (Utils.isArray(data.lockForAll)) {
             result.lock.forAll.insert(data.lockForAll);
         }
         // Unique action lock itself
@@ -378,20 +379,17 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // Build
         if (data.build) {
-            if (data.build === specialIdOption) {
-                data.build = data.optionId;
-            }
             var build = DataManager.get(data.build);
             result.build = data.build;
-            effect.build = an(build.name);
+            effect.build = Utils.an(build.name);
         }
 
-        result.give = compactResources(result.give);
-        effect.give = formatArray(result.give);
+        result.give = Utils.compactResources(result.give);
+        effect.give = Utils.formatArray(result.give);
 
         // Log
         var logData = data.log || "";
-        var rawLog = isFunction(logData) ? logData(effect, this) : logData;
+        var rawLog = Utils.isFunction(logData) ? logData(effect, this) : logData;
         result.log = LogManager.personify(rawLog, effect);
 
         return result;

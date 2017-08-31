@@ -2,7 +2,7 @@
 
 window.ga = false;
 if (!IS_DEV) {
-    (function (scope, globalName, tag, firstTag) {
+    (function iife (scope, globalName, tag, firstTag) {
         scope.GoogleAnalyticsObject = globalName;
         scope[globalName] = scope[globalName] || function () {
             (scope[globalName].q = scope[globalName].q || []).push(arguments);
@@ -25,7 +25,7 @@ if (!IS_DEV) {
  * @param {Number} [value] - Any value
  */
 function sendEvent (category, label, value) {
-    if (isFunction(ga)) {
+    if (Utils.isFunction(ga)) {
         ga("send", "event", "Game", category, label, value);
     }
 }

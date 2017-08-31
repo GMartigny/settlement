@@ -13,7 +13,6 @@
  * @param {HTMLElement} container - The element
  * @param {TooltipData} data - Some data for the tooltip
  */
-
 function Tooltip (container, data) {
     this.container = container;
     this.nodes = {};
@@ -35,8 +34,8 @@ Tooltip.prototype = {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = constrain(x + 10, 0, this.bodyWidth - this.width);
-        var top = constrain(y + 10, 0, this.bodyHeight - this.height);
+        var left = MathUtils.constrain(x + 10, 0, this.bodyWidth - this.width);
+        var top = MathUtils.constrain(y + 10, 0, this.bodyHeight - this.height);
         this.box.style.left = left + "px";
         this.box.style.top = top + "px";
     },
@@ -90,26 +89,26 @@ Tooltip.prototype = {
      * @return {HTMLElement}
      */
     toHTML: function (data) {
-        var html = wrap("tooltip");
+        var html = Utils.wrap("tooltip");
 
-        var nameNode = wrap("title", capitalize(data.name));
+        var nameNode = Utils.wrap("title", Utils.capitalize(data.name));
         html.appendChild(nameNode);
         this.nodes.name = nameNode;
         if (data.desc) {
-            var descNode = wrap("description", data.desc);
+            var descNode = Utils.wrap("description", data.desc);
             html.appendChild(descNode);
             this.nodes.desc = descNode;
         }
         if (data.time) {
-            var timeNode = wrap("time", formatTime(data.time));
+            var timeNode = Utils.wrap("time", Utils.formatTime(data.time));
             html.appendChild(timeNode);
             this.nodes.time = timeNode;
         }
-        if (isArray(data.consume)) {
-            var resourcesContainer = wrap("consumption");
+        if (Utils.isArray(data.consume)) {
+            var resourcesContainer = Utils.wrap("consumption");
             data.consume.forEach(function (resource) {
                 var name = DataManager.get(resource[1]).name;
-                var resourceNode = wrap("resource not-enough", resource[0] + " " + name);
+                var resourceNode = Utils.wrap("resource not-enough", resource[0] + " " + name);
                 this.resourcesMapper[resource[1]] = resourceNode;
                 resourcesContainer.appendChild(resourceNode);
             }, this);
@@ -123,14 +122,14 @@ Tooltip.prototype = {
      * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
     refresh: function (resources, data) {
-        this.nodes.name.textContent = capitalize(data.name);
+        this.nodes.name.textContent = Utils.capitalize(data.name);
         if (data.desc) {
             this.nodes.desc.textContent = data.desc;
         }
         if (data.time) {
-            this.nodes.time.textContent = formatTime(data.time);
+            this.nodes.time.textContent = Utils.formatTime(data.time);
         }
-        if (isArray(data.consume)) {
+        if (Utils.isArray(data.consume)) {
             data.consume.forEach(function (resource) {
                 var id = resource[1];
                 var hasEnougth = resources.has(id) && resources.get(id).has(resource[0]);

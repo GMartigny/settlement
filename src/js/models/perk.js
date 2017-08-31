@@ -25,16 +25,16 @@ Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
 
         new Tooltip(this.html, this.data);
 
-        if (isArray(this.data.unlock)) {
+        if (Utils.isArray(this.data.unlock)) {
             this.owner.addAction(this.data.unlock);
         }
-        if (isArray(this.data.lock)) {
+        if (Utils.isArray(this.data.lock)) {
             this.owner.lockAction(this.data.lock);
         }
     },
     toHTML: function () {
         var html = this._toHTML();
-        html.textContent = "the \"" + capitalize(this.data.name) + "\"";
+        html.textContent = "the \"" + Utils.capitalize(this.data.name) + "\"";
         return html;
     }
 });

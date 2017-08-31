@@ -32,10 +32,10 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.counter = wrap("counter", "1");
+        this.counter = Utils.wrap("counter", "1");
         html.appendChild(this.counter);
 
-        var icon = wrap("icon icon-" + this.data.icon);
+        var icon = Utils.wrap("icon icon-" + this.data.icon);
         html.appendChild(icon);
 
         html.style.order = this.data.order;
@@ -48,7 +48,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      */
     refresh: function (resources) {
         this.counter.textContent = this.get();
-        if (isArray(this.data.consume) && resources) {
+        if (Utils.isArray(this.data.consume) && resources) {
             this.tooltip.refresh(resources, this.data);
         }
     },
@@ -60,7 +60,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         var prevAmount = this.count;
         this.set(this.count + amount);
 
-        if (floor(prevAmount) !== floor(this.count)) {
+        if (MathUtils.floor(prevAmount) !== MathUtils.floor(this.count)) {
             var node = this.html;
             var toClear = false;
             if (amount > 0 && !node.classList.contains("more")) {
@@ -82,7 +82,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {Number}
      */
     get: function () {
-        return floor(this.count);
+        return MathUtils.floor(this.count);
     },
     /**
      * Define this resource amount
@@ -112,7 +112,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {string}
      */
     toString: function () {
-        var str = this.count + " " + pluralize(this.data.name, this.count);
+        var str = this.count + " " + Utils.pluralize(this.data.name, this.count);
         if (this.data.icon) {
             str += " " + Resource.iconAsString(this.data.icon);
         }
@@ -125,6 +125,6 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
  * @return {String}
  */
 Resource.iconAsString = function (iconName) {
-    return wrap("icon icon-small-" + iconName).outerHTML;
+    return Utils.wrap("icon icon-small-" + iconName).outerHTML;
 };
 Resource.LST_ID = "resourceList";
