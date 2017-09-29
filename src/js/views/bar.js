@@ -34,7 +34,7 @@ Bar.extends(Model, "Bar", /** @lends Bar.prototype */{
         if (percentage !== this.value) {
             this.value = percentage;
             this.valueBar.style.width = percentage + "%";
-            this.valueBar.classList[percentage < this.threshold ? "add" : "remove"]("warning");
+            this.html.classList[percentage < this.threshold ? "add" : "remove"]("warning");
         }
     },
     /**

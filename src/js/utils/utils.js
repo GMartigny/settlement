@@ -153,7 +153,7 @@ var Utils = {
                     amount = [+amount];
                 }
             }
-            return [MathUtils.round(random.apply(null, amount)), all[pick]];
+            return [MathUtils.round(MathUtils.random.apply(null, amount)), all[pick]];
         }
         else {
             return all[pick];
@@ -181,7 +181,7 @@ var Utils = {
                 amount = [+amount];
             }
         }
-        var total = MathUtils.round(random.apply(null, amount));
+        var total = MathUtils.round(MathUtils.random.apply(null, amount));
         var sum = 0;
 
         while (sum++ < total) {

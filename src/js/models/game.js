@@ -253,6 +253,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                     peopleConsumption[0][0] *= 2;
                 }
                 peopleConsumption.forEach(function (consumption) {
+                    this.flags[consumption[2]] = 0;
                     this.consume(consumption[0], consumption[1], function (diff) {
                         this.flags[consumption[2]] = diff;
                     });
@@ -304,21 +305,23 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     consume: function (amount, resourceId, lack) {
         if (amount) {
             var instance = this.resources.get(resourceId);
-            if (!instance) {
-                instance = new Resource(resourceId);
-            }
-            if (instance && instance.has(amount)) {
-                instance.update(-amount);
-                instance.warnLack = false;
-            }
-            else if (Utils.isFunction(lack)) {
-                var diff = amount - instance.count;
-                instance.set(0);
-                lack.call(this, diff, resourceId);
+            if (instance) {
+                if (instance.has(amount)) {
+                    instance.update(-amount);
+                    instance.warnLack = false;
+                }
+                else {
+                    instance.set(0);
 
-                if (!instance.warnLack) {
-                    instance.warnLack = true;
-                    MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
+                    if (Utils.isFunction(lack)) {
+                        var diff = amount - instance.count;
+                        lack.call(this, diff, resourceId);
+                    }
+
+                    if (!instance.warnLack) {
+                        instance.warnLack = true;
+                        MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
+                    }
                 }
             }
         }

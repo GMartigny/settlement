@@ -43,9 +43,7 @@ function People (name, gender) {
     this.busy = false;
     this.energyDrain = 0.7;
     this.energy = 100;
-    this.starving = false;
     this.life = 100;
-    this.thirsty = false;
 
     this.stats = {
         idle: 0,
@@ -110,13 +108,11 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             this.stats.age += elapse;
             this.stats.idle += elapse;
             var ratio = this.perk && this.perk.id === DataManager.ids.perks.lounger ? 0 : this.energyDrain;
-            this.updateEnergy(-elapse * ratio - this.starving * 30); // getting tired
-            if (this.thirsty) { // drying
-                this.updateLife(-elapse * this.thirsty * 30);
+            this.updateEnergy(-elapse * (ratio + flags.starving * 30)); // getting tired
+            if (flags.thirsty) { // drying
+                this.updateLife(-elapse * flags.thirsty * 30);
             }
         }
-        this.starving = 0;
-        this.thirsty = 0;
     },
     /**
      * Define people pronouns

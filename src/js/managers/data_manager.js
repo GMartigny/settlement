@@ -511,9 +511,9 @@ var DataManager = (function iife () {
             return this.knownLocations;
         },
         giveSpan: [7, 10],
-        giveList: [
-            ids.option
-        ],
+        // giveList: [
+        //     ids.option
+        // ],
         log: "All locations should have own log",
         order: 20
     });
@@ -527,18 +527,22 @@ var DataManager = (function iife () {
         consume: [
             [1, ids.resources.gatherables.common.water]
         ],
-        giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2],
+        giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2], // twice more ruin drop rate
         giveList: [
             ids.resources.gatherables.special.ruins
         ],
         log: function (effect) {
             var log;
-            if (effect.location) {
-                log = "@people.name knew @people.nominative could find @location towards @direction, " +
-                    "so @people.nominative comes back with @give.";
+            if (effect.give) {
+                var location = Utils.randomize(ids.locations.far);
+                if (!this.knownLocations.includes(location)) {
+                    this.knownLocations.push(location);
+                }
+                effect.location = Utils.an(DataManager.get(location).name);
+                log = "@people.name knew @people.nominative could find @location towards @direction.";
             }
             else {
-                log = "No special location towards @direction, but @people.name find @give.";
+                log = "No special location towards @direction.";
             }
             effect.direction = directions.random();
             return log;
@@ -570,8 +574,12 @@ var DataManager = (function iife () {
         log: function (effect) {
             var log;
             if (effect.give) {
-                this.knownLocations.push(location);
-                log = "Heading @direction, @people.name spots @location.";
+                var location = Utils.randomize(ids.locations.near);
+                if (!this.knownLocations.includes(location)) {
+                    this.knownLocations.push(location);
+                }
+                effect.location = Utils.an(DataManager.get(location).name);
+                log = "Heading @direction, @people.name spots @location";
             }
             else {
                 log = "@people.name found nothing special towards @direction.";
@@ -1070,7 +1078,7 @@ var DataManager = (function iife () {
     ids.locations.near.supermarket = insert({
         id: "hng",
         name: "hangar",
-        desc: "A huge hangar. It was certainly raided before by others, but you may grab something",
+        desc: "A huge hangar. It was certainly raided before by others, but you may grab something.",
         giveList: [
             ids.resources.gatherables.common.food,
             ids.resources.gatherables.rare.medication,
