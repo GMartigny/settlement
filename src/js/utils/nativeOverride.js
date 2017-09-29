@@ -1,5 +1,9 @@
 "use strict";
 
+Number.prototype.equals = function equals (number) {
+    return MathUtils.diff(this, number) <= Number.EPSILON;
+};
+
 /**
  * Return the last item of the array
  * @return {*}
@@ -13,7 +17,6 @@ Array.prototype.last = function last () {
  * @return {*}
  */
 Array.prototype.random = function random () {
-    console.debug(this);
     return this[MathUtils.floor(MathUtils.random(0, this.length))];
 };
 
@@ -23,16 +26,20 @@ Array.prototype.random = function random () {
  * @return {Number} The array length
  */
 Array.prototype.out = function out (item) {
-    this.splice(this.indexOf(item), 1);
+    var index = this.indexOf(item);
+    if (index >= 0) {
+        this.splice(index, 1);
+    }
     return this.length;
 };
 
 /**
  * Push an array of items into the array
  * @param {Array} array - An array of item
+ * @return {Number} New array length
  */
 Array.prototype.insert = function insert (array) {
-    this.push.apply(this, array);
+    return this.push.apply(this, array);
 };
 
 /**
@@ -66,20 +73,6 @@ Map.prototype.getValues = function getValues () {
 };
 
 /**
- * Return all value of an object as array
- * @return {Array}
- */
-Object.prototype.values = function values () {
-    var values = [];
-
-    this.browse(function (value) {
-        values.push(value);
-    });
-
-    return values;
-};
-
-/**
  * Browse all item in an object
  * @param {Function} action - A function called on each item
  * @param {Object} [thisArg] - A context for the callback
@@ -88,6 +81,14 @@ Object.prototype.browse = function browse (action, thisArg) {
     Object.keys(this).forEach(function (key) {
         action.call(thisArg, this[key], key, this);
     }, this);
+};
+
+/**
+ * Return all value of an object as array
+ * @return {Array}
+ */
+Object.prototype.values = function values () {
+    return Object.values(this);
 };
 
 /**
@@ -124,7 +125,7 @@ Object.prototype.swap = function swap () {
  */
 Object.prototype.clone = function clone () {
     var clone;
-    if (this === undefined || this === null || [Boolean, Number, String].includes(this.constructor)) {
+    if ([Boolean, Number, String].includes(this.constructor)) {
         clone = this;
     }
     else if (this instanceof Array) {

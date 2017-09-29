@@ -15,11 +15,11 @@ module.exports = function (grunt) {
 
     var sourceDir = {
         js: ["src/js/utils/utils.js", "src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
-        json: "src/js/**/*.json",
-        css: "src/css/**/*.less",
+        json: ["src/js/**/*.json"],
+        css: ["src/css/**/*.less"],
         img: {
-            icons: "src/img/icons/**/*.png",
-            assets: "src/img/assets/**/*.png"
+            icons: ["src/img/icons/**/*.png"],
+            assets: ["src/img/assets/**/*.png"]
         }
     };
     var VERSION = "v<%= version %>";
@@ -76,7 +76,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    "dist/js/script.js": [sourceDir.js]
+                    "dist/js/script.js": sourceDir.js
                 }
             },
             prod: {
@@ -90,30 +90,30 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    "dist/js/script.js": [sourceDir.js]
+                    "dist/js/script.js": sourceDir.js
                 }
             }
         },
 
         watch: {
             iconsCSS: {
-                files: [sourceDir.img.icons],
+                files: sourceDir.img.icons,
                 tasks: ["icons"]
             },
             assets: {
-                files: [sourceDir.img.assets],
+                files: sourceDir.img.assets,
                 tasks: ["assets"]
             },
             less2css: {
-                files: [sourceDir.css],
+                files: sourceDir.css,
                 tasks: ["css"]
             },
             jsbuild: {
-                files: [sourceDir.js],
+                files: sourceDir.js,
                 tasks: ["js"]
             },
             jsonCopy: {
-                files: [sourceDir.json],
+                files: sourceDir.json,
                 tasks: ["uglifyJSON"]
             }
         },
@@ -142,6 +142,25 @@ module.exports = function (grunt) {
             src: ["index.html", "favicon.png", "dist/**/*", "!dist/**/*.map"],
             options: {
                 message: "Auto-commit: push to prod."
+            }
+        },
+
+        jasmine: {
+            all: {
+                src: sourceDir.js.concat("!src/js/loader.js"),
+                options: {
+                    specs: "tests/**/*Test.js",
+					template: require('grunt-template-jasmine-istanbul'),
+                    templateOptions: {
+                        coverage: "tests/report/coverage.json",
+                        report: "tests/report"
+                    },
+                    polyfills: [
+                        "tests/res/mock.js",
+                        "node_modules/es6-shim/es6-shim.min.js",
+                        "node_modules/es7-shim/dist/es7-shim.min.js"
+                    ]
+                }
             }
         }
     });
@@ -182,4 +201,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
+
+    grunt.registerTask("test", ["jasmine:all"]);
 };

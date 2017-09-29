@@ -102,7 +102,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @returns {boolean}
      */
     has: function (amount) {
-        return this.count >= amount;
+        return this.count > amount || this.count.equals(amount);
     },
     getStraight: function () {
         return [this.count, this.data.id];

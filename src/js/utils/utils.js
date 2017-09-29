@@ -22,28 +22,25 @@ var Utils = {
     },
 
     /**
-     * Format a time with multiple units
-     * @param {Number} time - Number of hour
-     * @returns {string}
+     * Join an array for human reading
+     * @param {Array<String>} array - Any array of strings
+     * @param {String} [final="and"] - The last joiner of the list
+     * @return {String}
      */
-    formatTime: function (time) {
-        var units = ["year", "month", "day", "hour", "minute"],
-            res = [],
-            timeMatch = DataManager.time;
-
-        units.forEach(function (unit) {
-            if (time >= timeMatch[unit]) {
-                var y = MathUtils.floor(time / timeMatch[unit]);
-                time = time % timeMatch[unit];
-                res.push(y + " " + Utils.pluralize(unit, y));
-            }
-        });
-
-        return Utils.formatJoin(res);
+    formatJoin: function (array, final) {
+        if (array.length > 1) {
+            return (array.slice(0, array.length - 1)).join(", ") + " " + (final || "and") + " " + array.last();
+        }
+        else if (array.length) {
+            return "" + array[0];
+        }
+        else {
+            return "";
+        }
     },
 
     /**
-     * Format an array for human reading
+     * Format an array of resources for human reading
      * @param {Array<[Number, ID]>} array - An array of resources consumption
      * @return {String}
      */
@@ -63,29 +60,36 @@ var Utils = {
     },
 
     /**
-     * Join an array for human reading
-     * @param {Array<String>} array - Any array of strings
-     * @param {String} [final="and"] - The last joiner of the list
-     * @return {String}
+     * Format a time with multiple units
+     * @param {Number} time - Number of hour
+     * @returns {string}
      */
-    formatJoin: function (array, final) {
-        if (array.length > 1) {
-            array[array.length - 2] += " " + (final || "and") + " " + array.pop();
-            return array.join(", ");
+    formatTime: function (time) {
+
+        if (!time) {
+            return "0 hour";
         }
-        else if (array.length) {
-            return array[0];
-        }
-        else {
-            return "";
-        }
+
+        var units = ["year", "month", "day", "hour", "minute"],
+            res = [],
+            timeMatch = DataManager.time;
+
+        units.forEach(function (unit) {
+            if (time > timeMatch[unit]) {
+                var y = MathUtils.floor(time / timeMatch[unit]);
+                time = time % timeMatch[unit];
+                res.push(y + " " + Utils.pluralize(unit, y));
+            }
+        });
+
+        return Utils.formatJoin(res);
     },
 
     /**
      * Add "s" when plural
      * @param {String} string - Origin string
      * @param {Number} number - How many
-     * @returns {string}
+     * @returns {String}
      */
     pluralize: function (string, number) {
         return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
@@ -261,6 +265,10 @@ var Utils = {
         return typeof string === "string";
     },
 
+    isNumber: function (number) {
+        return typeof number === "number";
+    },
+
     /**
      * Test if is undefined
      * @param {*} value - Anything to test
@@ -276,7 +284,7 @@ var Utils = {
      * @return {String}
      */
     sanitize: function (str) {
-        return str.toLowerCase().replace(/(\W)+/g, "_");
+        return str.replace(/^\W+|\W+$/g, "").replace(/\W+/g, "_").toLowerCase();
     },
 
     /**
@@ -285,7 +293,7 @@ var Utils = {
      * @return {String}
      */
     camelize: function (str) {
-        return str.toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
+        return str.replace(/^\W+/, "").toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
             return capture && capture[0].toUpperCase() + capture.slice(1);
         });
     },
@@ -296,6 +304,10 @@ var Utils = {
      * @return {String}
      */
     an: function an (word) {
+        if (!word.length) {
+            return "";
+        }
+
         var vowels = "aeiou".split("");
         return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
     },
