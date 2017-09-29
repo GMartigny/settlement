@@ -31,7 +31,7 @@ Bar.extends(Model, "Bar", /** @lends Bar.prototype */{
      * @param {Number} percentage - Any percentage between 0 and 100
      */
     set: function (percentage) {
-        if (percentage !== this.value) {
+        if (!this.value.equals(percentage)) {
             this.value = percentage;
             this.valueBar.style.width = percentage + "%";
             this.valueBar.classList[percentage < this.threshold ? "add" : "remove"]("warning");

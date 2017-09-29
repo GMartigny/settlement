@@ -193,7 +193,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @returns {Boolean}
      */
     isTired: function () {
-        return this.energy <= 0;
+        return this.energy.equals(0) || this.energy < 0;
     },
     /**
      * Change life

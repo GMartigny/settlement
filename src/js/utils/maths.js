@@ -29,6 +29,18 @@ var MathUtils = {
         return MathUtils.floor(x + 1);
     },
 
+    abs: Math.abs,
+
+    /**
+     * Return the absolute difference between two number
+     * @param {Number} a - Any number
+     * @param {Number} b - Any number
+     * @returns {Number}
+     */
+    diff: function (a, b) {
+        return MathUtils.abs(a - b);
+    },
+
     /**
      * Return value constrained to lower and upper bounds
      * @param {Number} x - Any value

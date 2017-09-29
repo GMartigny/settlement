@@ -12,7 +12,7 @@ var DataManager = (function iife () {
         day: 24,
         week: 7 * 24,
         month: 30 * 24,
-        year: 12 * 30 * 24
+        year: 365 * 24
     };
 
     var directions = [
