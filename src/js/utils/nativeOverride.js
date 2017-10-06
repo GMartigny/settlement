@@ -1,7 +1,7 @@
 "use strict";
 
 Number.prototype.equals = function equals (number) {
-    return MathUtils.diff(this, number) <= Number.EPSILON;
+    return Utils.isNumber(number) && MathUtils.diff(this, number) <= Number.EPSILON;
 };
 
 /**
@@ -51,7 +51,7 @@ Array.prototype.insert = function insert (array) {
 Map.prototype.push = function push (key, value) {
     if (Utils.isUndefined(value)) {
         value = key;
-        key = value.id || (this.size + 1).toString(36);
+        key = value.id || Symbol(Utils.randomStr(3));
     }
     this.set(key, value);
     return key;

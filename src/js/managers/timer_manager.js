@@ -80,7 +80,7 @@ var TimerManager = (function iife () {
          * @return {Number} The ID of the timeout
          */
         timeout: function (action, time) {
-            var timerId;
+            var timerId = Utils.randomStr();
             /**
              * Wrapper for calling action and popping from collection
              */
