@@ -51,7 +51,7 @@ Array.prototype.insert = function insert (array) {
 Map.prototype.push = function push (key, value) {
     if (Utils.isUndefined(value)) {
         value = key;
-        key = value.id || Symbol(Utils.randomStr(3));
+        key = value.id || new String();
     }
     this.set(key, value);
     return key;

@@ -6,3 +6,9 @@
 
 var IS_DEV = false;
 var VERSION = "v0.0.1";
+
+/*
+    Clear state
+ */
+
+localStorage.clear();

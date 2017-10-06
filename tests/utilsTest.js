@@ -83,7 +83,9 @@ describe("Test all general helper", function utilsDescribe () {
     it("randomStr", function utilsRandomStr () {
 
         expect(Utils.randomStr()).toMatch(/\w{6}/);
-        expect(Utils.randomStr(3)).toMatch(/\w{3}/);
+        for (var i = 0; i < 999; ++i) {
+            expect(Utils.randomStr(3)).toMatch(/\w{3}/);
+        }
 
     });
 
