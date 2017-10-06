@@ -46,7 +46,7 @@ var LogManager = (function iife () {
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 sendEvent("death", "survival duration", survivalDuration);
                 var message = "We held up for " + Utils.formatTime(survivalDuration) + ", but all is lost now.";
-                self.log(message, self.LOG_TYPES.FLAVOR);
+                self.log(message, self.LOG_TYPES.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceId) {
@@ -57,14 +57,14 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
-                var message = people.name + " is now known as the \"" + Utils.capitalize(people.perk.name) + "\".";
+                var message = people.name + " is now known as the \"" + Utils.capitalize(people.perk.data.name) + "\".";
                 self.log(message, self.LOG_TYPES.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.WIN, function (survivalDuration) {
                 sendEvent("win", "survival duration", survivalDuration);
                 var message = "It took " + Utils.formatTime(survivalDuration) + " to escape.";
-                self.log(message, self.LOG_TYPES.FLAVOR);
+                self.log(message, self.LOG_TYPES.EVENT);
             });
         },
         /**

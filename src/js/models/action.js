@@ -20,7 +20,6 @@
  */
 function Action (id, owner, parentAction) {
     this.locked = true;
-    this.running = false;
     this.nameNode = null;
     this.options = null;
     this.optionsWrapper = null;
@@ -28,6 +27,7 @@ function Action (id, owner, parentAction) {
     this.owner = owner;
     this.parentAction = parentAction || null;
     this.repeated = 0;
+    this.choosenOptionId = null;
 
     this.super(id);
 }
@@ -57,7 +57,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }.bind(this), true);
         }
 
-        html.style.order = this.data.order;
+        if (this.data.order) {
+            html.style.order = this.data.order;
+        }
 
         return html;
     },
@@ -139,13 +141,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @return {Boolean} Is launched
      */
     click: function (optionId) {
-        if (!this.running && !this.owner.busy && !this.locked) {
+        if (!this.owner.busy && !this.locked) {
 
             if (this.parentAction) {
                 return this.parentAction.click(this.data.id);
             }
             else if (optionId || !this.options) {
                 // Merge data from this and selected option
+                this.choosenOptionId = optionId;
                 var data = this.mergeWithOption(optionId);
                 // Use resources
                 if (Utils.isArray(data.consume)) {
@@ -162,11 +165,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
                 var duration = this.defineDuration(data);
 
-                this.owner.setBusy(this.data.id, data.energy / duration);
+                this.energyDrain = data.energy / duration;
 
-                this.setCoolDown(duration);
+                this.start(duration * GameController.tickLength);
 
-                this.timeout = TimerManager.timeout(this.end.bind(this, data), duration * GameController.tickLength);
+                MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
                 return true;
             }
         }
@@ -185,9 +188,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
         return duration;
     },
-    setCoolDown: function (duration) {
-        this.nameNode.style.animationDuration = (duration * GameController.tickLength) + "ms";
+    start: function (duration, consumed) {
+        consumed = consumed || 0;
+        var totalActionDuration = duration + consumed;
+        this.owner.setBusy(this.data.id, this.energyDrain);
+        this.nameNode.style.animationDuration = totalActionDuration + "ms";
+        this.nameNode.style.animationDelay = (-consumed) + "ms";
         this.nameNode.classList.add(Action.COOLDOWN_CLASS);
+        this.timeout = TimerManager.timeout(this.end.bind(this), duration);
     },
     mergeWithOption: function (optionId) {
         var merge = {};
@@ -237,9 +245,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     },
     /**
      * Resolve the end of an action
-     * @param {Data} data - Data of action + option
      */
-    end: function (data) {
+    end: function () {
         this.timeout = null;
         this.html.classList.remove(Action.RUNNING_CLASS);
         this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
@@ -248,7 +255,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             name: this.data.name,
             people: this.owner
         };
+        var data = this.mergeWithOption(this.choosenOptionId);
+        this.choosenOptionId = null;
 
+        this.owner.finishAction();
+
+        // Effect
         if (Utils.isFunction(this.data.effect)) {
             this.data.effect(this, data, effect);
         }
@@ -287,7 +299,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, Utils.capitalize(result.log));
 
-        this.owner.finishAction();
+        MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
     },
     /**
      * Resolve all function of this action
@@ -426,6 +438,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     getStraight: function () {
         var straight = this._getStraight();
         straight.repeated = this.repeated;
+        if (this.timeout) {
+            straight.elapsed = TimerManager.getElapsed(this.timeout);
+            straight.remaining = TimerManager.getRemaining(this.timeout);
+            straight.energyDrain = this.energyDrain;
+            straight.optionId = this.choosenOptionId;
+        }
         return straight;
     }
 });

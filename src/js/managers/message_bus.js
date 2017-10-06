@@ -67,6 +67,7 @@ var MessageBus = (function iife () {
             LOOSE: 90, // Game over
             WIN: 95, // Congratulation
             KEYS: {
+                TAB: 1009,
                 SPACE: 1032,
                 ENTER: 1013,
                 ESCAPE: 1027,
@@ -96,7 +97,7 @@ var MessageBus = (function iife () {
 
     window.addEventListener("keydown", function (event) {
         var code = 1000 + event.keyCode;
-        if (code !== api.MSG_TYPES.KEYS.F5 && code !== api.MSG_TYPES.KEYS.F12) {
+        if (code !== api.MSG_TYPES.KEYS.F5 && code !== api.MSG_TYPES.KEYS.F12 && code !== api.MSG_TYPES.KEYS.TAB) {
             event.preventDefault();
             event.stopPropagation();
         }

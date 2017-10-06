@@ -19,7 +19,7 @@ function GameController (holder, assets) {
     this.buildings = new Map();
     this.events = new Map();
     this.people = [];
-    this.initialActions = new Map();
+    this.initialActions = [];
     this.knownLocations = [];
     this.buildingsInProgress = [];
 
@@ -60,16 +60,53 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         this.logsList = Utils.wrap("logs");
         html.appendChild(this.logsList);
 
+        var game = this;
+
+        var bottomOptions = Utils.wrap("bottomOptions");
+        var wipeSaveNode = Utils.wrap("wipe clickable", "Clear save");
+        wipeSaveNode.addEventListener("click", function () {
+            popup({
+                name: "Clear your save",
+                desc: "Completely wipe your saved game. Careful, this is irreversible."
+            }, {
+                yes: {
+                    name: "Restart anew",
+                    action: function () {
+                        sendEvent("Save", "wipe");
+                        game.wipeSave();
+                        location.reload();
+                    }
+                },
+                no: {
+                    name: "Cancel"
+                }
+            }, "wipeIt");
+        });
+        bottomOptions.appendChild(wipeSaveNode);
+        var credits = Utils.wrap("credits clickable", "Credits");
+        credits.addEventListener("click", function () {
+            popup({
+                name: "Settlement",
+                desc: "<ul>" +
+                "<li>Design and code: Guillaume Martigny</li>" +
+                "<li>Graphics: Maybe you ;)</li>"
+            });
+        });
+        bottomOptions.appendChild(credits);
+        html.appendChild(bottomOptions);
+
         return html;
     },
     /**
      * Start a new adventure
+     * @param {HTMLElement} holder - The whole game HTML holder
      * @private
      */
     init: function (holder) {
         var game = this;
         DataManager.bindAll(this);
 
+        holder.innerHTML = "";
         holder.appendChild(this.html);
 
         // Start managers
@@ -136,8 +173,6 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         })
         // We may build
         .observe(msgType.BUILD, this.build.bind(this))
-        // Some may arrive
-        .observe(msgType.ARRIVAL, this.arrive.bind(this))
         // And we may die :'(
         .observe(msgType.LOOSE_SOMEONE, function (person) {
             game.people.out(person);
@@ -145,6 +180,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             if (game.people.length <= 0) {
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
                 game.flags.paused = true;
+                game.wipeSave();
             }
         })
 
@@ -160,9 +196,12 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         .observe(msgType.LOCK, this.removeFromInitialActions.bind(this))
         .observe(msgType.UNLOCK, this.addToInitialActions.bind(this))
 
+        .observe(msgType.SAVE, this.saveGame.bind(this))
+
         // End of the game
         .observe(msgType.WIN, function () {
             this.flags.paused = true;
+            // TODO
         })
 
         .observe(msgType.KEYS.SPACE, function (direction) {
@@ -180,8 +219,10 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             actions = [actions];
         }
 
-        actions.forEach(function (action) {
-            this.initialActions.push(action);
+        actions.forEach(function (actionId) {
+            if (!this.initialActions.includes(actionId)) {
+                this.initialActions.push(actionId);
+            }
         }, this);
         this.people.forEach(function (people) {
             people.addAction(actions);
@@ -196,8 +237,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             actions = [actions];
         }
 
-        actions.forEach(function (action) {
-            this.initialActions.delete(action);
+        actions.forEach(function (actionId) {
+            this.initialActions.out(actionId);
         }, this);
         this.people.forEach(function (people) {
             people.lockAction(actions);
@@ -242,7 +283,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             elapse = 0;
         }
 
-        setTimeout(this.refresh.bind(this), GameController.tickLength / 3);
+        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 3);
 
         if (elapse > 0) {
             if (this.flags.settled) {
@@ -279,6 +320,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             this.people.forEach(function (people) {
                 people.refresh(this.resources, elapse, this.flags);
             }, this);
+            this.saveGame();
         }
     },
     /**
@@ -347,9 +389,9 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
      */
     prepareNewcomer: function (amount) {
         var game = this;
-        peopleFactory(amount).then(function (persons) {
+        peopleFactory(amount || 1).then(function (persons) {
             persons.forEach(function (person) {
-                person.addAction(game.initialActions.getValues());
+                person.addAction(game.initialActions);
 
                 if (!game.people.length) {
                     person.life = 0;
@@ -371,11 +413,10 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         }
 
         people.forEach(function (person) {
-
             if (this.people.length) {
                 MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
 
-                if (this.people.length === 2) {
+                if (this.people.length === 1) {
                     TimerManager.timeout(function () {
                         var message = person.name + " say that there's other desert-walkers " +
                             "ready to join you if there's room for them.";
@@ -540,7 +581,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             plp: this.people.map(function (people) {
                 return people.getStraight();
             }),
-            iac: this.initialActions.getValues(),
+            iac: this.initialActions,
             bld: this.buildings.getValues().map(function (building) {
                 return building.getStraight();
             }),
@@ -548,36 +589,50 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 return event.getStraight();
             }),
             lct: this.knownLocations,
-            bip: this.buildingsInProgress
+            bip: this.buildingsInProgress,
+            settled: this.flags.settled,
+            survived: this.flags.survived
         };
 
         SaveManager.persist(gameData);
-        MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
     },
     loadGame: function () {
         var data = SaveManager.load();
 
         MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);
 
-        data.plp.forEach(function (personData) {
+        this.arrive(data.plp.map(function (personData) {
             var person = new People(personData.nam, personData.gnd);
-            person.life = personData.lif;
-            person.energy = personData.ene;
-            person.stats = personData.stt;
+            person.setLife(personData.lif);
+            person.setEnergy(personData.ene);
+            person.stats = personData.sts;
             if (personData.prk) {
                 person.gainPerk(personData.prk);
             }
-            personData.act.forEach(function (action) {
-                person.addAction(action.data);
-                person.actions.get(action.data.id).repeated = action.repeated;
+            personData.act.forEach(function (actionData) {
+                person.addAction(actionData.id);
+                var action = person.actions.get(actionData.id);
+                action.repeated = actionData.repeated;
+                if (actionData.remaining) {
+                    action.choosenOptionId = actionData.optionId;
+                    action.energyDrain = actionData.energyDrain;
+                    action.start(actionData.remaining, actionData.elapsed);
+                }
             });
-            MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
+            return person;
+        }));
+        this.addToInitialActions(data.iac);
+        data.bld.forEach(function (bld) {
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id);
         });
-        game.addToInitialActions(data.iac);
-        data.bld.forEach(MessageBus.notify.bind(MessageBus, MessageBus.MSG_TYPES.BUILD));
         // TODO events
-        game.knownLocations = data.lct;
-        game.buildingsInProgress = data.bip;
+        this.knownLocations = data.lct;
+        this.buildingsInProgress = data.bip;
+        this.flags.settled = data.settled;
+        this.flags.survived = data.survived;
+    },
+    wipeSave: function () {
+        SaveManager.clear();
     }
 });
 if (IS_DEV) {

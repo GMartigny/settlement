@@ -16,7 +16,7 @@
 /**
  * Display a popup with choice buttons
  * @param {Data} data - Text for the popup
- * @param {PopupData} buttons - Text for the popup
+ * @param {PopupData} [buttons={}] - Text for the popup
  * @param {String} [CSSClasses] - Additional classes for the popup
  * @returns {Object} Some functions
  */
@@ -39,6 +39,7 @@ function popup (data, buttons, CSSClasses) {
         }
     };
 
+    buttons = buttons || {};
     var yesButton = Utils.wrap("yes clickable", (buttons.yes && buttons.yes.name) || "Ok");
     var onYes = (buttons.yes && buttons.yes.action) || Utils.noop;
     yesButton.addEventListener("click", function () {

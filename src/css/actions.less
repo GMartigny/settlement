@@ -1,8 +1,7 @@
 @import (reference) "base";
 
 .Action {
-    display: inline-block;
-    margin: 3px 5px 0 0;
+    margin-top: 3px;
 
     .name {
         display: inline-block;
@@ -37,7 +36,7 @@
             }
         }
 
-        &:not(.running):hover .options {
+        &:not(.running):hover .options, &:not(.running):active .options {
             @duration: .3s;
             transition: opacity linear @duration, top ease-out @duration;
             height: auto;

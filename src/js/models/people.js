@@ -7,6 +7,7 @@
  * @return {Promise}
  */
 function peopleFactory (amount) {
+    amount = amount || 1;
     // We don't want to spam the webservice when in dev
     if (IS_DEV) {
         var res = [];
@@ -134,7 +135,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             default:
                 this.nominative = "it";
                 this.accusative = "it";
-                this.possessive = "it";
+                this.possessive = "its";
                 this.reflexive = "itself";
         }
     },
@@ -170,19 +171,23 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @returns {Number} Current energy
      */
     updateEnergy: function (amount) {
-        this.energy += amount;
+        var value = this.energy += amount;
 
-        if (this.energy > 100) {
-            this.energy = 100;
+        if (value > 100) {
+            value = 100;
         }
-        else if (this.energy < 0) {
-            this.updateLife(this.energy);
-            this.energy = 0;
+        else if (value < 0) {
+            this.updateLife(value);
+            value = 0;
         }
 
-        this.energyBar.set(this.energy);
+        this.setEnergy(value);
 
         return this.energy;
+    },
+    setEnergy: function (value) {
+        this.energy = value;
+        this.energyBar.set(value);
     },
     /**
      * Test if tired
@@ -197,15 +202,22 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * @returns {Number} Current life
      */
     updateLife: function (amount) {
-        this.life += amount;
-        if (this.life > 100) {
-            this.life = 100;
+        var value = this.life + amount;
+
+        if (value > 100) {
+            value = 100;
         }
-        else if (this.life < 0) {
+
+        this.setLife(value);
+
+        return value;
+    },
+    setLife: function (value) {
+        this.life = value;
+        this.lifeBar.set(value);
+        if (value < 0) {
             this.die();
         }
-        this.lifeBar.set(this.life);
-        return this.life;
     },
     /**
      * Add some actions
@@ -235,8 +247,11 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         }
 
         actionsId.forEach(function (id) {
-            this.actions.get(id).lock();
-            this.actions.delete(id);
+            var action = this.actions.get(id);
+            if (action) {
+                action.lock();
+                this.actions.delete(id);
+            }
         }, this);
     },
     /**
@@ -273,6 +288,7 @@ People.extends(Model, "People", /** @lends People.prototype */ {
                             if (done && MathUtils.random() < done) {
                                 // perk is unlocked
                                 self.gainPerk(perkId);
+                                MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, self);
                                 gotPerk = true;
                             }
                         }
@@ -291,8 +307,6 @@ People.extends(Model, "People", /** @lends People.prototype */ {
         var perk = new Perk(perkId, this);
         this.perk = perk;
         this.nameNode.appendChild(perk.html);
-
-        MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
     },
     /**
      * Check for perk
@@ -325,8 +339,8 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             gnd: this.gender,
             lif: this.life,
             ene: this.energy,
-            stt: this.stats,
-            prk: this.perk,
+            sts: this.stats,
+            prk: this.perk && this.perk.data.id,
             act: []
         };
         this.actions.forEach(function (action) {

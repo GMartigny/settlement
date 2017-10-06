@@ -12,12 +12,24 @@ var SaveManager = (function iife () {
     }
     var salt = Utils.randomStr();
 
+    /**
+     * "Compress" a string to non-readable format
+     * @param {String} str - Any string
+     * @returns {String}
+     */
     function compress (str) {
-        return btoa(salt + str);
+        var comp = btoa(salt + btoa(str));
+        Utils.log("Compress: " + str.length + " => " + comp.length);
+        return comp;
     }
 
+    /**
+     * Turn back
+     * @param {String} compressed - A string from the "compress" function
+     * @returns {String}
+     */
     function unCompress (compressed) {
-        return atob(compressed.substr(salt.length));
+        return atob(atob(compressed).substr(salt.length));
     }
 
     return /** @lends SaveManager */ {

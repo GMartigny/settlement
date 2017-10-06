@@ -84,7 +84,7 @@ var TimerManager = (function iife () {
             /**
              * Wrapper for calling action and popping from collection
              */
-            var func = function () {
+            var func = function timerCallbackWrapper () {
                 _timers.delete(timerId);
                 action();
             };
@@ -139,6 +139,9 @@ var TimerManager = (function iife () {
             _timers.forEach(function (timer) {
                 timer.clear();
             });
+        },
+        getElapsed: function (timerId) {
+            return _timers.get(timerId).getElapsed();
         },
         /**
          * Return remaining time on a timer

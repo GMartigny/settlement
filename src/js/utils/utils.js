@@ -135,7 +135,9 @@ var Utils = {
             }
         });
         var pick = MathUtils.floor(MathUtils.random(dropRateSum));
-        dropRateScale.sort();
+        dropRateScale.sort(function (a, b) {
+            return a - b;
+        });
 
         for (var i = 0, l = dropRateScale.length; i < l; ++i) {
             if (dropRateScale[i] > pick) {
@@ -209,7 +211,7 @@ var Utils = {
     randomStr: function (length) {
         length = length || 6;
         return (new Array(length)).fill("-").join("").replace(/-/g, function () {
-            return MathUtils.floor(MathUtils.random(37)).toString(36);
+            return MathUtils.floor(MathUtils.random(36)).toString(36);
         });
     },
 

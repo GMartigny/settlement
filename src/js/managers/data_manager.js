@@ -96,14 +96,14 @@ var DataManager = (function iife () {
             gatherables: {
                 common: {},
                 uncommon: {},
-                rare: {},
-                special: {}
+                rare: {}
             },
             craftables: {
                 basic: {},
                 complex: {},
                 advanced: {}
-            }
+            },
+            special: {}
         },
         buildings: {
             small: {},
@@ -192,7 +192,7 @@ var DataManager = (function iife () {
         name: "scrap metal",
         desc: "An old rusty piece of metal.",
         icon: "metal-scraps",
-        dropRate: 90,
+        dropRate: 80,
         order: 40
     });
 
@@ -255,7 +255,7 @@ var DataManager = (function iife () {
 
     /** GATHERABLES SPECIAL **/
 
-    ids.resources.gatherables.special.ruins = insert({
+    ids.resources.special.ruins = insert({
         id: "run",
         name: "location",
         desc: "Directions to a point of interest we found earlier.",
@@ -263,7 +263,7 @@ var DataManager = (function iife () {
         order: 80,
         dropRate: 0.6
     });
-    ids.resources.gatherables.special.quartz = insert({
+    ids.resources.special.quartz = insert({
         id: "qtz",
         name: "quartz cristal",
         desc: "A rough uncut gem of quartz. Quite valuable.",
@@ -292,7 +292,8 @@ var DataManager = (function iife () {
         id: "wrk",
         name: "wreckage",
         desc: "Remainings of space-ships.",
-        asset: "wreckage"
+        asset: "wreckage",
+        order: 0
     });
 
     /***** ACTIONS *****/
@@ -481,6 +482,7 @@ var DataManager = (function iife () {
         name: "craft",
         desc: "Use some resources to tinker something useful.",
         time: 5,
+        energy: 15,
         options: function () {
             return this.unlockedCraftables();
         },
@@ -490,34 +492,29 @@ var DataManager = (function iife () {
         unlock: [
             ids.actions.build
         ],
-        log: function () {
-            return "@people.name succeeds to craft @give.";
-        },
+        log: "@people.name succeeds to craft @give.",
         order: 30
     });
     ids.actions.explore = insert({
         id: "xpl",
         name: "explore",
         desc: "Remember that location we saw the other day ? Let's see what we can find there.",
-        time: time.day + 4 * time.hour,
+        time: time.day,
         energy: 100,
         isOut: 1,
         consume: [
-            [3, ids.resources.gatherables.common.water],
+            [2, ids.resources.gatherables.common.water],
             [1, ids.resources.gatherables.common.food],
-            [1, ids.resources.gatherables.special.ruins]
+            [1, ids.resources.special.ruins]
         ],
         options: function () {
             return this.knownLocations;
         },
         giveSpan: [7, 10],
-        // giveList: [
-        //     ids.option
-        // ],
         log: "All locations should have own log",
         order: 20
     });
-    var ruinsDropRate = db[ids.resources.gatherables.special.ruins].dropRate;
+    var ruinsDropRate = db[ids.resources.special.ruins].dropRate;
     ids.actions.scour = insert({
         id: "scr",
         name: "scour",
@@ -529,7 +526,7 @@ var DataManager = (function iife () {
         ],
         giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2], // twice more ruin drop rate
         giveList: [
-            ids.resources.gatherables.special.ruins
+            ids.resources.special.ruins
         ],
         log: function (effect) {
             var log;
@@ -569,7 +566,7 @@ var DataManager = (function iife () {
         ],
         giveSpan: [ruinsDropRate / 2, (ruinsDropRate + 1) / 2],
         giveList: [
-            ids.resources.gatherables.special.ruins
+            ids.resources.special.ruins
         ],
         log: function (effect) {
             var log;
@@ -615,7 +612,8 @@ var DataManager = (function iife () {
         give: [
             [1, ids.resources.room]
         ],
-        asset: "forum"
+        asset: "forum",
+        order: 1
     });
     ids.actions.settle = insert({
         id: "stl",
@@ -711,6 +709,7 @@ var DataManager = (function iife () {
             [2, ids.resources.gatherables.uncommon.oil]
         ],
         asset: "furnace",
+        order: 15,
         log: "A simple furnace that can smelt small things like sand or little electronics."
     });
     ids.resources.craftables.basic.glass = insert({
@@ -739,6 +738,7 @@ var DataManager = (function iife () {
             [1, ids.resources.room]
         ],
         asset: "forum+1",
+        order: 10,
         log: "It'll be nice to have someone else helping."
     });
     ids.buildings.small.plot = insert({
@@ -754,6 +754,7 @@ var DataManager = (function iife () {
             ids.actions.harvestPlot
         ],
         asset: "plot",
+        order: 12,
         log: "More crops required more care but that's going to help us keeping a constant stock of food."
     });
     ids.buildings.small.pharmacy = insert({
@@ -766,6 +767,7 @@ var DataManager = (function iife () {
             [4, ids.resources.craftables.basic.component]
         ],
         asset: "pharmacy",
+        order: 16,
         log: "Sorting our medications should prevent further mistakes and bad reaction."
     });
     ids.buildings.small.well = insert({
@@ -790,6 +792,7 @@ var DataManager = (function iife () {
             ids.actions.drawFromRiver
         ],
         asset: "well",
+        order: 13,
         log: "Drawing water from the ground should allow to further polish stone into bricks."
     });
 
@@ -810,6 +813,7 @@ var DataManager = (function iife () {
             [1, ids.resources.room]
         ],
         asset: "forum+2",
+        order: 20,
         log: "Another room for someone to join. So far, so good."
     });
     ids.buildings.medium.plot1 = insert({
@@ -827,6 +831,7 @@ var DataManager = (function iife () {
         ],
         upgrade: ids.buildings.small.plot,
         asset: "plot+1",
+        order: 25,
         log: "This should be enough to provide food for our small encampment."
     });
     ids.buildings.medium.forge = insert({
@@ -841,6 +846,7 @@ var DataManager = (function iife () {
         ],
         upgrade: ids.buildings.small.furnace,
         asset: "furnace+1",
+        order: 27,
         log: "We can now work metal better and make more complex part."
     });
 
@@ -896,7 +902,7 @@ var DataManager = (function iife () {
         ifHas: ids.buildings.small.furnace,
         consume: [
             [4, ids.resources.gatherables.rare.electronic],
-            [3, ids.resources.gatherables.special.quartz]
+            [3, ids.resources.special.quartz]
         ],
         dropRate: 40,
         order: 117
@@ -918,6 +924,7 @@ var DataManager = (function iife () {
             [15, ids.resources.craftables.complex.brick]
         ],
         asset: "workshop",
+        order: 35,
         log: "Good organisation allow you to prepare project and do much more complex crafting."
     });
     ids.resources.craftables.complex.furniture = insert({
@@ -948,6 +955,7 @@ var DataManager = (function iife () {
             [2, ids.resources.room]
         ],
         asset: "forum+3",
+        order: 30,
         log: "All the forum space is now used for sleeping place."
     });
     ids.resources.craftables.advanced.engine = insert({
@@ -989,6 +997,7 @@ var DataManager = (function iife () {
             [1, ids.resources.craftables.advanced.computer]
         ],
         asset: "radio",
+        order: 37,
         log: "\"Message received. We thought no one survive the crash. Glad you still have the cube." +
         "Unfortunately we can't risk being located, bring it to sent position. Over.\""
     });
@@ -1008,6 +1017,7 @@ var DataManager = (function iife () {
             ids.actions.drawFromWell
         ],
         asset: "pump",
+        order: 36,
         log: "A big upgrade to your well ! Now we have a continuous flow of water coming."
     });
     ids.buildings.big.trading = insert({
@@ -1026,6 +1036,7 @@ var DataManager = (function iife () {
             ids.actions.exchange
         ],
         asset: "trading",
+        order: 38,
         log: "Arranging some space allow us to trade with merchant caravan passing by."
     });
     ids.buildings.big.module = insert({
@@ -1045,6 +1056,7 @@ var DataManager = (function iife () {
             ids.actions.launch
         ],
         asset: "module",
+        order: 40,
         log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>" +
         "Now it's time to end it all !"
     });
@@ -1060,7 +1072,7 @@ var DataManager = (function iife () {
             ids.resources.gatherables.common.scrap,
             ids.resources.craftables.basic.component
         ],
-        log: "That was hard to climb those mountains, but at least @people find @give.",
+        log: "That was hard to climb those mountains, but at least @people.name find @give.",
         dropRate: 90
     });
     ids.locations.near.desert = insert({
@@ -1310,7 +1322,7 @@ var DataManager = (function iife () {
         get: function (id) {
             return db[id];
         },
-        bindAll: function (context) {
+        bindAll: function (context) { // FIXME: 
             db.browse(function (data) {
                 data.browse(function (field, key) {
                     if (Utils.isFunction(field)) {

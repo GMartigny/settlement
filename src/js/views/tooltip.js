@@ -107,8 +107,9 @@ Tooltip.prototype = {
         if (Utils.isArray(data.consume)) {
             var resourcesContainer = Utils.wrap("consumption");
             data.consume.forEach(function (resource) {
-                var name = DataManager.get(resource[1]).name;
-                var resourceNode = Utils.wrap("resource not-enough", resource[0] + " " + name);
+                var data = DataManager.get(resource[1]);
+                var resourceNode = Utils.wrap("resource not-enough", resource[0] + " " + data.name);
+                resourceNode.style.order = data.order;
                 this.resourcesMapper[resource[1]] = resourceNode;
                 resourcesContainer.appendChild(resourceNode);
             }, this);

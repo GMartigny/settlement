@@ -31,18 +31,23 @@
     }
 
     .consumption {
+        display: flex;
+        flex-flow: column nowrap;
         margin-left: 15px;
         font-size: 14px;
 
-        .resource:before {
-            content: "✓ ";
-        }
-
-        .resource.not-enough {
-            text-decoration: line-through;
+        .resource {
 
             &:before {
-                content: "✗ "
+                content: "✓ ";
+            }
+
+            &.not-enough {
+                text-decoration: line-through;
+
+                &:before {
+                    content: "✗ "
+                }
             }
         }
     }

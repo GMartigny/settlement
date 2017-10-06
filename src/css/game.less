@@ -4,6 +4,12 @@
     overflow: hidden;
     height: 100%;
 
+    .bottomOptions {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+    }
+
     &.paused {
 
         &:after {
@@ -25,4 +31,8 @@
             animation-play-state: paused;
         }
     }
+}
+
+.popup.wipeIt .yes {
+    background-color: #f6d9d9;
 }
