@@ -21,11 +21,15 @@ Here's the few rules I try to follow making this game :
 
 ## Changelog
 
-### v0.4 WIP
+### v0.5 - WIP
 
-Progression finally saved.
+More texts and story building. Add lots of events.
 
-...
+
+### [v0.4](https://github.com/GMartigny/settlement/releases/tag/v0.4.0)
+
+Game progression saved.
+
 
 ### [v0.3](https://github.com/GMartigny/settlement/releases/tag/v0.3.0)
 
