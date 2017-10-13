@@ -104,6 +104,10 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     has: function (amount) {
         return this.count > amount || this.count.equals(amount);
     },
+    /**
+     * Get this data in plain object
+     * @returns {Object}
+     */
     getStraight: function () {
         return [this.count, this.data.id];
     },

@@ -51,14 +51,14 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         this.peopleList = Utils.wrap(People.LST_ID);
         html.appendChild(this.peopleList);
 
+        this.logsList = Utils.wrap("logs");
+        html.appendChild(this.logsList);
+
         this.visualPane = Utils.wrap("visualPane");
         html.appendChild(this.visualPane);
 
         this.eventsList = Utils.wrap(Event.LST_ID);
         html.appendChild(this.eventsList);
-
-        this.logsList = Utils.wrap("logs");
-        html.appendChild(this.logsList);
 
         var game = this;
 
@@ -72,7 +72,6 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 yes: {
                     name: "Restart anew",
                     action: function () {
-                        sendEvent("Save", "wipe");
                         game.wipeSave();
                         location.reload();
                     }
@@ -353,13 +352,14 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                     instance.warnLack = false;
                 }
                 else {
-                    instance.set(0);
-
                     if (Utils.isFunction(lack)) {
                         var diff = amount - instance.count;
                         lack.call(this, diff, resourceId);
                     }
 
+                    instance.set(0);
+
+                    // Warn for consuming more than available
                     if (!instance.warnLack) {
                         instance.warnLack = true;
                         MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
@@ -378,9 +378,9 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             this.resources.get(id).update(amount);
         }
         else {
-            var res = new Resource(id, amount);
-            this.resources.push(id, res);
-            this.resourcesList.appendChild(res.html);
+            var resource = new Resource(id, amount);
+            this.resources.push(id, resource);
+            this.resourcesList.appendChild(resource.html);
         }
     },
     /**
@@ -440,8 +440,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     build: function (id) {
         this.buildingsInProgress.out(id);
         if (!this.buildings.has(id)) {
-            var bld = new Building(id);
-            this.buildings.push(id, bld);
+            var building = new Building(id);
+            this.buildings.push(id, building);
         }
     },
     /**
@@ -498,9 +498,19 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         return buildings;
     },
+    /**
+     * Tell if building is already in progress
+     * @param {ID} buildingId - Any building ID
+     * @returns {Boolean}
+     */
     isBuildingInProgress: function (buildingId) {
         return this.buildingsInProgress.includes(buildingId);
     },
+    /**
+     * Tell if this building (or an upgrade) is done
+     * @param {ID} buildingId - Any building ID
+     * @returns {Boolean}
+     */
     isBuildingDone: function (buildingId) {
         var isDone = false;
         this.buildings.forEach(function (building) {
@@ -523,8 +533,8 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         return this.hasEnough(DataManager.ids.resources.room, this.people.length + 1);
     },
     /**
-     * Return an event that can happened
-     * @return {EventData|null}
+     * Return an id of event that can happened or null otherwise
+     * @return {ID|null}
      */
     getRandomEvent: function () {
         var list = [],
@@ -540,10 +550,10 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
             }
         }
         // filter events already running or with unmatched conditions
-        list = list.filter(function (id) {
-            var event = DataManager.get(id);
-            return !this.events.has(id) &&
-                (!event.condition || (Utils.isFunction(event.condition) && event.condition(event)));
+        list = list.filter(function (eventId) {
+            var eventData = DataManager.get(eventId);
+            return !this.events.has(eventId) &&
+                (!eventData.condition || (Utils.isFunction(eventData.condition) && eventData.condition()));
         }, this);
 
         if (list.length) {
@@ -555,12 +565,12 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
     },
     /**
      * Start an event
-     * @param {EventData} eventData - The event's data
+     * @param {ID} eventId - The event's data
      */
-    startEvent: function (eventData) {
+    startEvent: function (eventId) {
         // in the right conditions
-        if (eventData) {
-            var event = new Event(eventData);
+        if (eventId) {
+            var event = new Event(eventId);
             this.flags.popup = !!event.start(function (event) {
                 if (event.data.time) {
                     this.eventsList.appendChild(event.html);
@@ -632,6 +642,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
         this.flags.survived = data.survived;
     },
     wipeSave: function () {
+        sendEvent("Save", "wipe");
         SaveManager.clear();
     }
 });

@@ -11,6 +11,10 @@ function Building (id) {
 }
 Building.extends(Model, "Building", /** @lends Building.prototype */ {
     toHTML: Utils.noop,
+    /**
+     * Initialize object
+     * @private
+     */
     init: function () {
         if (this.data.lock) {
             MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.lock);

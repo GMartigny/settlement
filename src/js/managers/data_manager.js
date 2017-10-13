@@ -519,7 +519,7 @@ var DataManager = (function iife () {
         id: "scr",
         name: "scour",
         desc: "Knowledge of the area allows for better findings.",
-        time: 5,
+        time: 4,
         isOut: 1,
         consume: [
             [1, ids.resources.gatherables.common.water]
@@ -550,7 +550,7 @@ var DataManager = (function iife () {
         id: "ram",
         name: "roam",
         desc: "Explore the surroundings hoping to find something interesting.",
-        time: 6,
+        time: 5,
         isOut: 1,
         consume: [
             [1, ids.resources.gatherables.common.water]

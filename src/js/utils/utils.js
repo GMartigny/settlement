@@ -221,7 +221,7 @@ var Utils = {
 
     /**
      * Give a random unique ID without collision
-     * @returns {string}
+     * @returns {String}
      */
     pickUniqueID: (function iife () {
         var IDS = [];

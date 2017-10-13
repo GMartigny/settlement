@@ -99,6 +99,10 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
 
         this.html.remove();
     },
+    /**
+     * Get this data in plain object
+     * @returns {Object}
+     */
     getStraight: function () {
         var straight = this._getStraight();
         straight.remains = TimerManager.getRemaining(this.timer);

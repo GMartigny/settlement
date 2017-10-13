@@ -333,6 +333,10 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             }.bind(this), 400);
         }
     },
+    /**
+     * Get this data in plain object
+     * @returns {Object}
+     */
     getStraight: function () {
         var straight = {
             nam: this.name,

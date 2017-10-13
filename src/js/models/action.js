@@ -27,7 +27,8 @@ function Action (id, owner, parentAction) {
     this.owner = owner;
     this.parentAction = parentAction || null;
     this.repeated = 0;
-    this.choosenOptionId = null;
+    this.chosenOptionId = null;
+    this.energyDrain = null;
 
     this.super(id);
 }
@@ -148,7 +149,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
             else if (optionId || !this.options) {
                 // Merge data from this and selected option
-                this.choosenOptionId = optionId;
+                this.chosenOptionId = optionId;
                 var data = this.mergeWithOption(optionId);
                 // Use resources
                 if (Utils.isArray(data.consume)) {
@@ -177,6 +178,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             return false;
         }
     },
+    /**
+     * Determine the duration of the action
+     * @param {ActionData} data - This action's data
+     * @returns {Number} In "in game" hours
+     */
     defineDuration: function (data) {
         var duration = (data.time || 0);
 
@@ -188,6 +194,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
         return duration;
     },
+    /**
+     * Start this action's cooldown
+     * @param {Number} duration - Time until the action resolution (ms)
+     * @param {Number} [consumed=0] - Time already consumed
+     */
     start: function (duration, consumed) {
         consumed = consumed || 0;
         var totalActionDuration = duration + consumed;
@@ -197,6 +208,11 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         this.nameNode.classList.add(Action.COOLDOWN_CLASS);
         this.timeout = TimerManager.timeout(this.end.bind(this), duration);
     },
+    /**
+     * Take this action, its option and what it may build and merge all together
+     * @param {ID} [optionId] - Any ID for the chosen option
+     * @returns {ActionData}
+     */
     mergeWithOption: function (optionId) {
         var merge = {};
         var data = this.data;
@@ -255,8 +271,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             name: this.data.name,
             people: this.owner
         };
-        var data = this.mergeWithOption(this.choosenOptionId);
-        this.choosenOptionId = null;
+        var data = this.mergeWithOption(this.chosenOptionId);
+        this.chosenOptionId = null;
 
         this.owner.finishAction();
 
@@ -435,6 +451,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
         }
     },
+    /**
+     * Get this data in plain object
+     * @returns {Object}
+     */
     getStraight: function () {
         var straight = this._getStraight();
         straight.repeated = this.repeated;
@@ -442,7 +462,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             straight.elapsed = TimerManager.getElapsed(this.timeout);
             straight.remaining = TimerManager.getRemaining(this.timeout);
             straight.energyDrain = this.energyDrain;
-            straight.optionId = this.choosenOptionId;
+            straight.optionId = this.chosenOptionId;
         }
         return straight;
     }
