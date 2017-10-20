@@ -25,8 +25,9 @@ function Tooltip (container, data) {
     this._addEvents();
 }
 Tooltip.prototype = {
-    bodyWidth: document.body.offsetWidth,
-    bodyHeight: document.body.offsetHeight,
+    // Save body size to avoid overflow
+    _bodyWidth: document.body.offsetWidth,
+    _bodyHeight: document.body.offsetHeight,
     /**
      * Position the tooltip
      * @param {Number} x - The x coordinate
@@ -34,8 +35,8 @@ Tooltip.prototype = {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = MathUtils.constrain(x + 10, 0, this.bodyWidth - this.width);
-        var top = MathUtils.constrain(y + 10, 0, this.bodyHeight - this.height);
+        var left = MathUtils.constrain(x + 10, 0, this._bodyWidth - this.width);
+        var top = MathUtils.constrain(y + 10, 0, this._bodyHeight - this.height);
         this.box.style.left = left + "px";
         this.box.style.top = top + "px";
     },
@@ -51,7 +52,7 @@ Tooltip.prototype = {
      * @private
      */
     _mouseOut: function () {
-        this.box.remove();
+        this.remove();
     },
     /**
      * Handle mouse move events
@@ -108,9 +109,15 @@ Tooltip.prototype = {
             var resourcesContainer = Utils.wrap("consumption");
             data.consume.forEach(function (resource) {
                 var data = DataManager.get(resource[1]);
-                var resourceNode = Utils.wrap("resource not-enough", resource[0] + " " + data.name);
+                var resourceNode = Utils.wrap("resource not-enough");
+                var counterNode = Utils.wrap("counter", "0/");
+                resourceNode.appendChild(counterNode);
+                resourceNode.appendChild(Utils.wrap("", resource[0] + " " + data.name));
                 resourceNode.style.order = data.order;
-                this.resourcesMapper[resource[1]] = resourceNode;
+                this.resourcesMapper[resource[1]] = {
+                    node: resourceNode,
+                    counter: counterNode
+                };
                 resourcesContainer.appendChild(resourceNode);
             }, this);
             html.appendChild(resourcesContainer);
@@ -133,8 +140,11 @@ Tooltip.prototype = {
         if (Utils.isArray(data.consume)) {
             data.consume.forEach(function (resource) {
                 var id = resource[1];
-                var hasEnougth = resources.has(id) && resources.get(id).has(resource[0]);
-                this.resourcesMapper[id].classList.toggle("not-enough", !hasEnougth);
+                var count = (resources.has(id) || 0) && resources.get(id).get();
+                var resourceNodes = this.resourcesMapper[id];
+                var notEnough = count < resource[0];
+                resourceNodes.counter.textContent = notEnough ? count + "/" : "";
+                resourceNodes.node.classList.toggle("not-enough", notEnough);
             }, this);
         }
     },

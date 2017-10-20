@@ -9,7 +9,7 @@
     "url": "https://github.com/GMartigny/settlement.git"
   },
   "bugs": "https://github.com/GMartigny/settlement/issues",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "devDependencies": {
     "es6-shim": "^0.35.3",
     "es7-shim": "^6.0.0",

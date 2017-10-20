@@ -10,10 +10,9 @@
 function Bar (CSSClass, warningThreshold) {
     this.value = null;
     this.threshold = warningThreshold || 0;
-    this.super();
-    this.html.classList.add.apply(this.html.classList, CSSClass.split(" "));
+    this.super(CSSClass);
 }
-Bar.extends(Model, "Bar", /** @lends Bar.prototype */{
+Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}

@@ -1,17 +1,19 @@
 "use strict";
-/* exported Model */
+/* exported View */
 
 /**
  * A base model for all
- * @param {ID} id - The object's id
+ * @param {String} CSSClass - A custom css class to add
  * @constructor
  */
-function Model (id) {
-    this.data = DataManager.get(id);
+function View (CSSClass) {
     this.html = this.toHTML();
-    this.init.apply(this, Array.prototype.splice.call(arguments, 1));
+    if (CSSClass) {
+        this.html.classList.add.apply(this.html.classList, CSSClass.split(" "));
+    }
+    this.init.apply(this, Array.prototype.slice.call(arguments, 1));
 }
-Model.prototype = {
+View.extends(Object, "View", {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */
@@ -22,10 +24,5 @@ Model.prototype = {
      */
     toHTML: function () {
         return Utils.wrap(this.modelName);
-    },
-    getStraight: function () {
-        return {
-            id: this.data.id
-        };
     }
-};
+});

@@ -61,4 +61,4 @@ I'm sure this will be useful in the future in term of knowledge and code-base.
 
 But, in the end, it would have been good to learn a new framework and I could have finish this way earlier (pixi.js, vue.js ...).
 
-Also, I love to develop tools but, tests for example have catch very few bugs and took quite some time.
+Also, I love to develop tools but, unit tests for example have catch very few bugs and took quite some time to set up.
