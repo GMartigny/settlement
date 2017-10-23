@@ -18,28 +18,28 @@ var TimerManager = (function iife () {
     Timer.prototype = {
         /**
          * Define an action to launch after a timer
-         * @return {number} ID of the timeout
+         * @return {Number} ID of the timeout
          */
         setTimeout: function () {
             return setTimeout(this.action, this.time);
         },
         /**
          * Return time spend on the timer
-         * @return {number}
+         * @return {Number}
          */
         getElapsed: function () {
             return Utils.getNow() - this.startTime;
         },
         /**
          * Get remaining time on the timer
-         * @return {number}
+         * @return {Number}
          */
         getRemaining: function () {
             return this.time - this.getElapsed();
         },
         /**
          * Stop the timer
-         * @return {*} False if was not running, remaining time otherwise
+         * @return {Boolean|Number} False if was not running, remaining time otherwise
          */
         stop: function () {
             if (this.isRunning) {
@@ -55,7 +55,7 @@ var TimerManager = (function iife () {
         /**
          * Restart the timer
          * @param {Number} now - The current timestamp
-         * @return {*} False if already running, remaining time otherwise
+         * @return {Boolean|Number} False if already running, remaining time otherwise
          */
         restart: function (now) {
             if (!this.isRunning) {
@@ -72,15 +72,29 @@ var TimerManager = (function iife () {
 
     var _timers = new Map();
 
+    /**
+     * Return a timer matching an ID
+     * @param {ID} timerId - Existing ID in the timer list
+     * @returns {Timer}
+     * @throws RangeError
+     */
+    function getTimer (timerId) {
+        var timer = _timers.get(timerId);
+        if (!timer) {
+            throw new RangeError("Unknown timer ID [" + timerId + "]");
+        }
+        return timer;
+    }
+
     return /** @lends TimerManager */ {
         /**
          * Set a timeout
          * @param {Function} action - A callback function called after timeout
          * @param {Number} time - The timeout length
-         * @return {Number} The ID of the timeout
+         * @return {ID} The ID of the timeout
          */
         timeout: function (action, time) {
-            var timerId = Utils.randomStr();
+            var timerId;
             /**
              * Wrapper for calling action and popping from collection
              */
@@ -93,11 +107,12 @@ var TimerManager = (function iife () {
         },
         /**
          * Stop a timer
-         * @param {String} timerId - A timer id
+         * @param {ID} timerId - A timer id
          * @return {*}
+         * @throws RangeError
          */
         stop: function (timerId) {
-            return _timers.get(timerId).stop();
+            return getTimer(timerId).stop();
         },
         /**
          * Stop all known timers
@@ -109,11 +124,12 @@ var TimerManager = (function iife () {
         },
         /**
          * Restart a timer
-         * @param {String} timerId - A timer id
+         * @param {ID} timerId - A timer id
          * @return {*}
+         * @throws RangeError
          */
         restart: function (timerId) {
-            return _timers.get(timerId).restart(Utils.getNow());
+            return getTimer(timerId).restart(Utils.getNow());
         },
         /**
          * Restart all known timers
@@ -126,11 +142,13 @@ var TimerManager = (function iife () {
         },
         /**
          * Stop a timer and remove it from the list
-         * @param {String} timerId - A timer id
-         * @return {*}
+         * @param {ID} timerId - A timer id
+         * @throws RangeError
          */
         clear: function (timerId) {
-            return _timers.delete(timerId).stop();
+            var timer = getTimer(timerId);
+            _timers.delete(timerId);
+            timer.stop();
         },
         /**
          * Clear all known timers
@@ -140,8 +158,14 @@ var TimerManager = (function iife () {
                 timer.clear();
             });
         },
+        /**
+         * Return elapsed time on a timer
+         * @param {ID} timerId - Id of a running timer
+         * @returns {Number} Elapsed time in ms
+         * @throws RangeError
+         */
         getElapsed: function (timerId) {
-            return _timers.get(timerId).getElapsed();
+            return getTimer(timerId).getElapsed();
         },
         /**
          * Return remaining time on a timer
@@ -150,7 +174,7 @@ var TimerManager = (function iife () {
          * @throws RangeError
          */
         getRemaining: function (timerId) {
-            return _timers.get(timerId).getRemaining();
+            return getTimer(timerId).getRemaining();
         }
     };
 })();

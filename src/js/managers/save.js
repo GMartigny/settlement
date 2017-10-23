@@ -1,6 +1,9 @@
 "use strict";
 /* exported SaveManager */
 
+/**
+ * Handles mangling and storage of data
+ */
 var SaveManager = (function iife () {
 
     var storage = localStorage;
@@ -18,9 +21,7 @@ var SaveManager = (function iife () {
      * @returns {String}
      */
     function compress (str) {
-        var comp = btoa(salt + btoa(str));
-        Utils.log("Compress: " + str.length + " => " + comp.length);
-        return comp;
+        return btoa(salt + btoa(str));
     }
 
     /**

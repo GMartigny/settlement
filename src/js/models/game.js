@@ -37,7 +37,7 @@ function GameController (holder, assets) {
     console.log("Started in " + (Utils.getNow() - now) + "ms");
 }
 GameController.tickLength = 2000;
-GameController.extends(Model, "GameController", /** @lends GameController.prototype */ {
+GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -62,10 +62,9 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         var game = this;
 
-        var bottomOptions = Utils.wrap("bottomOptions");
-        var wipeSaveNode = Utils.wrap("wipe clickable", "Clear save");
-        wipeSaveNode.addEventListener("click", function () {
-            popup({
+        var bottomOptionsNode = Utils.wrap("bottomOptions");
+        var wipeSaveClickable = new Clickable("wipe", "Clear save", function () {
+            new Popup({
                 name: "Clear your save",
                 desc: "Completely wipe your saved game. Careful, this is irreversible."
             }, {
@@ -81,25 +80,37 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
                 }
             }, "wipeIt");
         });
-        bottomOptions.appendChild(wipeSaveNode);
-        var credits = Utils.wrap("credits clickable", "Credits");
-        credits.addEventListener("click", function () {
-            popup({
+        bottomOptionsNode.appendChild(wipeSaveClickable.html);
+        var creditsClickable = new Clickable("credits", "Credits", function () {
+            var creditsData = [
+                {
+                    task: "Design and code",
+                    name: "Guillaume Martigny",
+                    url: "https://www.guillaume-martigny.fr"
+                }, {
+                    task: "Graphics",
+                    name: "if you want your name here, send me an email",
+                    url: "mailto:https://www.guillaume-martigny.fr"
+                }
+            ];
+            var credits = "<ul>";
+            creditsData.forEach(function (people) {
+                credits += "<li>" + people.task + ": <a href='" + people.url + "'>" + people.name + "</a></li>";
+            });
+            credits += "</ul>";
+            new Popup({
                 name: "Settlement",
-                desc: "<ul>" +
-                "<li>Design and code: Guillaume Martigny</li>" +
-                "<li>Graphics: Maybe you ;)</li>"
+                desc: credits
             });
         });
-        bottomOptions.appendChild(credits);
-        html.appendChild(bottomOptions);
+        bottomOptionsNode.appendChild(creditsClickable.html);
+        html.appendChild(bottomOptionsNode);
 
         return html;
     },
     /**
      * Start a new adventure
      * @param {HTMLElement} holder - The whole game HTML holder
-     * @private
      */
     init: function (holder) {
         var game = this;
@@ -128,7 +139,7 @@ GameController.extends(Model, "GameController", /** @lends GameController.protot
 
         if (!IS_DEV && VERSION.includes("v0.")) {
             // early access warning
-            popup({
+            new Popup({
                 name: "Early access [" + VERSION + "]",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
                 "If you want to report a bug or anything to improve the game, go to " +

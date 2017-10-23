@@ -1,14 +1,21 @@
+/**
+ * @licence Settlement Copyright 2017 Guillaume Martigny
+ * Licensed under the Apache License, Version 2.0
+ */
 "use strict";
 
+/* exported starter */
+
 /**
- * Loader
+ * Main loader
+ * @param {Object} globalScope - A scope to put the game controller object (DEV only)
  */
-(function () {
+function starter (globalScope) {
     console.groupCollapsed("Loading");
 
     var _assetsURL = "dist/img/assets.png";
-    var _assetsDataURL = "dist/js/assets.json";
-    var _buildingsDataURL = "dist/js/buildingsData.json";
+    var _assetsDataURL = "dist/json/assets.json";
+    var _buildingsDataURL = "dist/json/buildingsData.json";
 
     var loadStart = Utils.getNow();
     Utils.loadAsync([
@@ -20,22 +27,17 @@
         console.log(file + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart));
     }).then(function (media) {
         console.groupEnd();
-        try {
-            var Game = new GameController(document.body, {
-                images: media[Utils.sanitize(_assetsURL)],
-                data: {
-                    assets: media[Utils.sanitize(_assetsDataURL)],
-                    positions: media[Utils.sanitize(_buildingsDataURL)]
-                }
-            });
-            if (IS_DEV) {
-                window.G = Game;
+        var Game = new GameController(document.body, {
+            images: media[Utils.sanitize(_assetsURL)],
+            data: {
+                assets: media[Utils.sanitize(_assetsDataURL)],
+                positions: media[Utils.sanitize(_buildingsDataURL)]
             }
-        }
-        catch (error) {
-            console.warn("Fail to load game : " + error.message, error.stack);
+        });
+        if (IS_DEV) {
+            globalScope.G = Game;
         }
     }).catch(function (error) {
-        console.warn(error.message, e.stack);
+        console.warn("Fail to load game : " + error.message, error.stack);
     });
-})();
+}

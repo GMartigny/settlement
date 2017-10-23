@@ -14,12 +14,21 @@ module.exports = function (grunt) {
     });
 
     var sourceDir = {
-        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js", "src/js/**/*.js"], // Load utils before
-        json: ["src/js/**/*.json"],
+        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js", "src/js/views/view.js", "src/js/models/model.js", "src/js/**/*.js"], // Load in order
+        json: ["src/json/**/*.json"],
         css: ["src/css/**/*.less"],
         img: {
             icons: ["src/img/icons/**/*.png"],
             assets: ["src/img/assets/**/*.png"]
+        }
+    };
+    var destDir = {
+        js: "dist/js/script.js",
+        json: "dist/json/",
+        css: "dist/css/style.css",
+        img: {
+            icons: "dist/img/icons.png",
+            assets: "dist/img/assets.png"
         }
     };
     var VERSION = "v<%= version %>";
@@ -31,13 +40,13 @@ module.exports = function (grunt) {
         sprite: {
             icons: {
                 src: sourceDir.img.icons,
-                dest: "dist/img/icons.png",
+                dest: destDir.img.icons,
                 destCss: "src/css/sprites.less"
             },
             assets: {
                 src: sourceDir.img.assets,
-                dest: "dist/img/assets.png",
-                destCss: "dist/js/assets.json"
+                dest: destDir.img.assets,
+                destCss: "src/json/assets.json"
             }
         },
 
@@ -46,7 +55,7 @@ module.exports = function (grunt) {
                 options: {
                 },
                 files: {
-                    "dist/css/style.css": sourceDir.css
+                    [destDir.css]: sourceDir.css
                 }
             },
             prod: {
@@ -54,7 +63,7 @@ module.exports = function (grunt) {
                     compress: true
                 },
                 files: {
-                    "dist/css/style.css": sourceDir.css
+                    [destDir.css]: sourceDir.css
                 }
             }
         },
@@ -76,7 +85,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    "dist/js/script.js": sourceDir.js
+                    [destDir.js]: sourceDir.js
                 }
             },
             prod: {
@@ -90,7 +99,7 @@ module.exports = function (grunt) {
                     }
                 },
                 files: {
-                    "dist/js/script.js": sourceDir.js
+                    [destDir.js]: sourceDir.js
                 }
             }
         },
@@ -147,7 +156,7 @@ module.exports = function (grunt) {
 
         jasmine: {
             all: {
-                src: sourceDir.js.concat("!src/js/loader.js"),
+                src: destDir.js,
                 options: {
                     specs: "tests/**/*Test.js",
 					template: require('grunt-template-jasmine-istanbul'),
@@ -162,22 +171,59 @@ module.exports = function (grunt) {
                     ]
                 }
             }
+        },
+        
+        jsonify: {
+            main: {
+                files: {
+                    [destDir.json]: sourceDir.json
+                }
+            }
         }
     });
 
-    grunt.registerTask("uglifyJSON", "Minify and copy json to dist", function () {
-        var origin = "src/";
-        var dest = "dist/js/";
-        var files = grunt.file.expand({
-            matchBase: true,
-            cwd: origin
-        }, "*.json");
+    grunt.registerMultiTask("jsonify", "Minify and copy json to dist folder", function () {
+        var options = this.options({
+            indent: 0,
+            compress: false
+        });
 
-        files.forEach(function (filePath) {
-            var name = filePath.substr(filePath.lastIndexOf("/") + 1);
-            var src = JSON.stringify(grunt.file.readJSON(origin + filePath));
-            grunt.file.write(dest + name, src);
-            grunt.log.writeln("Successfully write " + name);
+        function compress (key, value) {
+            if (typeof this === "object" && !this.length) {
+                var undf = undefined;
+                var result;
+
+                if (Array.isArray(value)) {
+                    result = value.length > 0 ? value : undf;
+                }
+                else if (typeof value === "object") {
+                    result = value && Object.keys(value).length > 0 ? value : undf;
+                }
+                else if (Number.isInteger(+value)) {
+                    result = +value !== 0 ? value : undf;
+                }
+                else {
+                    result = !!value ? value : undf;
+                }
+                return result;
+            }
+            else {
+                return value;
+            }
+        }
+
+        var origin = "./";
+
+        this.files.forEach(function (target) {
+            var dest = target.dest;
+
+            target.src.forEach(function (filePath) {
+                var name = filePath.substr(filePath.lastIndexOf("/") + 1);
+                var json = grunt.file.readJSON(origin + filePath);
+                var src = JSON.stringify(json, (options.compress && compress), options.indent);
+                grunt.file.write(dest + name, src);
+                grunt.log.ok("Successfully wrote " + name);
+            });
         });
     });
 
@@ -188,11 +234,11 @@ module.exports = function (grunt) {
     grunt.registerTask("icons", ["sprite:icons"]);
     grunt.registerTask("assets", ["sprite:assets"]);
     grunt.registerTask("images", ["icons", "assets"]);
-    grunt.registerTask("js", ["uglify:dev", "uglifyJSON"]);
+    grunt.registerTask("js", ["uglify:dev", "jsonify:main"]);
     grunt.registerTask("css", ["less:dev"]);
 
     grunt.registerTask("build:dev", ["images", "js", "css"]);
-    grunt.registerTask("build:prod", ["images", "uglify:prod", "uglifyJSON", "less:prod"]);
+    grunt.registerTask("build:prod", ["images", "uglify:prod", "jsonify:main", "less:prod"]);
     grunt.registerTask("build", ["build:dev"]); // (default)
 
     grunt.registerTask("default", ["build", "watch"]);
@@ -202,5 +248,5 @@ module.exports = function (grunt) {
     grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 
-    grunt.registerTask("test", ["jasmine:all"]);
+    grunt.registerTask("test", ["uglify:dev", "jasmine:all"]);
 };

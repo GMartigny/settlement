@@ -6,3 +6,4 @@ dist
 /src/css/sprites.less
 *.log
 /tests/report/
+/src/json/assets.json

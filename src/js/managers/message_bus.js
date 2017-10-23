@@ -1,5 +1,8 @@
 /* exported MessageBus */
 
+/**
+ * API to observe and send message across the application
+ */
 var MessageBus = (function iife () {
     "use strict";
 

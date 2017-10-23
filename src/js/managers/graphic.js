@@ -106,10 +106,6 @@ var GraphicManager = (function iife () {
             layer.cnv.classList.add("layer", "buildings");
             wrapper.appendChild(layer.cnv);
 
-            layer = CanvasUtils.prepareCanvas(wrapper.offsetWidth, wrapper.offsetHeight);
-            layer.cnv.classList.add("layer", "events");
-            wrapper.appendChild(layer.cnv);
-
             // watch for new buildings
             _buildingsList = new Map();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (id) {

@@ -192,7 +192,7 @@ var DataManager = (function iife () {
         name: "scrap metal",
         desc: "An old rusty piece of metal.",
         icon: "metal-scraps",
-        dropRate: 80,
+        dropRate: 75,
         order: 40
     });
 
@@ -424,9 +424,6 @@ var DataManager = (function iife () {
         name: "harvest crops",
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
         time: 6,
-        lock: [
-            ids.actions.harvestPlot
-        ],
         consume: [
             [3, ids.resources.gatherables.common.water]
         ],
@@ -821,6 +818,9 @@ var DataManager = (function iife () {
         name: "field",
         desc: "A larger crop field to produce more food.",
         time: 10,
+        lockForAll: [
+            ids.actions.harvestPlot
+        ],
         unlockForAll: [
             ids.actions.harvestField
         ],
@@ -1320,7 +1320,9 @@ var DataManager = (function iife () {
          * @returns {Data}
          */
         get: function (id) {
-            return db[id];
+            if (id) {
+                return db[id];
+            }
         },
         bindAll: function (context) { // FIXME: 
             db.browse(function (data) {

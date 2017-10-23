@@ -46,7 +46,7 @@ Event.extends(Model, "Event", /** @lends Event.prototype */ {
      * @return {boolean} Is event running
      */
     start: function (callback) {
-        popup(this.data, function () {
+        new Popup(this.data, function () {
             // Effect
             var effect = {
                 event: this.data

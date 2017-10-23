@@ -265,6 +265,11 @@ var Utils = {
         return typeof string === "string";
     },
 
+    /**
+     * Test if is a number
+     * @param {*} number - Anything to test
+     * @return {Boolean}
+     */
     isNumber: function (number) {
         return typeof number === "number";
     },

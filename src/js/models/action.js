@@ -20,21 +20,20 @@
  */
 function Action (id, owner, parentAction) {
     this.locked = true;
-    this.nameNode = null;
+    this.clickable = null;
     this.options = null;
     this.optionsWrapper = null;
 
     this.owner = owner;
     this.parentAction = parentAction || null;
+    this.running = false;
     this.repeated = 0;
     this.chosenOptionId = null;
     this.energyDrain = null;
 
     this.super(id);
 }
-Action.COOLDOWN_CLASS = "cooldown";
 Action.RUNNING_CLASS = "running";
-Action.DISABLED_CLASS = "disabled";
 Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Return HTML for display
@@ -43,9 +42,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        var name = Utils.wrap("name clickable disabled animated", Utils.capitalize(this.data.name));
-        this.nameNode = name;
-        html.appendChild(name);
+        var clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
+        this.clickable = clickable;
+        html.appendChild(clickable.html);
 
         if (Utils.isFunction(this.data.options)) {
             html.classList.add("withOptions");
@@ -74,7 +73,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.data.energy = this.data.time * 5;
         }
 
-        this.tooltip = new Tooltip(this.nameNode, this.data);
+        this.tooltip = new Tooltip(this.clickable.html, this.data);
 
         this.manageOptions();
     },
@@ -134,7 +133,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             });
         }
 
-        this.nameNode.classList.toggle(Action.DISABLED_CLASS, this.locked);
+        this.clickable.toggle(!this.locked);
     },
     /**
      * Player click on action
@@ -203,10 +202,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         consumed = consumed || 0;
         var totalActionDuration = duration + consumed;
         this.owner.setBusy(this.data.id, this.energyDrain);
-        this.nameNode.style.animationDuration = totalActionDuration + "ms";
-        this.nameNode.style.animationDelay = (-consumed) + "ms";
-        this.nameNode.classList.add(Action.COOLDOWN_CLASS);
-        this.timeout = TimerManager.timeout(this.end.bind(this), duration);
+        this.clickable.startCoolDown(totalActionDuration, consumed, this.end.bind(this));
+        this.running = true;
     },
     /**
      * Take this action, its option and what it may build and merge all together
@@ -263,9 +260,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Resolve the end of an action
      */
     end: function () {
-        this.timeout = null;
+        this.running = false;
         this.html.classList.remove(Action.RUNNING_CLASS);
-        this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
 
         var effect = {
             name: this.data.name,
@@ -444,11 +440,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Cancel this action
      */
     cancel: function () {
-        if (this.timeout) {
-            TimerManager.clear(this.timeout);
+        if (this.running) {
             this.owner.setBusy();
             this.html.classList.remove(Action.RUNNING_CLASS);
-            this.nameNode.classList.remove(Action.COOLDOWN_CLASS);
+            this.clickable.endCoolDown();
         }
     },
     /**
@@ -458,9 +453,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     getStraight: function () {
         var straight = this._getStraight();
         straight.repeated = this.repeated;
-        if (this.timeout) {
-            straight.elapsed = TimerManager.getElapsed(this.timeout);
-            straight.remaining = TimerManager.getRemaining(this.timeout);
+        if (this.running) {
+            straight.elapsed = this.clickable.getElapsed();
+            straight.remaining = this.clickable.getRemaining();
             straight.energyDrain = this.energyDrain;
             straight.optionId = this.chosenOptionId;
         }

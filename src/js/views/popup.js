@@ -1,5 +1,5 @@
 "use strict";
-/* exported popup */
+/* exported Popup */
 
 /**
  * @typedef {Object} ButtonData
@@ -18,50 +18,58 @@
  * @param {Data} data - Text for the popup
  * @param {PopupData} [buttons={}] - Text for the popup
  * @param {String} [CSSClasses] - Additional classes for the popup
- * @returns {Object} Some functions
+ * @constructor
  */
-function popup (data, buttons, CSSClasses) {
-    var holder = document.body;
+function Popup (data, buttons, CSSClasses) {
+    this.data = data;
+    this.buttons = buttons || {};
 
-    CSSClasses = "popup" + (CSSClasses ? " " + CSSClasses : "");
-    var box = Utils.wrap(CSSClasses);
+    this.super(CSSClasses);
 
-    box.appendChild(Utils.wrap("title", Utils.capitalize(data.name)));
-    box.appendChild(Utils.wrap("description", data.desc));
-
-    var api = {
-        /**
-         * Remove popup from DOM
-         */
-        remove: function () {
-            box.remove();
-            holder.classList.remove("backdrop");
-        }
-    };
-
-    buttons = buttons || {};
-    var yesButton = Utils.wrap("yes clickable", (buttons.yes && buttons.yes.name) || "Ok");
-    var onYes = (buttons.yes && buttons.yes.action) || Utils.noop;
-    yesButton.addEventListener("click", function () {
-        onYes();
-        api.remove();
-    }, true);
-    box.appendChild(yesButton);
-
-    if (buttons.no) {
-        var noButton = Utils.wrap("no clickable", buttons.no.name || "Cancel");
-        var onNo = buttons.no.action || Utils.noop;
-        noButton.addEventListener("click", function () {
-            onNo();
-            api.remove();
-        }, true);
-        box.appendChild(noButton);
-    }
-
-    holder.classList.add("backdrop");
-    holder.appendChild(box);
-
-    box.style.top = MathUtils.floor((holder.offsetHeight - box.offsetHeight) / 2) + "px";
-
-    return api;
+    this.show();
 }
+Popup.holder = document.body;
+Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
+    toHTML: function () {
+        var html = this._toHTML();
+
+        html.appendChild(Utils.wrap("title", Utils.capitalize(this.data.name)));
+        html.appendChild(Utils.wrap("description", this.data.desc));
+
+        var self = this;
+
+        var onYes = (this.buttons.yes && this.buttons.yes.action) || Utils.noop;
+        var yesButton = new Clickable("yes", (this.buttons.yes && this.buttons.yes.name) || "Ok", function () {
+            onYes();
+            self.remove();
+        });
+        html.appendChild(yesButton.html);
+
+        if (this.buttons.no) {
+            var onNo = this.buttons.no.action || Utils.noop;
+            var noButton = new Clickable("no", this.buttons.no.name || "Cancel", function () {
+                onNo();
+                self.remove();
+            });
+            html.appendChild(noButton.html);
+        }
+
+        return html;
+    },
+    show: function () {
+        Popup.holder.classList.add("backdrop");
+        Popup.holder.appendChild(this.html);
+
+        var top = MathUtils.floor((Popup.holder.offsetHeight - this.html.offsetHeight) / 2) + "px";
+        this.html.style.top = top;
+        this.html.style.transform = "scale3d(1, 1, 1)";
+        this.html.style.opacity = "1";
+    },
+    /**
+     * Remove popup from DOM
+     */
+    remove: function () {
+        this.html.remove();
+        Popup.holder.classList.remove("backdrop");
+    }
+});

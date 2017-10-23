@@ -70,8 +70,8 @@ var MathUtils = {
         var rand = Math.random;
 
         return function random (from, to) {
-            if (Utils.isUndefined(to)) {
-                if (Utils.isUndefined(from)) {
+            if (to === undefined) {
+                if (from === undefined) {
                     to = 1;
                 }
                 else {

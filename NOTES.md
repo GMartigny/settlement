@@ -62,3 +62,11 @@ I'm sure this will be useful in the future in term of knowledge and code-base.
 But, in the end, it would have been good to learn a new framework and I could have finish this way earlier (pixi.js, vue.js ...).
 
 Also, I love to develop tools but, unit tests for example have catch very few bugs and took quite some time to set up.
+
+## Rant
+
+There's no tools to build JS source (like uglify) but that follow dependencies.
+I tried requireJS, but it rely on modular JS that didn't fit into client-side. (to try: browserify)
+
+Anyway, those tools seams a bit overpowered just to concat and uglify sources.
+Maybe, some day, I'll do a grunt task to order files input to uglify.
