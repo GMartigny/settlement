@@ -17,6 +17,7 @@
  * @param {People} owner - Action's owner
  * @param {Action} [parentAction] - If this action has a parent
  * @constructor
+ * @extends Model
  */
 function Action (id, owner, parentAction) {
     this.locked = true;
@@ -26,7 +27,6 @@ function Action (id, owner, parentAction) {
 
     this.owner = owner;
     this.parentAction = parentAction || null;
-    this.running = false;
     this.repeated = 0;
     this.chosenOptionId = null;
     this.energyDrain = null;
@@ -42,9 +42,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        var clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
-        this.clickable = clickable;
-        html.appendChild(clickable.html);
+        this.clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
+        html.appendChild(this.clickable.html);
 
         if (Utils.isFunction(this.data.options)) {
             html.classList.add("withOptions");
@@ -52,9 +51,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             html.appendChild(this.optionsWrapper);
         }
         else {
-            html.addEventListener("click", function () {
-                this.click();
-            }.bind(this), true);
+            this.clickable.setAction(this.click.bind(this, null));
         }
 
         if (this.data.order) {
@@ -112,7 +109,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      */
     refresh: function (resources, flags) {
         this.locked = (this.owner.isTired() && this.data.energy > 0) ||
-            (this.data.isOut && flags.cantGoOut) ||
+            (this.data.isOut && flags.incidents[DataManager.ids.incidents.easy.sandstorm]) ||
             (this.parentAction && this.parentAction.locked);
 
         this.tooltip.refresh(resources, this.data);
@@ -160,7 +157,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                     MessageBus.notify(MessageBus.MSG_TYPES.START_BUILD, data.build);
                 }
 
-                this.html.classList.add(Action.RUNNING_CLASS);
                 ++this.repeated;
 
                 var duration = this.defineDuration(data);
@@ -203,7 +199,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         var totalActionDuration = duration + consumed;
         this.owner.setBusy(this.data.id, this.energyDrain);
         this.clickable.startCoolDown(totalActionDuration, consumed, this.end.bind(this));
-        this.running = true;
+
+        this.html.classList.add(Action.RUNNING_CLASS);
     },
     /**
      * Take this action, its option and what it may build and merge all together
@@ -260,7 +257,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Resolve the end of an action
      */
     end: function () {
-        this.running = false;
         this.html.classList.remove(Action.RUNNING_CLASS);
 
         var effect = {
@@ -440,7 +436,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Cancel this action
      */
     cancel: function () {
-        if (this.running) {
+        if (this.clickable.isRunning()) {
             this.owner.setBusy();
             this.html.classList.remove(Action.RUNNING_CLASS);
             this.clickable.endCoolDown();
@@ -450,10 +446,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Get this data in plain object
      * @returns {Object}
      */
-    getStraight: function () {
-        var straight = this._getStraight();
+    toJSON: function () {
+        var straight = this._toJSON();
         straight.repeated = this.repeated;
-        if (this.running) {
+        if (this.clickable.isRunning()) {
             straight.elapsed = this.clickable.getElapsed();
             straight.remaining = this.clickable.getRemaining();
             straight.energyDrain = this.energyDrain;

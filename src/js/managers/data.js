@@ -78,9 +78,10 @@ var DataManager = (function iife () {
      * @prop {String} asset - Id of the graphical asset
      */
     /**
-     * @typedef {Object} EventData
+     * @typedef {Object} IncidentData
      * @extends ActionData
-     * @prop {String} asset - Id of the graphical asset
+     * @prop {String} [yes="Ok"] - Text for the validate button
+     * @prop {String} [no] - Text for the cancel button
      * @prop {Number} dropRate - Chance of getting it
      */
     /**
@@ -117,7 +118,7 @@ var DataManager = (function iife () {
             far: {},
             epic: {}
         },
-        events: {
+        incidents: {
             easy: {},
             medium: {},
             hard: {}
@@ -204,7 +205,7 @@ var DataManager = (function iife () {
             [1.2 / time.day, ids.resources.gatherables.common.water, "thirsty"],
             [1 / time.day, ids.resources.gatherables.common.food, "starving"]
         ],
-        dropRate: 0.1
+        dropRate: 0.05
     });
 
     /** GATHERABLES UNCOMMON **/
@@ -528,7 +529,7 @@ var DataManager = (function iife () {
         log: function (effect) {
             var log;
             if (effect.give) {
-                var location = Utils.randomize(ids.locations.far);
+                var location = Utils.randomize(ids.locations);
                 if (!this.knownLocations.includes(location)) {
                     this.knownLocations.push(location);
                 }
@@ -568,7 +569,10 @@ var DataManager = (function iife () {
         log: function (effect) {
             var log;
             if (effect.give) {
-                var location = Utils.randomize(ids.locations.near);
+                var location = Utils.randomize({
+                    near: ids.locations.near,
+                    far: ids.locations.far
+                });
                 if (!this.knownLocations.includes(location)) {
                     this.knownLocations.push(location);
                 }
@@ -637,7 +641,7 @@ var DataManager = (function iife () {
         energy: 0,
         effect: function () {
             TimerManager.timeout(function () {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.FLAVOR, "We need a shelter.");
+                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "We need a shelter.");
             }, 1500);
         },
         give: [
@@ -1115,7 +1119,7 @@ var DataManager = (function iife () {
             ids.resources.craftables.basic.stone
         ],
         log: "It's nice by the river, @people.name found @give.",
-        dropRate: 40
+        dropRate: 30
     });
     ids.locations.far.ruin = insert({
         id: "orn",
@@ -1128,7 +1132,7 @@ var DataManager = (function iife () {
             ids.resources.craftables.basic.tool
         ],
         log: "Amazing no-one get lost in those caves to get @give.",
-        dropRate: 60
+        dropRate: 50
     });
 
     /** EPIC LOCATIONS **/
@@ -1144,7 +1148,7 @@ var DataManager = (function iife () {
         ],
         log: "No-one could guess what that building was, but it sure was interesting. " +
         "@people.name find @give.",
-        dropRate: 30
+        dropRate: 10
     });
     ids.locations.epic.spaceship = insert({
         id: "swr",
@@ -1156,40 +1160,51 @@ var DataManager = (function iife () {
             ids.resources.craftables.complex.furniture
         ],
         log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
-        dropRate: 20
+        dropRate: 5
     });
 
-    /** EASY EVENTS **/
+    /** EASY INCIDENTS **/
 
-    ids.events.easy.sandstorm = insert({
+    // found chest (add some resources, condition: resource run low)
+    // fortune teller (no impact)
+    ids.incidents.easy.sandstorm = insert({
         id: "ssm",
         name: "sandstorm",
         desc: "The wind is blowing hard, impossible to go out for now.",
-        time: 20,
+        time: 16,
         timeDelta: 4,
-        effect: function (isOn) {
-            this.flags.cantGoOut = isOn;
-        },
         dropRate: 100,
         log: "A sandstorm has started and prevent anyone from leaving the camp."
     });
 
-    /** MEDUIM  EVENTS**/
+    /** MEDUIM  INCIDENTS **/
 
-    /** HARD EVENTS **/
+    ids.incidents.medium.acidRain = insert({
+        id: "acr",
+        name: "acid rain",
+        desc: "A big dark cloud is coming from the north, " +
+            "which means that it's going to rain acid droplet like stingers from the sky",
+        time: time.day,
+        timeDelta: time.day / 2,
+        dropRate: 50,
+        log: ""
+    });
+    // strange beggar (giving may return investment)
+    // Someone get sick (low max energy)
 
-    ids.events.hard.drought = insert({
+    /** HARD INCIDENTS **/
+
+    ids.incidents.hard.drought = insert({
         id: "drg",
         name: "drought",
         desc: "The climate is so hot, we consume more water.",
         time: 3 * time.day,
         timeDelta: 10,
-        effect: function (isOn) {
-            this.flags.drought = isOn;
-        },
         dropRate: 10,
         log: "A harsh drought has fall, water will be more important than ever."
     });
+    // conversation between people (no impact)
+    // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
 
     /***** PERKS *****/
 

@@ -28,9 +28,9 @@ describe("Test all model's instantiations", function modelDescribe () {
 
         });
 
-        it("getStraight", function ActionGetStraight () {
+        it("toJSON", function ActionToJSON () {
 
-            expect(this.model.getStraight()).toEqual({
+            expect(this.model.toJSON()).toEqual({
                 id: settleId,
                 repeated: 0
             });

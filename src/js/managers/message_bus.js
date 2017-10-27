@@ -63,9 +63,8 @@ var MessageBus = (function iife () {
             START_BUILD: 59, // Someone started to build
             BUILD: 60, // Build a building
             UNBUILD: 61, // Remove a building
-            EVENT_START: 70, // An event start
-            EVENT_CANCEL: 71, // Cancel an event
-            EVENT_END: 72, // An event end
+            INCIDENT_START: 70, // An incident start
+            INCIDENT_END: 72, // An incident end
             SAVE: 80, // Game saved
             LOOSE: 90, // Game over
             WIN: 95, // Congratulation
@@ -98,16 +97,18 @@ var MessageBus = (function iife () {
         }
     };
 
-    window.addEventListener("keydown", function (event) {
+    var letThroughtKeys = [api.MSG_TYPES.KEYS.F5, api.MSG_TYPES.KEYS.F12, api.MSG_TYPES.KEYS.TAB];
+
+    window.addEventListener("keydown", function keyDownListener (event) {
         var code = 1000 + event.keyCode;
-        if (code !== api.MSG_TYPES.KEYS.F5 && code !== api.MSG_TYPES.KEYS.F12 && code !== api.MSG_TYPES.KEYS.TAB) {
+        if (!letThroughtKeys.includes(code)) {
             event.preventDefault();
             event.stopPropagation();
         }
         api.notify(code, "down", true);
     }, true);
 
-    window.addEventListener("keyup", function (event) {
+    window.addEventListener("keyup", function keyUpListener (event) {
         event.preventDefault();
         event.stopPropagation();
 

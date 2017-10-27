@@ -6,6 +6,7 @@
  * @param {String} CSSClass - A custom css class to add
  * @param {Number} [warningThreshold=0] - A threshold to trigger a warning animation
  * @constructor
+ * @extends View
  */
 function Bar (CSSClass, warningThreshold) {
     this.value = null;

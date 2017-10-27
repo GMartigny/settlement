@@ -5,6 +5,7 @@
  * Class for buildings
  * @param {ID} id - The building's id
  * @constructor
+ * @extends Model
  */
 function Building (id) {
     this.super(id);

@@ -6,6 +6,7 @@
  * @param {ID} id - The perk's id
  * @param {People} owner - The person having this perk
  * @constructor
+ * @extends Model
  */
 function Perk (id, owner) {
     if (Perk.usedId.includes(id)) {

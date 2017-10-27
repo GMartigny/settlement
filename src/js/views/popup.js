@@ -8,21 +8,21 @@
  */
 /**
  * @typedef {Object} PopupData
- * @prop {ButtonData} [yes={name: "Ok"}] - The validate button data
- * @prop {ButtonData} [no] - The cancel button data
+ * @extends Data
+ * @prop {ButtonData} [yes={name: "Ok"}] - The validate button data (right)
+ * @prop {ButtonData} [no] - The cancel button data (left)
  */
 
 
 /**
  * Display a popup with choice buttons
- * @param {Data} data - Text for the popup
- * @param {PopupData} [buttons={}] - Text for the popup
+ * @param {PopupData} data - Text and action for the popup
  * @param {String} [CSSClasses] - Additional classes for the popup
  * @constructor
+ * @extends View
  */
-function Popup (data, buttons, CSSClasses) {
+function Popup (data, CSSClasses) {
     this.data = data;
-    this.buttons = buttons || {};
 
     this.super(CSSClasses);
 
@@ -38,16 +38,16 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
 
         var self = this;
 
-        var onYes = (this.buttons.yes && this.buttons.yes.action) || Utils.noop;
-        var yesButton = new Clickable("yes", (this.buttons.yes && this.buttons.yes.name) || "Ok", function () {
+        var onYes = (this.data.yes && this.data.yes.action) || Utils.noop;
+        var yesButton = new Clickable("yes", (this.data.yes && this.data.yes.name) || "Ok", function () {
             onYes();
             self.remove();
         });
         html.appendChild(yesButton.html);
 
-        if (this.buttons.no) {
-            var onNo = this.buttons.no.action || Utils.noop;
-            var noButton = new Clickable("no", this.buttons.no.name || "Cancel", function () {
+        if (this.data.no) {
+            var onNo = this.data.no.action || Utils.noop;
+            var noButton = new Clickable("no", this.data.no.name || "Cancel", function () {
                 onNo();
                 self.remove();
             });
@@ -60,8 +60,7 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
         Popup.holder.classList.add("backdrop");
         Popup.holder.appendChild(this.html);
 
-        var top = MathUtils.floor((Popup.holder.offsetHeight - this.html.offsetHeight) / 2) + "px";
-        this.html.style.top = top;
+        this.html.style.top = MathUtils.floor((Popup.holder.offsetHeight - this.html.offsetHeight) / 2) + "px";
         this.html.style.transform = "scale3d(1, 1, 1)";
         this.html.style.opacity = "1";
     },

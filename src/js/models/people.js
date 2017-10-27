@@ -35,6 +35,7 @@ function peopleFactory (amount) {
  * @param {String} name - It's name
  * @param {"male"|"female"} [gender="other"] - It's gender
  * @constructor
+ * @extends View
  */
 function People (name, gender) {
     this.name = name;
@@ -55,7 +56,7 @@ function People (name, gender) {
     this.super();
 }
 People.LST_ID = "peopleList";
-People.extends(Model, "People", /** @lends People.prototype */ {
+People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
      * @private
@@ -112,6 +113,10 @@ People.extends(Model, "People", /** @lends People.prototype */ {
             this.updateEnergy(-elapse * (ratio + flags.starving * 30)); // getting tired
             if (flags.thirsty) { // drying
                 this.updateLife(-elapse * flags.thirsty * 30);
+            }
+            if (flags.incidents[DataManager.ids.incidents.medium.acidRain]
+                && this.busy && DataManager.get(this.busy).isOut) {
+                this.updateLife(-elapse * 2);
             }
         }
     },
@@ -337,20 +342,16 @@ People.extends(Model, "People", /** @lends People.prototype */ {
      * Get this data in plain object
      * @returns {Object}
      */
-    getStraight: function () {
-        var straight = {
+    toJSON: function () {
+        return {
             nam: this.name,
             gnd: this.gender,
             lif: this.life,
             ene: this.energy,
             sts: this.stats,
             prk: this.perk && this.perk.data.id,
-            act: []
+            act: this.actions.getValues()
         };
-        this.actions.forEach(function (action) {
-            straight.act.push(action.getStraight());
-        });
-        return straight;
     }
 });
 /**

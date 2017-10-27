@@ -9,7 +9,7 @@ var LogManager = (function iife () {
     var logTypes = {
         0: "info",
         1: "warning",
-        2: "flavor",
+        2: "quote",
         3: "event"
     };
     var wrapper = null;
@@ -18,7 +18,7 @@ var LogManager = (function iife () {
         LOG_TYPES: {
             INFO: 0, // Result from an user action
             WARN: 1, // Something's wrong
-            FLAVOR: 2, // Anything without in-game effect
+            QUOTE: 2, // Blab without effect
             EVENT: 3 // Something happening without user action
         },
         maxLog: 50,

@@ -6,6 +6,7 @@
  * @param {ID} id - The resource's id
  * @param {Number} [count=0] - The resource amount
  * @constructor
+ * @extends Model
  */
 function Resource (id, count) {
     this.count = 0;
@@ -108,7 +109,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * Get this data in plain object
      * @returns {Object}
      */
-    getStraight: function () {
+    toJSON: function () {
         return [this.count, this.data.id];
     },
     /**

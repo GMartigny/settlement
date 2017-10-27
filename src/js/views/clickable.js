@@ -5,15 +5,16 @@
  * A class for a clickable element
  * @param {String} CSSClass - A custom css class to add
  * @param {String} text - Text inside the element
- * @param {Function} action - A function to call when clicked
+ * @param {Function} [action] - A function to call when clicked
  * @constructor
+ * @extends View
  */
 function Clickable (CSSClass, text, action) {
     this.text = text;
     this.timeout = null;
     this.super(CSSClass);
 
-    this.html.addEventListener("click", action, true);
+    this.setAction(action);
 }
 Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
@@ -40,21 +41,35 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
         this.html.style.animationDelay = (-consumed) + "ms";
         this.html.classList.add("cooldown");
 
-        this.timeout = TimerManager.timeout(function () {
+        this.timeout = TimerManager.timeout(function clickableTimeout () {
             self.endCoolDown();
             action();
         }, (duration - consumed));
+    },
+    setAction: function (action) {
+        if (Utils.isFunction(action)) {
+            this.html.addEventListener("click", action, true);
+        }
+    },
+    /**
+     *
+     * @returns {Boolean}
+     */
+    isRunning: function () {
+        return !!this.timeout;
     },
     /**
      * End the cool-down animation
      */
     endCoolDown: function () {
-        TimerManager.clear(this.timeout);
-        this.timeout = null;
+        if (this.isRunning()) {
+            TimerManager.clear(this.timeout);
+            this.timeout = null;
 
-        this.html.style.animationDuration = "";
-        this.html.style.animationDelay = "";
-        this.html.classList.remove("cooldown");
+            this.html.style.animationDuration = "";
+            this.html.style.animationDelay = "";
+            this.html.classList.remove("cooldown");
+        }
     },
     /**
      * Toggle its disabled state

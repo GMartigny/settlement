@@ -99,8 +99,8 @@ var TimerManager = (function iife () {
              * Wrapper for calling action and popping from collection
              */
             var func = function timerCallbackWrapper () {
-                _timers.delete(timerId);
                 action();
+                _timers.delete(timerId);
             };
             timerId = _timers.push(new Timer(func, time));
             return timerId;
