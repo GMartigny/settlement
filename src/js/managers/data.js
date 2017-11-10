@@ -739,7 +739,7 @@ var DataManager = (function iife () {
         give: [
             [1, ids.resources.room]
         ],
-        asset: "forum+1",
+        asset: "forum1",
         order: 10,
         log: "It'll be nice to have someone else helping."
     });
@@ -814,7 +814,7 @@ var DataManager = (function iife () {
         give: [
             [1, ids.resources.room]
         ],
-        asset: "forum+2",
+        asset: "forum2",
         order: 20,
         log: "Another room for someone to join. So far, so good."
     });
@@ -1342,7 +1342,7 @@ var DataManager = (function iife () {
                 return db[id];
             }
         },
-        bindAll: function (context) { // FIXME: 
+        bindAll: function (context) { // FIXME:
             db.browse(function (data) {
                 data.browse(function (field, key) {
                     if (Utils.isFunction(field)) {
