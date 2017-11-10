@@ -51,7 +51,7 @@ Array.prototype.insert = function insert (array) {
 Map.prototype.push = function push (key, value) {
     if (Utils.isUndefined(value)) {
         value = key;
-        key = value.id || new String();
+        key = value.id || (value.data && value.data.id) || new String();
     }
     this.set(key, value);
     return key;
@@ -70,6 +70,17 @@ Map.prototype.getValues = function getValues () {
         entry = iterator.next();
     }
     return values;
+};
+
+Map.prototype.getKeys = function getKeys () {
+    var iterator = this.keys();
+    var keys = [];
+    var entry = iterator.next();
+    while (!entry.done) {
+        keys.push(entry.value);
+        entry = iterator.next();
+    }
+    return keys;
 };
 
 /**

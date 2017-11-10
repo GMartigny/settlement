@@ -44,7 +44,7 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
-                sendEvent("death", "survival duration", survivalDuration);
+                sendEvent("Death", "survival duration", survivalDuration);
                 var message = "We held up for " + Utils.formatTime(survivalDuration) + ", but all is lost now.";
                 self.log(message, self.LOG_TYPES.EVENT);
             })
@@ -62,7 +62,6 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.WIN, function (survivalDuration) {
-                sendEvent("win", "survival duration", survivalDuration);
                 var message = "It took " + Utils.formatTime(survivalDuration) + " to escape.";
                 self.log(message, self.LOG_TYPES.EVENT);
             });

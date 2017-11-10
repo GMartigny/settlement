@@ -30,7 +30,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         var yes = this.data.yes;
         this.data.yes = {
             name: yes,
-            action: this._run.bind(this)
+            action: this.run.bind(this)
         };
         var no = this.data.no;
         this.data.no = no ? {
@@ -52,21 +52,29 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
 
         return html;
     },
-    _run: function () {
+    /**
+     * The player validate the popup
+     * @param {Number} [forceTime=false] - Force a time to the incident
+     */
+    run: function (forceTime) {
         // Effect
         var effect = {
             incident: this.data
         };
-        if (Utils.isFunction(this.data.effect)) {
-            this.data.effect(true, this, effect);
-        }
 
         if (this.data.time) {
-            MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, this.data.id);
-            var duration = this.data.time * GameController.tickLength;
+            MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, this);
 
-            if (this.data.deltaTime) {
-                duration += MathUtils.random(-this.data.deltaTime, this.data.deltaTime);
+            var duration = 0;
+            if (forceTime) {
+                duration = forceTime;
+            }
+            else {
+                duration = this.data.time * GameController.tickLength;
+
+                if (this.data.deltaTime) {
+                    duration += MathUtils.random(-this.data.deltaTime, this.data.deltaTime);
+                }
             }
 
             this.progressBar.run(duration);
@@ -84,7 +92,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, Utils.capitalize(log));
     },
     /**
-     * Start the incident
+     * Start the incident (open popup)
      * @return {boolean} Is incident running
      */
     start: function () {
@@ -104,7 +112,6 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * End the incident
      */
     end: function () {
-        this.data.effect(false, this);
         this.timer = null;
         MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_END, this);
 

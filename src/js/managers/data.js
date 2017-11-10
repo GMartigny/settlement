@@ -67,6 +67,7 @@ var DataManager = (function iife () {
      * @prop {Number} [timeDelta=0] - Added randomness to time (from -x to +x)
      * @prop {Number} [timeBonus=0] - From 0 to 1, a ratio for action duration (set to 1 and action time is 0)
      * @prop {Number} [energy=time*5] - Energy taken to do
+     * @prop {Boolean} unique - This should only be done once
      * @prop {String} log - A log string to display when done
      */
     /**
@@ -623,7 +624,7 @@ var DataManager = (function iife () {
         time: 2,
         energy: 0,
         effect: function () {
-            this.flags.settled = true;
+            this.flags.settled = 1;
         },
         unlock: [
             ids.actions.gather
@@ -1187,6 +1188,7 @@ var DataManager = (function iife () {
         time: time.day,
         timeDelta: time.day / 2,
         dropRate: 50,
+        lifeLose: 3,
         log: ""
     });
     // strange beggar (giving may return investment)
@@ -1201,6 +1203,7 @@ var DataManager = (function iife () {
         time: 3 * time.day,
         timeDelta: 10,
         dropRate: 10,
+        multiplier: 3,
         log: "A harsh drought has fall, water will be more important than ever."
     });
     // conversation between people (no impact)

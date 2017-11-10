@@ -96,7 +96,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 id = newOptions[i];
                 if (!this.options.has(id)) {
                     option = new Action(id, this.owner, this);
-                    this.options.push(id, option);
+                    this.options.push(option);
                     this.optionsWrapper.appendChild(option.html);
                 }
             }
@@ -108,9 +108,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Object} flags - Game flags
      */
     refresh: function (resources, flags) {
-        this.locked = (this.owner.isTired() && this.data.energy > 0) ||
-            (this.data.isOut && flags.incidents[DataManager.ids.incidents.easy.sandstorm]) ||
-            (this.parentAction && this.parentAction.locked);
+        this.locked = (this.owner.isTired() && this.data.energy > 0) || // is tired and demand energy
+            (this.data.isOut && flags.incidents.includes(DataManager.ids.incidents.easy.sandstorm)) || // is outside and a sand-storm is running
+            (this.parentAction && this.parentAction.locked); // its parent action is locked
 
         this.tooltip.refresh(resources, this.data);
 
@@ -164,6 +164,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.energyDrain = data.energy / duration;
 
                 this.start(duration * GameController.tickLength);
+                sendEvent("Action", "start", this.data.id);
 
                 MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
                 return true;

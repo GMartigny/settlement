@@ -18,20 +18,18 @@ function GameController (holder, assets) {
 
     this.resources = new Map();
     this.buildings = new Map();
+    this.incidents = new Map();
     this.people = [];
     this.initialActions = [];
     this.knownLocations = [];
     this.buildingsInProgress = [];
 
     this.flags = {
-        ready: false,
-        paused: false,
-        win: false,
-        settled: false,
-        survived: 0,
-        popup: false,
-        productivity: 1,
-        incidents: []
+        ready: false, // The game is ready
+        paused: false, // The game is paused
+        win: false, // The game has been won
+        settled: 0, // For how long settled
+        popup: false // A popup is shown
     };
     this.lastTick = now;
 
@@ -178,10 +176,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             game.buildingsInProgress.push(buildingId);
         })
         // We may build
-        .observe(msgType.BUILD, this.build.bind(this))
+        .observe(msgType.BUILD, function (buildingId) {
+            game.build(buildingId);
+            sendEvent("Building", "built", buildingId);
+        })
+        .observe(msgType.ARRIVAL, function () {
+            sendEvent("People", "arrive", game.getSettledTime());
+        })
         // And we may die :'(
         .observe(msgType.LOOSE_SOMEONE, function (person) {
             game.people.out(person);
+            sendEvent("People", "die", person.stats.age);
             // The last hope fade away
             if (game.people.length <= 0) {
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
@@ -191,15 +196,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         })
 
         // Keep track of running incidents
-        .observe(msgType.INCIDENT_START, function (incidentId) {
-            var incident = new Incident(incidentId);
-            if (incident.start()) {
-                game.flags.incidents.push(incidentId);
-                game.incidentsList.appendChild(incident.html);
-            }
+        .observe(msgType.INCIDENT_START, function (incident) {
+            game.incidentsList.appendChild(incident.html);
+            game.incidents.push(incident);
         })
-        .observe(msgType.INCIDENT_END, function (incidentId) {
-            game.flags.incidents.out(incidentId);
+        .observe(msgType.INCIDENT_END, function (incident) {
+            // incident remove its html itself
+            if (!incident.data.unique) {
+                game.incidents.delete(incident.data.id);
+            }
         })
 
         // Lock or unlock actions for all
@@ -211,7 +216,11 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         // End of the game
         .observe(msgType.WIN, function () {
             this.flags.win = true;
-            // TODO
+            sendEvent("Game", "win", game.getSettledTime());
+            new Popup({
+                name: "You win !!",
+                desc: ""
+            });
         })
 
         .observe(msgType.KEYS.SPACE, function (direction) {
@@ -259,7 +268,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @return {Number}
      */
     getSettledTime: function () {
-        return this.flags.settled ? this.flags.survived / GameController.tickLength : 0;
+        return this.flags.settled ? this.flags.settled / GameController.tickLength : 0;
     },
     /**
      * Return a well formatted play duration
@@ -297,15 +306,22 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 3);
 
         if (elapse > 0) {
+
+            this.flags.incidents = this.incidents.getKeys();
+
             if (this.flags.settled) {
-                this.flags.survived += elapse * GameController.tickLength;
+                this.flags.settled += elapse * GameController.tickLength;
                 // People consume resources to survive
                 var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
-                if (this.flags.incidents.includes(DataManager.ids.incidents.hard.drought)) {
+                if (this.incidents.has(DataManager.ids.incidents.hard.drought)) {
                     peopleConsumption[0][0] *= 3;
                 }
                 peopleConsumption.forEach(function (consumption) {
                     this.flags[consumption[2]] = 0;
+                    var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
+                    if (consumption[1] === DataManager.ids.resources.gatherables.common.water && drought) {
+                        consumption[0] *= drought.data.multiplier;
+                    }
                     this.consume(consumption[0] * this.people.length, consumption[1], function setLackResource (diff) {
                         this.flags[consumption[2]] = diff;
                     });
@@ -390,7 +406,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         }
         else {
             var resource = new Resource(id, amount);
-            this.resources.push(id, resource);
+            this.resources.push(resource);
             this.resourcesList.appendChild(resource.html);
         }
     },
@@ -452,7 +468,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         this.buildingsInProgress.out(id);
         if (!this.buildings.has(id)) {
             var building = new Building(id);
-            this.buildings.push(id, building);
+            this.buildings.push(building);
         }
     },
     /**
@@ -579,9 +595,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {ID} incidentId - The incident's id
      */
     startIncident: function (incidentId) {
-        // in the right conditions
         if (incidentId) {
-            MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, incidentId);
+            var incident = new Incident(incidentId);
+            incident.start();
+            sendEvent("Incident", "start", incident.data.id);
         }
     },
     /**
@@ -597,11 +614,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             plp: this.people,
             iac: this.initialActions,
             bld: this.buildings.getValues(),
-            inc: this.flags.incidents,
+            inc: this.incidents.getValues(),
             lct: this.knownLocations,
-            bip: this.buildingsInProgress,
-            settled: this.flags.settled,
-            survived: this.flags.survived
+            bip: this.buildingsInProgress
         };
     },
     /**
@@ -641,13 +656,16 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id);
         });
         data.inc.forEach(function restartIncident (inc) {
-            game.startIncident(inc.id);
+            var incident = new Incident(inc.id);
+            incident.run(inc.remains);
         });
         this.knownLocations = data.lct;
         this.buildingsInProgress = data.bip;
-        this.flags.settled = data.settled;
-        this.flags.survived = data.survived;
+        this.flags.settled = data.stl;
     },
+    /**
+     * Clear the save
+     */
     wipeSave: function () {
         sendEvent("Save", "wipe");
         SaveManager.clear();

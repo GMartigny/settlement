@@ -111,13 +111,16 @@ People.extends(View, "People", /** @lends People.prototype */ {
             this.stats.idle += elapse;
             var ratio = this.perk && this.perk.id === DataManager.ids.perks.lounger ? 0 : this.energyDrain;
             this.updateEnergy(-elapse * (ratio + flags.starving * 30)); // getting tired
+            var lifeLose = 0;
             if (flags.thirsty) { // drying
-                this.updateLife(-elapse * flags.thirsty * 30);
+                lifeLose += flags.thirsty * 30;
             }
-            if (flags.incidents[DataManager.ids.incidents.medium.acidRain]
+            // If an acid-rain is running and busy outside
+            if (flags.incidents.includes(DataManager.ids.incidents.medium.acidRain)
                 && this.busy && DataManager.get(this.busy).isOut) {
-                this.updateLife(-elapse * 2);
+                lifeLose += DataManager.get(DataManager.ids.incidents.medium.acidRain).lifeLose;
             }
+            this.updateLife(-elapse * lifeLose);
         }
     },
     /**
@@ -237,7 +240,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
         actionsId.forEach(function (id) {
             if (!this.actions.has(id)) {
                 var action = new Action(id, this);
-                this.actions.push(id, action);
+                this.actions.push(action);
                 this.actionList.appendChild(action.html);
             }
         }, this);
