@@ -90,7 +90,7 @@ module.exports = function (grunt) {
             },
             prod: {
                 options: {
-                    wrap: "G",
+                    wrap: "window",
                     compress: {
                         global_defs: {
                             IS_DEV: false,
