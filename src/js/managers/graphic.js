@@ -110,7 +110,7 @@ var GraphicManager = (function iife () {
             _buildingsList = new Map();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (id) {
                 var building = DataManager.get(id);
-                if (building && building.asset) {
+                if (building && building.asset && _imageData[building.asset]) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
                     if (building.upgrade) {
                         var upgradedId = building.upgrade;
