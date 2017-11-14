@@ -117,10 +117,11 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {string}
      */
     toString: function () {
-        var str = this.count + " " + Utils.pluralize(this.data.name, this.count);
+        var str = "";
         if (this.data.icon) {
-            str += " " + Resource.iconAsString(this.data.icon);
+            str += Resource.iconAsString(this.data.icon) + " ";
         }
+        str += this.count + " " + Utils.pluralize(this.data.name, this.count);
         return str;
     }
 });

@@ -233,8 +233,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         merge.optionId = optionId;
 
         var fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy", "giveSpan"]; // Others
-        var concat = ["consume", "give", "unlock", "lock", "unlockForAll", "lockForAll"]; // Array
-        var mix = ["giveList"]; // Object
+        var concat = ["consume", "give", "giveList", "unlock", "lock", "unlockForAll", "lockForAll"]; // Array
+        var mix = []; // Object
 
         fallback.forEach(function (prop) {
             merge[prop] = build[prop] || option[prop] || data[prop];
@@ -350,6 +350,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.data.unlockAfter.forEach(function (couple) {
                 if (repeated > couple[0]) {
                     result.unlock.forOne.push(couple[1]);
+                    result.lock.forOne.push(this.data.id);
                 }
             });
         }

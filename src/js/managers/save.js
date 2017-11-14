@@ -40,7 +40,6 @@ var SaveManager = (function iife () {
          */
         persist: function (data) {
             storage.setItem(key, compress(JSON.stringify(data)));
-            Utils.log("Saved");
         },
         /**
          * Return true if some data are stored

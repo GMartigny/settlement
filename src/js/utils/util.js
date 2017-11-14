@@ -168,7 +168,7 @@ var Utils = {
 
     /**
      * Return a random amount of random items
-     * @param {Object} list - A list draw from
+     * @param {Array} list - A list draw from
      * @param {String|Array<Number>} amount - Interval for randomness separated by "-" or array
      * @see randomize
      * @return {Array}

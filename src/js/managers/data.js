@@ -57,11 +57,12 @@ var DataManager = (function iife () {
      * @prop {Function} [condition] - Return true if can be done
      * @prop {Array<[Number, ID]>} [give] - Return an array of given resources (can be replace by giveSpan and giveList combo)
      * @prop {Array<Number>} [giveSpan] - Span of randomness for give
-     * @prop {Object} [giveList] - List to draw from for give
+     * @prop {Array} [giveList] - List to draw from for give
      * @prop {Array<ID>} [unlock] - Return an array of unlocked action for this person
      * @prop {Array<ID>} [lock] - Return an array of locked action for this person
      * @prop {Array<ID>} [unlockForAll] - Return an array of unlocked action for all
      * @prop {Array<ID>} [lockForAll] - Return an array of locked action for all
+     * @prop {Function} [effect] - An effect to run
      * @prop {ID} [build] - Return an array of built buildings id
      * @prop {Number} [time=0] - In game time to do
      * @prop {Number} [timeDelta=0] - Added randomness to time (from -x to +x)
@@ -90,7 +91,6 @@ var DataManager = (function iife () {
      * @extends UniqueData
      * @prop {Array<ID>} actions - Return the list of actions
      * @prop {Number} [iteration=0] - Number of time it take to have a 100% chance to get the perk
-     * @prop {Function} [effect] - Need to be defined
      */
 
     var ids = {
@@ -270,7 +270,7 @@ var DataManager = (function iife () {
         name: "quartz cristal",
         desc: "A rough uncut gem of quartz. Quite valuable.",
         icon: "gem",
-        dropRate: 0.1,
+        dropRate: 10,
         order: 77
     });
 
@@ -436,19 +436,6 @@ var DataManager = (function iife () {
         log: "Our crops produce @give.",
         order: 70
     });
-    ids.actions.drawFromWell = insert({
-        id: "dfw",
-        name: "draw water",
-        desc: "Get some water from our well.",
-        time: 2,
-        energy: 15,
-        giveSpan: [1, 3],
-        giveList: [
-            ids.resources.gatherables.common.water
-        ],
-        log: "Using our well, @people.name get @give.",
-        order: 60
-    });
     ids.actions.drawFromRiver = insert({
         id: "dfr",
         name: "draw water",
@@ -464,6 +451,31 @@ var DataManager = (function iife () {
             ids.resources.gatherables.common.water
         ],
         log: "Coming back from the river, @people.name brings @give with @people.accusative.",
+        order: 60
+    });
+    ids.actions.drawFromWell = insert({
+        id: "dfw",
+        name: "draw water",
+        desc: "Get some water from our well.",
+        time: 2,
+        energy: 15,
+        giveSpan: [1, 3],
+        giveList: [
+            ids.resources.gatherables.common.water
+        ],
+        log: "Using our well, @people.name get @give.",
+        order: 60
+    });
+    ids.actions.drawFromPump = insert({
+        id: "dfp",
+        name: "draw water",
+        desc: "Get some water at the pump.",
+        time: 2,
+        giveSpan: [3, 3],
+        giveList: [
+            ids.resources.gatherables.common.water
+        ],
+        log: "Using our pump, @people.name get @give.",
         order: 60
     });
     ids.actions.build = insert({
@@ -510,6 +522,9 @@ var DataManager = (function iife () {
             return this.knownLocations;
         },
         giveSpan: [7, 10],
+        giveList: [
+            ids.resources.special.quartz
+        ],
         log: "All locations should have own log",
         order: 20
     });
@@ -599,7 +614,7 @@ var DataManager = (function iife () {
             ids.actions.craft
         ],
         giveSpan: [3, 6],
-        giveList: ids.resources.gatherables,
+        giveList: ids.resources.gatherables.flatten(),
         log: "@people.name comes back with @give.",
         order: 1
     });
@@ -777,12 +792,9 @@ var DataManager = (function iife () {
         name: "well",
         desc: "Just a large hole into the ground.",
         time: 16,
-        condition: function () {
-            return !this.buildings.has(ids.buildings.big.pump);
-        },
         consume: [
-            [10, ids.resources.craftables.basic.stone],
-            [3, ids.resources.craftables.basic.tool]
+            [10, ids.resources.gatherables.common.rock],
+            [4, ids.resources.craftables.basic.tool]
         ],
         give: [
             [5, ids.resources.gatherables.common.water]
@@ -831,7 +843,7 @@ var DataManager = (function iife () {
         ],
         consume: [
             [20, ids.resources.gatherables.common.food],
-            [5, ids.resources.gatherables.uncommon.sand],
+            [5, ids.resources.craftables.basic.tool],
             [3, ids.resources.gatherables.rare.medication]
         ],
         upgrade: ids.buildings.small.plot,
@@ -907,7 +919,7 @@ var DataManager = (function iife () {
         ifHas: ids.buildings.small.furnace,
         consume: [
             [4, ids.resources.gatherables.rare.electronic],
-            [3, ids.resources.special.quartz]
+            [2, ids.resources.special.quartz]
         ],
         dropRate: 40,
         order: 117
@@ -1001,6 +1013,9 @@ var DataManager = (function iife () {
             [4, ids.resources.craftables.complex.circuit],
             [1, ids.resources.craftables.advanced.computer]
         ],
+        effect: function () {
+            DataManager.get(ids.people).dropRate = 1;
+        },
         asset: "radio",
         order: 37,
         log: "\"Message received. We thought no one survive the crash. Glad you still have the cube." +
@@ -1019,6 +1034,10 @@ var DataManager = (function iife () {
         ],
         upgrade: ids.buildings.small.well,
         unlockForAll: [
+            ids.actions.drawFromPump
+        ],
+        lockForAll: [
+            ids.actions.drawFromRiver,
             ids.actions.drawFromWell
         ],
         asset: "pump",

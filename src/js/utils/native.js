@@ -102,13 +102,21 @@ Object.prototype.values = function values () {
     return Object.values(this);
 };
 
+Object.prototype.flatten = function () {
+    var res = [];
+    this.deepBrowse(function (value) {
+        res.push(value);
+    });
+    return res;
+};
+
 /**
  * Browse all item in a nested tree
  * @param {Function} action - A function called on each item
  * @param {Object} [thisArg] - A context for the callback
  */
 Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
-    if (this.constructor.name !== "Object") {
+    if (!["Object", "Array"].includes(this.constructor.name)) {
         action.call(thisArg, this);
     }
     else {

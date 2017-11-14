@@ -10,7 +10,7 @@
  * Main loader
  * @param {Object} globalScope - A scope to put the game controller object (DEV only)
  */
-exports.starter = function starter (globalScope) {
+function starter (globalScope) {
     console.groupCollapsed("Loading");
 
     var _assetsURL = "dist/img/assets.png";
@@ -40,4 +40,8 @@ exports.starter = function starter (globalScope) {
     }).catch(function (error) {
         console.warn("Fail to load game : " + error.message, error.stack);
     });
-};
+}
+
+if (!IS_DEV) {
+    exports.starter = starter;
+}

@@ -23,5 +23,8 @@ Building.extends(Model, "Building", /** @lends Building.prototype */ {
         if (this.data.unlock) {
             MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, this.data.unlock);
         }
+        if (Utils.isFunction(this.data.effect)) {
+            this.data.effect(this, this.data);
+        }
     }
 });

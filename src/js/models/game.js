@@ -28,6 +28,7 @@ function GameController (holder, assets) {
         ready: false, // The game is ready
         paused: false, // The game is paused
         win: false, // The game has been won
+        gameOver: false, // the game is lost
         settled: 0, // For how long settled
         popup: false // A popup is shown
     };
@@ -190,9 +191,11 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             // The last hope fade away
             if (game.people.length <= 0) {
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
-                game.flags.paused = true;
-                game.wipeSave();
             }
+        })
+        .observe(msgType.LOOSE, function () {
+            game.flags.gameOver = true;
+            game.wipeSave();
         })
 
         // Keep track of running incidents
@@ -299,34 +302,33 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var elapse = MathUtils.floor((Utils.getNow() - this.lastTick) / GameController.tickLength);
         this.lastTick += elapse * GameController.tickLength;
 
-        if (this.flags.paused || this.flags.win) {
+        if (this.flags.paused || this.flags.gameOver) {
             elapse = 0;
         }
 
-        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 3);
+        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 10);
 
         if (elapse > 0) {
-
             this.flags.incidents = this.incidents.getKeys();
 
             if (this.flags.settled) {
                 this.flags.settled += elapse * GameController.tickLength;
+
                 // People consume resources to survive
                 var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
-                if (this.incidents.has(DataManager.ids.incidents.hard.drought)) {
-                    peopleConsumption[0][0] *= 3;
-                }
-                peopleConsumption.forEach(function (consumption) {
+                peopleConsumption.forEach(function peopleConsumptionUse (consumption) {
                     this.flags[consumption[2]] = 0;
                     var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
                     if (consumption[1] === DataManager.ids.resources.gatherables.common.water && drought) {
                         consumption[0] *= drought.data.multiplier;
                     }
-                    this.consume(consumption[0] * this.people.length, consumption[1], function setLackResource (diff) {
+                    var amount = consumption[0] * this.people.length * elapse;
+                    this.consume(amount, consumption[1], function setLackResource (diff) {
                         this.flags[consumption[2]] = diff;
                     });
                 }, this);
 
+                // Someone arrive
                 var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
                 if (this.canSomeoneArrive() && MathUtils.random() < peopleDropRate) {
                     this.prepareNewcomer();
@@ -338,15 +340,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             }
 
-            // Let's now recount our resources
+            // Refresh resources
             this.resources.forEach(function (resource, id, list) {
                 resource.refresh(list);
             });
 
+            // Refresh people
             this.people.forEach(function (people) {
                 people.refresh(this.resources, elapse, this.flags);
             }, this);
-            this.saveGame();
+
+            MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
         }
     },
     /**
@@ -605,7 +609,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Save the whole game state
      */
     saveGame: function () {
-        SaveManager.persist(this);
+        if (!this.flags.gameOver) {
+            SaveManager.persist(this);
+        }
     },
     toJSON: function () {
         return {
@@ -676,10 +682,7 @@ if (IS_DEV) {
      * Earn one of each resources and buildings
      */
     GameController.prototype.resourcesOverflow = function () {
-        DataManager.ids.resources.gatherables.deepBrowse(function (id) {
-            this.earn(50, id);
-        }.bind(this));
-        DataManager.ids.resources.craftables.deepBrowse(function (id) {
+        DataManager.ids.resources.deepBrowse(function (id) {
             this.earn(50, id);
         }.bind(this));
     };
