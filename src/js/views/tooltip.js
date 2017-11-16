@@ -3,7 +3,7 @@
 
 /**
  * @typedef {Object} TooltipData
- * @extends Data
+ * @extends ActionData
  * @prop {Number} [time] - Time in game hour
  * @prop {Array<[Number, String]>} [consume] - An array of resources consumption
  */
@@ -17,17 +17,32 @@ function Tooltip (container, data) {
     this.container = container;
     this.nodes = {};
     this.resourcesMapper = {};
-    this.box = this.toHTML(data);
-    this._mouseOver(); //  add to DOM
-    this.width = this.box.offsetWidth;
-    this.height = this.box.offsetHeight;
-    this._mouseOut(); // Clear from DOM
-    this._addEvents();
+
+    this.super(null, data);
 }
-Tooltip.prototype = {
-    // Save body size to avoid overflow
-    _bodyWidth: document.body.offsetWidth,
-    _bodyHeight: document.body.offsetHeight,
+Tooltip.extends(View, "Tooltip", {
+    _holderWidth: null,
+    _holderHeight: null,
+    init: function (data) {
+        this.refresh(new Map(), data);
+
+        // Save body size to avoid overflow
+        if (!(this._holderWidth && this._holderHeight)) {
+            Tooltip._holder = GameController.holder; // meh
+            var holderMeasures = Tooltip._holder.getBoundingClientRect();
+            this._holderWidth = holderMeasures.width;
+            this._holderHeight = holderMeasures.height;
+        }
+
+        // Measure the box
+        this._mouseOver(); //  add to DOM
+        var htmlMeasures = this.html.getBoundingClientRect();
+        this.width = htmlMeasures.width;
+        this.height = htmlMeasures.height;
+        this._mouseOut(); // Clear from DOM
+
+        this._addEvents();
+    },
     /**
      * Position the tooltip
      * @param {Number} x - The x coordinate
@@ -35,17 +50,17 @@ Tooltip.prototype = {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = MathUtils.constrain(x + 10, 0, this._bodyWidth - this.width);
-        var top = MathUtils.constrain(y + 10, 0, this._bodyHeight - this.height);
-        this.box.style.left = left + "px";
-        this.box.style.top = top + "px";
+        var left = MathUtils.constrain(x + 10, 0, this._holderWidth - this.width);
+        var top = MathUtils.constrain(y + 10, 0, this._holderHeight - this.height);
+        this.html.style.left = left + "px";
+        this.html.style.top = top + "px";
     },
     /**
      * Handle mouse over events
      * @private
      */
     _mouseOver: function () {
-        document.body.appendChild(this.box);
+        Tooltip._holder.appendChild(this.html);
     },
     /**
      * Handle mouse out events
@@ -86,42 +101,30 @@ Tooltip.prototype = {
     },
     /**
      * Update tooltip content
-     * @param {TooltipData} data - Data to build the tooltip
      * @return {HTMLElement}
      */
-    toHTML: function (data) {
-        var html = Utils.wrap("tooltip");
+    toHTML: function () {
+        var html = this._toHTML();
 
-        var nameNode = Utils.wrap("title", Utils.capitalize(data.name));
+        var nameNode = Utils.wrap("title");
         html.appendChild(nameNode);
         this.nodes.name = nameNode;
-        if (data.desc) {
-            var descNode = Utils.wrap("description", data.desc);
-            html.appendChild(descNode);
-            this.nodes.desc = descNode;
-        }
-        if (data.time) {
-            var timeNode = Utils.wrap("time", Utils.formatTime(data.time));
-            html.appendChild(timeNode);
-            this.nodes.time = timeNode;
-        }
-        if (Utils.isArray(data.consume)) {
-            var resourcesContainer = Utils.wrap("consumption");
-            data.consume.forEach(function (resource) {
-                var data = DataManager.get(resource[1]);
-                var resourceNode = Utils.wrap("resource not-enough");
-                var counterNode = Utils.wrap("counter", "0/");
-                resourceNode.appendChild(counterNode);
-                resourceNode.appendChild(Utils.wrap("", resource[0] + " " + data.name));
-                resourceNode.style.order = data.order;
-                this.resourcesMapper[resource[1]] = {
-                    node: resourceNode,
-                    counter: counterNode
-                };
-                resourcesContainer.appendChild(resourceNode);
-            }, this);
-            html.appendChild(resourcesContainer);
-        }
+
+        // Description
+        var descNode = Utils.wrap("description");
+        html.appendChild(descNode);
+        this.nodes.desc = descNode;
+
+        // Time
+        var timeNode = Utils.wrap("time");
+        html.appendChild(timeNode);
+        this.nodes.time = timeNode;
+
+        // Consume
+        var resourcesContainer = Utils.wrap("consumption");
+        html.appendChild(resourcesContainer);
+        this.nodes.resourcesContainer = resourcesContainer;
+
         return html;
     },
     /**
@@ -134,24 +137,49 @@ Tooltip.prototype = {
         if (data.desc) {
             this.nodes.desc.textContent = data.desc;
         }
+        else {
+            this.nodes.desc.remove();
+        }
+
         if (data.time) {
             this.nodes.time.textContent = Utils.formatTime(data.time);
         }
+        else {
+            this.nodes.time.remove();
+        }
+
         if (Utils.isArray(data.consume)) {
             data.consume.forEach(function (resource) {
                 var id = resource[1];
-                var count = (resources.has(id) || 0) && resources.get(id).get();
                 var resourceNodes = this.resourcesMapper[id];
+                if (!resourceNodes) {
+                    var data = DataManager.get(id);
+                    var wrapperNode = Utils.wrap("resource not-enough");
+                    var counterNode = Utils.wrap("counter");
+                    wrapperNode.appendChild(counterNode);
+                    wrapperNode.appendChild(Utils.wrap("", resource[0] + " " + data.name));
+                    wrapperNode.style.order = data.order;
+                    resourceNodes = {
+                        node: wrapperNode,
+                        counter: counterNode
+                    };
+                    this.resourcesMapper[id] = resourceNodes;
+                    this.nodes.resourcesContainer.appendChild(wrapperNode);
+                }
+                var count = (resources.has(id) || 0) && resources.get(id).get();
                 var notEnough = count < resource[0];
                 resourceNodes.counter.textContent = notEnough ? count + "/" : "";
                 resourceNodes.node.classList.toggle("not-enough", notEnough);
             }, this);
+        }
+        else {
+            this.nodes.resourcesContainer.remove();
         }
     },
     /**
      * Remove tooltip from DOM
      */
     remove: function () {
-        this.box.remove();
+        this.html.remove();
     }
-};
+});

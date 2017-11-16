@@ -34,10 +34,12 @@ function GameController (holder, assets) {
     };
     this.lastTick = now;
 
+    GameController.holder = holder;
     this.super(null, holder);
     console.log("Started in " + (Utils.getNow() - now) + "ms");
 }
 GameController.tickLength = 2000;
+GameController.holder = null;
 GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
     /**
      * Return HTML for display

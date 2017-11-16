@@ -49,6 +49,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             html.classList.add("withOptions");
             this.optionsWrapper = Utils.wrap("options");
             html.appendChild(this.optionsWrapper);
+
+            html.addEventListener("mouseover", this.showOptions.bind(this));
+            html.addEventListener("mouseout", this.hideOption.bind(this));
         }
         else {
             this.clickable.setAction(this.click.bind(this, null));
@@ -59,6 +62,15 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         }
 
         return html;
+    },
+    showOptions: function () {
+        this.html.classList.add("showOptions");
+        var position = this.html.getBoundingClientRect();
+        this.optionsWrapper.style.top = (position.top + position.height) + "px";
+        this.optionsWrapper.style.left = position.left + "px";
+    },
+    hideOption: function () {
+        this.html.classList.remove("showOptions");
     },
     /**
      * Initialise object

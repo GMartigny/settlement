@@ -3,6 +3,7 @@
 // The actions buttons
 .Action {
     margin-top: 3px;
+    z-index: 1;
 
     .name {
         display: inline-block;
@@ -20,29 +21,29 @@
         }
 
         .options {
-            position: absolute;
-            left: 0;
+            position: fixed;
+            height: 0;
             overflow: hidden;
             display: flex;
             flex-flow: column;
-            z-index: @actionsZIndex;
 
             // animated
-            height: 0;
             opacity: 0;
-            top: 50%;
+            transform: translate(0, -20px);
+            z-index: -1;
 
             .Action {
                 white-space: nowrap;
             }
         }
 
-        &:not(.running):hover .options, &:not(.running):active .options {
+        &:not(.running).showOptions .options {
             @duration: .3s;
-            transition: opacity linear @duration, top ease-out @duration;
+            transition: opacity linear @duration, transform ease-out @duration, z-index linear 0s @duration;
             height: auto;
+            z-index: @optionsZIndex;
             opacity: 1;
-            top: 100%;
+            transform: translate(0, 0);
         }
     }
 }
