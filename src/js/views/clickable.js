@@ -46,6 +46,10 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
             action();
         }, (duration - consumed));
     },
+    /**
+     * Define the action for the button
+     * @param {Function} action - Any function to execute on click
+     */
     setAction: function (action) {
         if (Utils.isFunction(action)) {
             this.html.addEventListener("click", action, true);
@@ -86,10 +90,21 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
         this.text = text;
         this.html.textContent = text;
     },
+    /**
+     * Return elapsed time of the cooldown
+     * @returns {Number}
+     */
     getElapsed: function () {
         return TimerManager.getElapsed(this.timeout);
     },
+    /**
+     * Return remaining time in the cooldown
+     * @returns {Number}
+     */
     getRemaining: function () {
         return TimerManager.getRemaining(this.timeout);
+    },
+    isDropdown: function (itIs) {
+        this.html.classList.toggle("dropdown", itIs);
     }
 });

@@ -12,6 +12,8 @@
  * Add a tooltip to an HTMLElement
  * @param {HTMLElement} container - The element
  * @param {TooltipData} data - Some data for the tooltip
+ * @constructor
+ * @extends View
  */
 function Tooltip (container, data) {
     this.container = container;

@@ -1,13 +1,62 @@
+@import (reference) "base";
+
 .Clickable {
     display: inline-block;
     cursor: pointer;
-    border: 1px solid #000;
-    padding: 0 10px;
-    margin-right: .5em;
-    line-height: 30px;
+    box-shadow: 0 1px 3px @shadowColor;
+    padding: .5em .7em;
+    margin-right: .7em;
+    margin-bottom: .2em;
+    background-color: #FFF;
 
-    &:not(.disabled):not(.cooldown):hover {
-        text-decoration: underline;
+    transition: linear .1s;
+    transition-property: transform, box-shadow;
+
+    // Focus
+    &:not(.disabled):not(.cooldown):not(.dropdown) {
+        &:hover, &:focus {
+            transform: translate(0, -2px);
+            box-shadow: 0 3px 7px @shadowColor;
+        }
+    }
+    &.dropdown.cooldown + .options .Clickable {
+        &:hover, &:focus {
+            transform: translate(0, 0);
+            box-shadow: 0 1px 3px @shadowColor;
+        }
+    }
+
+    &.dropdown {
+        cursor: default;
+        z-index: 1;
+
+        &:after {
+            content: " ...";
+        }
+
+        + .options {
+            position: fixed;
+            display: flex;
+            flex-flow: column;
+            left: -100%;
+
+            // animated
+            opacity: 0;
+            transform: translate(0, -20px);
+            z-index: -1;
+
+            .Action {
+                white-space: nowrap;
+            }
+        }
+
+        &.showOptions + .options {
+            @duration: .3s;
+            transition: opacity linear @duration, transform ease-out @duration, z-index linear 0s @duration;
+            z-index: @optionsZIndex;
+            opacity: 1;
+            transform: translate(0, 0);
+        }
     }
 
     &.disabled {

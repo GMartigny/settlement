@@ -2,22 +2,22 @@
 
 .logs {
     position: absolute;
-    top: @resourceListHeight;
     left: 50%;
+    top: 0;
+
     padding: 5px;
 
     width: 50%;
-    height: @firstPartHeight;
+    height: 100%;
     overflow: hidden;
 
-    &:after {
-        .initPseudo();
-        background: linear-gradient(rgba(255,255,255,0) 50%, rgba(255,255,255,1) 100%);
-    }
+    @mask: linear-gradient(#000 50%, transparent 100%);
+    mask-image: @mask;
+    -webkit-mask-image: @mask;
 
     .log {
         padding: 5px;
-        border-bottom: 1px dashed #DDD;
+        border-bottom: 1px dashed #333;
 
         &.info {
             color: #111;

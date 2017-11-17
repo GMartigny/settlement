@@ -48,14 +48,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     toHTML: function () {
         var html = this._toHTML();
 
+        var topPart = Utils.wrap("topPart");
+        html.appendChild(topPart);
+
         this.resourcesList = Utils.wrap(Resource.LST_ID);
         html.appendChild(this.resourcesList);
 
         this.peopleList = Utils.wrap(People.LST_ID);
-        html.appendChild(this.peopleList);
+        topPart.appendChild(this.peopleList);
 
         this.logsList = Utils.wrap("logs");
-        html.appendChild(this.logsList);
+        topPart.appendChild(this.logsList);
 
         this.visualPane = Utils.wrap("visualPane");
         html.appendChild(this.visualPane);

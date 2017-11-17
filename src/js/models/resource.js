@@ -114,14 +114,18 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     },
     /**
      * Format to string
+     * @param {Boolean} [withoutCount=false] -
      * @return {string}
      */
-    toString: function () {
+    toString: function (withoutCount) {
         var str = "";
+        if (!withoutCount) {
+            str += this.count + " ";
+        }
         if (this.data.icon) {
             str += Resource.iconAsString(this.data.icon) + " ";
         }
-        str += this.count + " " + Utils.pluralize(this.data.name, this.count);
+        str += Utils.pluralize(this.data.name, this.count);
         return str;
     }
 });

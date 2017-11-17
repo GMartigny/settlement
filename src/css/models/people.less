@@ -4,19 +4,19 @@
 .peopleList {
     position: absolute;
     left: 0;
-    top: @resourceListHeight;
+    top: 0;
 
     padding: 5px;
 
     width: 50%;
-    height: @firstPartHeight;
+    height: 100%;
     overflow: auto;
 
     .People {
-        border: 1px solid #666;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px @shadowColor;
         padding: 5px 20px;
         margin-bottom: 10px;
-        line-height: 30px;
         left: -100%;
         background-color: #FFF;
         opacity: 0;
@@ -29,18 +29,22 @@
         }
 
         &.busy {
-            background-color: #CCC;
+            background-color: #C0C0C0;
 
             .Action .name {
-                background-color: #CCC;
+                background-color: #C0C0C0;
             }
         }
 
-        .name .Perk {
-            display: inline;
-            margin-left: 1em;
-            font-style: italic;
-            color: #333;
+         > .name {
+            padding: .4em 0;
+
+            .Perk {
+                display: inline;
+                margin-left: 1em;
+                font-style: italic;
+                color: #333;
+            }
         }
 
         .Bar {

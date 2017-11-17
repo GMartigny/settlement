@@ -45,18 +45,10 @@ var Utils = {
      * @return {String}
      */
     formatArray: function (array) {
-        var res = [];
-
-        array.forEach(function (item) {
-            var resource = DataManager.get(item[1]);
-            var name = Utils.pluralize(resource.name, item[0]);
-            if (resource.icon) {
-                name += " " + Resource.iconAsString(resource.icon);
-            }
-            res.push(item[0] + " " + name);
-        });
-
-        return Utils.formatJoin(res);
+        return Utils.formatJoin(array.map(function (item) {
+            // TODO: prevent html building
+            return new Resource(item[1], item[0]);
+        }));
     },
 
     /**

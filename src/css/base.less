@@ -10,6 +10,19 @@
     height: 100%;
 }
 
+@resourceListHeight: (16 + 5) * 2px;
+@firstPartHeight: ~'calc(60% -' @resourceListHeight/2 ~')';
+@secondPartHeight: ~'calc(40% -' @resourceListHeight/2 ~')';
+
+@mainBackgroundColor: #F0F0F0;
+@shadowColor: rgba(0, 0, 0, .5);
+
+@optionsZIndex: 10;
+@tooltipZIndex: 100;
+@backdropZIndex: 500;
+@popupZIndex: 510;
+@pauseZIndex: 600;
+
 div {
     position: relative;
     box-sizing: border-box;
@@ -23,15 +36,5 @@ html, body {
 body {
     margin: 0;
     font-size: 16px;
-    background-color: #FFF;
+    background-color: @mainBackgroundColor;
 }
-
-@resourceListHeight: (16 + 5) * 2px;
-@firstPartHeight: ~'calc(60% -' @resourceListHeight/2 ~')';
-@secondPartHeight: ~'calc(40% -' @resourceListHeight/2 ~')';
-
-@optionsZIndex: 10;
-@tooltipZIndex: 100;
-@backdropZIndex: 500;
-@popupZIndex: 510;
-@pauseZIndex: 600;

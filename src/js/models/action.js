@@ -46,7 +46,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         html.appendChild(this.clickable.html);
 
         if (Utils.isFunction(this.data.options)) {
-            html.classList.add("withOptions");
+            this.clickable.isDropdown(true);
             this.optionsWrapper = Utils.wrap("options");
             html.appendChild(this.optionsWrapper);
 
@@ -64,13 +64,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         return html;
     },
     showOptions: function () {
-        this.html.classList.add("showOptions");
+        this.clickable.html.classList.add("showOptions");
         var position = this.html.getBoundingClientRect();
         this.optionsWrapper.style.top = (position.top + position.height) + "px";
         this.optionsWrapper.style.left = position.left + "px";
     },
     hideOption: function () {
-        this.html.classList.remove("showOptions");
+        this.clickable.html.classList.remove("showOptions");
+        this.optionsWrapper.style.left = "";
     },
     /**
      * Initialise object
