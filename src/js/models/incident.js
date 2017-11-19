@@ -116,6 +116,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_END, this);
 
         this.html.remove();
+        this.tooltip.remove();
     },
     /**
      * Get this data in plain object

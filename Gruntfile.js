@@ -94,7 +94,8 @@ module.exports = function (grunt) {
                     compress: {
                         global_defs: {
                             IS_DEV: false,
-                            VERSION: VERSION
+                            VERSION: VERSION,
+                            IS_BETA: VERSION.includes("v0.")
                         }
                     }
                 },

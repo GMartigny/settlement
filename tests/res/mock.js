@@ -6,6 +6,7 @@
 
 var IS_DEV = false;
 var VERSION = "v0.0.1";
+var IS_BETA = false;
 
 /*
     Clear state

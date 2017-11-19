@@ -97,7 +97,13 @@ var MessageBus = (function iife () {
         }
     };
 
-    var letThroughtKeys = [api.MSG_TYPES.KEYS.F5, api.MSG_TYPES.KEYS.F12, api.MSG_TYPES.KEYS.TAB];
+    var letThroughtKeys = [
+        api.MSG_TYPES.KEYS.F5,
+        api.MSG_TYPES.KEYS.F12,
+        api.MSG_TYPES.KEYS.TAB,
+        api.MSG_TYPES.KEYS.ENTER,
+        api.MSG_TYPES.KEYS.SPACE
+    ];
 
     window.addEventListener("keydown", function keyDownListener (event) {
         var code = 1000 + event.keyCode;

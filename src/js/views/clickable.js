@@ -2,19 +2,23 @@
 /* @exported Clickable */
 
 /**
+ * @typedef {Object} ClickableData
+ * @prop {String} text - Text inside the button
+ * @prop {Function|Array<ClickableData>} [action] - Function to call on click or a list
+ */
+
+/**
  * A class for a clickable element
  * @param {String} CSSClass - A custom css class to add
- * @param {String} text - Text inside the element
- * @param {Function} [action] - A function to call when clicked
+ * @param {ClickableData} data - Data of this button
  * @constructor
  * @extends View
  */
-function Clickable (CSSClass, text, action) {
-    this.text = text;
+function Clickable (CSSClass, data) {
     this.timeout = null;
     this.super(CSSClass);
 
-    this.setAction(action);
+    this.setData(data);
 }
 Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
@@ -48,11 +52,14 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     },
     /**
      * Define the action for the button
-     * @param {Function} action - Any function to execute on click
+     * @param {ClickableData} data - Any function to execute on click or a list
      */
-    setAction: function (action) {
+    setData: function (data) {
         if (Utils.isFunction(action)) {
             this.html.addEventListener("click", action, true);
+        }
+        else if (Utils.isArray(action)) {
+
         }
     },
     /**

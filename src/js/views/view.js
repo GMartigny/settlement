@@ -24,5 +24,11 @@ View.extends(Object, "View", {
      */
     toHTML: function () {
         return Utils.wrap(this.modelName);
+    },
+    show: function () {
+        this.html.removeAttribute("aria-hidden");
+    },
+    hide: function () {
+        this.html.setAttribute("aria-hidden", "true");
     }
 });

@@ -104,7 +104,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             });
             credits += "</ul>";
             new Popup({
-                name: "Settlement",
+                name: "Settlement " + VERSION,
                 desc: credits
             });
         });
@@ -141,7 +141,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             TimerManager.timeout(this.prepareNewcomer.bind(this, 1), 500);
         }
 
-        if (!IS_DEV && VERSION.includes("v0.")) {
+        if (!IS_DEV && IS_BETA) {
             // early access warning
             new Popup({
                 name: "Early access [" + VERSION + "]",
@@ -157,6 +157,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         // Start the refresh loop
         this.refresh();
     },
+    /**
+     * Set off event listeners
+     */
     registerObservers: function () {
         var game = this;
         var msgType = MessageBus.MSG_TYPES;

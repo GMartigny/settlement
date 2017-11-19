@@ -42,24 +42,22 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
+        var action = Utils.isFunction(this.data.options) ?
+            [] : this.click.bind(this, null);
+        this.clickable = new Clickable("name disabled animated", {
+            text: Utils.capitalize(this.data.name),
+            action: action
+        });
         html.appendChild(this.clickable.html);
 
         if (Utils.isFunction(this.data.options)) {
-            this.clickable.isDropdown(true);
             this.optionsWrapper = Utils.wrap("options");
-            html.appendChild(this.optionsWrapper);
-
-            html.addEventListener("mouseover", this.showOptions.bind(this));
-            html.addEventListener("mouseout", this.hideOption.bind(this));
-        }
-        else {
-            this.clickable.setAction(this.click.bind(this, null));
         }
 
         if (this.data.order) {
             html.style.order = this.data.order;
         }
+        this.clickable.html.tabIndex = this.parentAction ? -1 : 0;
 
         return html;
     },
