@@ -159,6 +159,14 @@ Object.prototype.clone = function clone () {
     return clone;
 };
 
+HTMLElement.prototype.show = function show () {
+    this.removeAttribute("aria-hidden");
+};
+
+HTMLElement.prototype.hide = function hide () {
+    this.setAttribute("aria-hidden", "true");
+};
+
 /**
  * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent functions can be accessed with a leading "_".
  * @param {Function} parent - A parent to draw prototype from

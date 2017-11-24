@@ -57,7 +57,6 @@ var Utils = {
      * @returns {string}
      */
     formatTime: function (time) {
-
         if (!time) {
             return "0 hour";
         }

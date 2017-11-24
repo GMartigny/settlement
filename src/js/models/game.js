@@ -469,7 +469,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
             //noinspection BadExpressionStatementJS - force redraw
             person.html.offsetHeight;
-            person.html.classList.add("arrived");
+            person.show();
         }, this);
     },
     /**
@@ -663,7 +663,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
             game.people.push(person);
             game.peopleList.appendChild(person.html);
-            person.html.classList.add("arrived");
+            person.show();
         });
         this.addToInitialActions(data.iac);
         data.bld.forEach(function rebuildBuildings (bld) {
@@ -689,7 +689,7 @@ if (IS_DEV) {
     /**
      * Earn one of each resources and buildings
      */
-    GameController.prototype.resourcesOverflow = function () {
+    GameController.prototype.resourcesOverflow = function resourcesOverflow () {
         DataManager.ids.resources.deepBrowse(function (id) {
             this.earn(50, id);
         }.bind(this));
@@ -697,7 +697,7 @@ if (IS_DEV) {
     /**
      * Build a random building
      */
-    GameController.prototype.nextBuilding = function () {
+    GameController.prototype.nextBuilding = function nextBuilding () {
         var pick = this.possibleBuildings().random();
         MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
     };

@@ -43,33 +43,18 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         var html = this._toHTML();
 
         var action = Utils.isFunction(this.data.options) ?
-            [] : this.click.bind(this, null);
+            this.data.options : this.click.bind(this, null);
         this.clickable = new Clickable("name disabled animated", {
-            text: Utils.capitalize(this.data.name),
+            name: Utils.capitalize(this.data.name),
             action: action
         });
         html.appendChild(this.clickable.html);
 
-        if (Utils.isFunction(this.data.options)) {
-            this.optionsWrapper = Utils.wrap("options");
-        }
-
         if (this.data.order) {
             html.style.order = this.data.order;
         }
-        this.clickable.html.tabIndex = this.parentAction ? -1 : 0;
 
         return html;
-    },
-    showOptions: function () {
-        this.clickable.html.classList.add("showOptions");
-        var position = this.html.getBoundingClientRect();
-        this.optionsWrapper.style.top = (position.top + position.height) + "px";
-        this.optionsWrapper.style.left = position.left + "px";
-    },
-    hideOption: function () {
-        this.clickable.html.classList.remove("showOptions");
-        this.optionsWrapper.style.left = "";
     },
     /**
      * Initialise object
@@ -87,7 +72,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     },
     /**
      * If needed, create and maintain options for this action
-     * @memberOf Action#
      */
     manageOptions: function () {
         if (Utils.isFunction(this.data.options)) {

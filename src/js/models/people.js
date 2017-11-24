@@ -77,7 +77,6 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
-     * @memberOf People#
      */
     toHTML: function () {
         var html = this._toHTML();
@@ -93,6 +92,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
 
         this.actionList = Utils.wrap("actionList");
         html.appendChild(this.actionList);
+
+        html.hide();
 
         return html;
     },
@@ -230,7 +231,6 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Add some actions
      * @param {ID|Array<ID>} actionsId - One or more actions to add
-     * @memberOf People#
      */
     addAction: function (actionsId) {
         if (!Utils.isArray(actionsId)) {
@@ -309,7 +309,6 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Add a perk
      * @param {ID} perkId - The perk data
-     * @memberOf People#
      */
     gainPerk: function (perkId) {
         var perk = new Perk(perkId, this);

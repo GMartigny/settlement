@@ -3,7 +3,7 @@
 
 /**
  * @typedef {Object} ClickableData
- * @prop {String} text - Text inside the button
+ * @prop {String} name - Text inside the button
  * @prop {Function|Array<ClickableData>} [action] - Function to call on click or a list
  */
 
@@ -16,9 +16,8 @@
  */
 function Clickable (CSSClass, data) {
     this.timeout = null;
-    this.super(CSSClass);
-
     this.setData(data);
+    this.super(CSSClass);
 }
 Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
@@ -30,6 +29,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
         var html = this._toHTML();
 
         html.textContent = this.text;
+        html.tabIndex = 0;
 
         return html;
     },
@@ -55,12 +55,30 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * @param {ClickableData} data - Any function to execute on click or a list
      */
     setData: function (data) {
-        if (Utils.isFunction(action)) {
-            this.html.addEventListener("click", action, true);
-        }
-        else if (Utils.isArray(action)) {
+        this.text = data.name;
 
+        // There's options
+        if (Utils.isArray(data.action)) {
+            this.html.classList.add("dropdown");
+            this.optionsWrapper = Utils.wrap("options");
+            this.optionsWrapper.hide();
+
+            this.html.addEventListener("mouseover", this.showOptions, true);
+            this.html.addEventListener("mouseout", this.hideOption, true);
         }
+        else if (Utils.isFunction(data.action)) {
+            this.html.addEventListener("click", data.action, true);
+        }
+    },
+    showOptions: function () {
+        this.optionsWrapper.show();
+        var position = this.html.getBoundingClientRect();
+        this.optionsWrapper.style.top = (position.top + position.height) + "px";
+        this.optionsWrapper.style.left = position.left + "px";
+    },
+    hideOption: function () {
+        this.optionsWrapper.hide();
+        this.optionsWrapper.style.left = "";
     },
     /**
      *
@@ -110,8 +128,5 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      */
     getRemaining: function () {
         return TimerManager.getRemaining(this.timeout);
-    },
-    isDropdown: function (itIs) {
-        this.html.classList.toggle("dropdown", itIs);
     }
 });

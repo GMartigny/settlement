@@ -2,7 +2,7 @@
 /* exported View */
 
 /**
- * A base model for all
+ * A base model for all widget
  * @param {String} CSSClass - A custom css class to add
  * @constructor
  */
@@ -25,10 +25,16 @@ View.extends(Object, "View", {
     toHTML: function () {
         return Utils.wrap(this.modelName);
     },
+    /**
+     * Show the widget
+     */
     show: function () {
-        this.html.removeAttribute("aria-hidden");
+        this.html.show();
     },
+    /**
+     * Hide the widget
+     */
     hide: function () {
-        this.html.setAttribute("aria-hidden", "true");
+        this.html.hide();
     }
 });

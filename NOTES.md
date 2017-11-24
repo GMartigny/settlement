@@ -55,6 +55,7 @@ Here's some ideas that I scrap to limit scope (and keep my sanity) :
   * Achievements
   * Day / Night cycle
   * Improve incident with meaningful choices
+  * Keyboard navigation
 
 
 ## What I should have done
