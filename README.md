@@ -18,6 +18,8 @@ Here's the few rules I try to follow making this game :
  * Value player's time (don't waste it)
  * Not too bleak (simple art over no art)
 
+Please, if you want to see a new feature, [drop me a word (or vote for one existing)](https://github.com/GMartigny/settlement/labels/feature).
+I'll be more than happy to do it when I get the time.
 
 ## Changelog
 
@@ -30,6 +32,8 @@ Last few polish (hopefully last development's version)
 ### [v0.5](https://github.com/GMartigny/settlement/releases/tag/v0.5.0)
 
 More texts and story building. Add lots of events.
+
+Better UI.
 
 
 ### [v0.4](https://github.com/GMartigny/settlement/releases/tag/v0.4.0)

@@ -45,17 +45,17 @@ Plus a tool to place graphical assets with each others.
 
 Here's some ideas that I scrap to limit scope (and keep my sanity) :
   * Adaptive difficulty
-  * I18n
+  * I18n *
   * Display water and food level
-  * Ambient sound/musics
+  * Ambient sound/musics *
   * Display villager doing their tasks
   * Graphical effect for ongoing events
   * Visual assets for in-construction buildings
-  * Social (trade between camp, huge objective share by all players ...)
-  * Achievements
-  * Day / Night cycle
+  * Social (trade between camp, huge objective share by all players ...) *
+  * Achievements *
+  * Day / Night cycle *
   * Improve incident with meaningful choices
-  * Keyboard navigation
+  * Keyboard navigation *
 
 
 ## What I should have done
