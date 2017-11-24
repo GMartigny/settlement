@@ -31,12 +31,10 @@ module.exports = function (grunt) {
             assets: "dist/img/assets.png"
         }
     };
-    var VERSION = "v<%= version %>";
+    var VERSION = "v" + grunt.file.readJSON('package.json').version;
+    var IS_BETA = VERSION.includes("v0.");
 
     grunt.initConfig({
-        version: grunt.file.readJSON('package.json').version,
-
-
         sprite: {
             icons: {
                 src: sourceDir.img.icons,
@@ -95,7 +93,7 @@ module.exports = function (grunt) {
                         global_defs: {
                             IS_DEV: false,
                             VERSION: VERSION,
-                            IS_BETA: VERSION.includes("v0.")
+                            IS_BETA: IS_BETA
                         }
                     }
                 },
