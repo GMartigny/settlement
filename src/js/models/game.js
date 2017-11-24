@@ -145,8 +145,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             this.prepareNewcomer.defer(this);
         }
 
-        if (!IS_DEV && IS_BETA && !localStorage.getItem("eaWarning")) {
-            // early access warning
+        // early access warning
+        if (!IS_DEV && IS_BETA && localStorage.getItem("ea-warn")) {
+            localStorage.setItem("ea-warn", "1");
             new Popup({
                 name: "Early access [" + VERSION + "]",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
