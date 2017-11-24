@@ -2,22 +2,19 @@
 /* @exported Clickable */
 
 /**
- * @typedef {Object} ClickableData
- * @prop {String} name - Text inside the button
- * @prop {Function|Array<ClickableData>} [action] - Function to call on click or a list
- */
-
-/**
  * A class for a clickable element
  * @param {String} CSSClass - A custom css class to add
- * @param {ClickableData} data - Data of this button
+ * @param {String} text - Text inside the element
+ * @param {Function} [action] - A function to call when clicked
  * @constructor
  * @extends View
  */
-function Clickable (CSSClass, data) {
+function Clickable (CSSClass, text, action) {
+    this.text = text;
     this.timeout = null;
-    this.setData(data);
     this.super(CSSClass);
+
+    this.setAction(action);
 }
 Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
@@ -52,33 +49,12 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     },
     /**
      * Define the action for the button
-     * @param {ClickableData} data - Any function to execute on click or a list
+     * @param {Function} action - Any function to execute on click
      */
-    setData: function (data) {
-        this.text = data.name;
-
-        // There's options
-        if (Utils.isArray(data.action)) {
-            this.html.classList.add("dropdown");
-            this.optionsWrapper = Utils.wrap("options");
-            this.optionsWrapper.hide();
-
-            this.html.addEventListener("mouseover", this.showOptions, true);
-            this.html.addEventListener("mouseout", this.hideOption, true);
+    setAction: function (action) {
+        if (Utils.isFunction(action)) {
+            this.html.addEventListener("click", action, true);
         }
-        else if (Utils.isFunction(data.action)) {
-            this.html.addEventListener("click", data.action, true);
-        }
-    },
-    showOptions: function () {
-        this.optionsWrapper.show();
-        var position = this.html.getBoundingClientRect();
-        this.optionsWrapper.style.top = (position.top + position.height) + "px";
-        this.optionsWrapper.style.left = position.left + "px";
-    },
-    hideOption: function () {
-        this.optionsWrapper.hide();
-        this.optionsWrapper.style.left = "";
     },
     /**
      *
@@ -106,6 +82,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      */
     toggle: function (enable) {
         this.html.classList.toggle("disabled", !enable);
+        this.html.tabIndex = enable ? 0 : -1;
     },
     /**
      * Change the clickable text
@@ -128,5 +105,8 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      */
     getRemaining: function () {
         return TimerManager.getRemaining(this.timeout);
+    },
+    isDropdown: function (itIs) {
+        this.html.classList.toggle("dropdown", itIs);
     }
 });

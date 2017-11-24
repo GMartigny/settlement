@@ -4,6 +4,28 @@
 .Action {
     margin-top: .3em;
 
+
+    .options {
+        position: fixed;
+        display: flex;
+        flex-flow: column;
+        left: -100%;
+
+        // animated
+        @duration: .3s;
+        transition: opacity linear @duration, transform ease-out @duration, z-index linear 0s @duration;
+        z-index: @optionsZIndex;
+        opacity: 1;
+        transform: translate(0, 0);
+
+        &[aria-hidden="true"] {
+            transition: none;
+            opacity: 0;
+            transform: translate(0, -20px);
+            z-index: 0;
+        }
+    }
+
     .Action {
         white-space: nowrap;
     }

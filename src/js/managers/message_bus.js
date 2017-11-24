@@ -118,7 +118,12 @@ var MessageBus = (function iife () {
         event.preventDefault();
         event.stopPropagation();
 
-        api.notify(1000 + event.keyCode, "up");
+        var code = 1000 + event.keyCode;
+        if (code === api.MSG_TYPES.KEYS.ENTER) {
+            event.target.dispatchEvent(new Event("click"));
+        }
+
+        api.notify(code, "up");
     }, true);
 
     api.SWAP_MSG_TYPE = api.MSG_TYPES.swap();

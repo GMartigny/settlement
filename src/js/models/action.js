@@ -42,19 +42,39 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        var action = Utils.isFunction(this.data.options) ?
-            this.data.options : this.click.bind(this, null);
-        this.clickable = new Clickable("name disabled animated", {
-            name: Utils.capitalize(this.data.name),
-            action: action
-        });
+        this.clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
         html.appendChild(this.clickable.html);
+
+        if (Utils.isFunction(this.data.options)) {
+            this.clickable.isDropdown(true);
+            this.optionsWrapper = Utils.wrap("options");
+            this.optionsWrapper.hide();
+            html.appendChild(this.optionsWrapper);
+
+            html.addEventListener("mouseover", this.showOptions.bind(this));
+            html.addEventListener("focusin", this.showOptions.bind(this));
+            html.addEventListener("mouseout", this.hideOption.bind(this));
+            html.addEventListener("focusout", this.hideOption.bind(this));
+        }
+        else {
+            this.clickable.setAction(this.click.bind(this, null));
+        }
 
         if (this.data.order) {
             html.style.order = this.data.order;
         }
 
         return html;
+    },
+    showOptions: function () {
+        this.optionsWrapper.show();
+        var position = this.html.getBoundingClientRect();
+        this.optionsWrapper.style.top = (position.top + position.height) + "px";
+        this.optionsWrapper.style.left = position.left + "px";
+    },
+    hideOption: function () {
+        this.optionsWrapper.hide();
+        this.optionsWrapper.style.left = "";
     },
     /**
      * Initialise object

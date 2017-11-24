@@ -168,6 +168,20 @@ HTMLElement.prototype.hide = function hide () {
 };
 
 /**
+ * Set aria-hidden to false (should be handled in CSS)
+ */
+HTMLElement.prototype.show = function show () {
+    this.removeAttribute("aria-hidden");
+};
+
+/**
+ * Set aria-hidden to true (should be handled in CSS)
+ */
+HTMLElement.prototype.hide = function hide () {
+    this.setAttribute("aria-hidden", "true");
+};
+
+/**
  * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent functions can be accessed with a leading "_".
  * @param {Function} parent - A parent to draw prototype from
  * @param {String} name - The constructor's name
