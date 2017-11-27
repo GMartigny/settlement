@@ -2,6 +2,8 @@ describe("Test all model's instantiations", function modelDescribe () {
 
     this.model = null;
 
+    GameController.holder = document.body;
+
     afterEach(function modelAfterEach () {
 
         this.model = null;
