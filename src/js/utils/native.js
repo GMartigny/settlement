@@ -58,28 +58,26 @@ Map.prototype.push = function push (key, value) {
 };
 
 /**
- * Return the array of inserted values
+ * Return all inserted values as an array
  * @return {Array}
  */
 Map.prototype.getValues = function getValues () {
-    var iterator = this.values();
     var values = [];
-    var entry = iterator.next();
-    while (!entry.done) {
-        values.push(entry.value);
-        entry = iterator.next();
-    }
+    this.forEach(function (value) {
+        values.push(value);
+    });
     return values;
 };
 
+/**
+ * Return all keys as an array
+ * @returns {Array}
+ */
 Map.prototype.getKeys = function getKeys () {
-    var iterator = this.keys();
     var keys = [];
-    var entry = iterator.next();
-    while (!entry.done) {
-        keys.push(entry.value);
-        entry = iterator.next();
-    }
+    this.forEach(function (value, key) {
+        keys.push(key);
+    });
     return keys;
 };
 

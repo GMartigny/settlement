@@ -22,7 +22,7 @@ function Tooltip (container, data) {
 
     this.super(null, data);
 }
-Tooltip.extends(View, "Tooltip", {
+Tooltip.extends(View, "Tooltip", /** @lends Tooltip */ {
     _holderWidth: null,
     _holderHeight: null,
     init: function (data) {
@@ -108,24 +108,16 @@ Tooltip.extends(View, "Tooltip", {
     toHTML: function () {
         var html = this._toHTML();
 
-        var nameNode = Utils.wrap("title");
-        html.appendChild(nameNode);
-        this.nodes.name = nameNode;
+        this.nodes.name = Utils.wrap("title", null, html);
 
         // Description
-        var descNode = Utils.wrap("description");
-        html.appendChild(descNode);
-        this.nodes.desc = descNode;
+        this.nodes.desc = Utils.wrap("description", null, html);
 
         // Time
-        var timeNode = Utils.wrap("time");
-        html.appendChild(timeNode);
-        this.nodes.time = timeNode;
+        this.nodes.time = Utils.wrap("time", null, html);
 
         // Consume
-        var resourcesContainer = Utils.wrap("consumption");
-        html.appendChild(resourcesContainer);
-        this.nodes.resourcesContainer = resourcesContainer;
+        this.nodes.resourcesContainer = Utils.wrap("consumption", null, html);
 
         return html;
     },
@@ -156,17 +148,15 @@ Tooltip.extends(View, "Tooltip", {
                 var resourceNodes = this.resourcesMapper[id];
                 if (!resourceNodes) {
                     var data = DataManager.get(id);
-                    var wrapperNode = Utils.wrap("resource not-enough");
-                    var counterNode = Utils.wrap("counter");
-                    wrapperNode.appendChild(counterNode);
-                    wrapperNode.appendChild(Utils.wrap("", resource[0] + " " + data.name));
+                    var wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
                     wrapperNode.style.order = data.order;
+                    var counterNode = Utils.wrap("counter", null, wrapperNode);
+                    Utils.wrap(null, resource[0] + " " + data.name, wrapperNode);
                     resourceNodes = {
                         node: wrapperNode,
                         counter: counterNode
                     };
                     this.resourcesMapper[id] = resourceNodes;
-                    this.nodes.resourcesContainer.appendChild(wrapperNode);
                 }
                 var count = (resources.has(id) || 0) && resources.get(id).get();
                 var notEnough = count < resource[0];

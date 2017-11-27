@@ -7,15 +7,19 @@ var Utils = {
      * Wrap some text content with html tag
      * @param {String} [CSSClasses] - A string of CSS classes separated by spaces
      * @param {String} [innerHTML] - An string of inside content
+     * @param {HTMLElement} [holder] - A parent to insert the newly created element into
      * @returns {HTMLElement}
      */
-    wrap: function (CSSClasses, innerHTML) {
+    wrap: function (CSSClasses, innerHTML, holder) {
         var html = document.createElement("div");
         if (CSSClasses) {
             html.className = CSSClasses;
         }
         if (innerHTML) {
             html.innerHTML = innerHTML;
+        }
+        if (holder) {
+            holder.appendChild(html);
         }
 
         return html;
@@ -45,16 +49,19 @@ var Utils = {
      * @return {String}
      */
     formatArray: function (array) {
-        return Utils.formatJoin(array.map(function (item) {
-            // TODO: prevent html building
-            return new Resource(item[1], item[0]);
+        View.enableHTML = false;
+        var str = Utils.formatJoin(array.map(function (item) {
+            var data = DataManager.get(item[1]);
+            return Resource.toString(data, item[0]);
         }));
+        View.enableHTML = true;
+        return str;
     },
 
     /**
      * Format a time with multiple units
      * @param {Number} time - Number of hour
-     * @returns {string}
+     * @returns {String}
      */
     formatTime: function (time) {
         if (!time) {

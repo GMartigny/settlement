@@ -50,8 +50,8 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceId) {
-                var resource = new Resource(resourceId);
-                var message = "We run out of " + resource.toString(true) + ", we need to do something.";
+                var data = DataManager.get(resourceId);
+                var message = "We run out of " + Resource.toString(data) + ", we need to do something.";
                 self.log(message, self.LOG_TYPES.WARN);
             })
 

@@ -7,13 +7,14 @@
  * @constructor
  */
 function View (CSSClass) {
-    this.html = this.toHTML();
+    this.html = View.enableHTML ? this.toHTML() : null;
     if (CSSClass) {
         this.html.classList.add.apply(this.html.classList, CSSClass.split(" "));
     }
     this.init.apply(this, Array.prototype.slice.call(arguments, 1));
 }
-View.extends(Object, "View", {
+View.enableHTML = true;
+View.extends(Object, "View", /** @lends View */ {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */

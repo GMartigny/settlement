@@ -14,7 +14,7 @@ function Resource (id, count) {
 
     this.super(id, count);
 }
-Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
+Resource.extends(Model, "Resource", /** @lends Resource */ {
     /**
      * Initialise object
      * @param {Number} count - The resource amount
@@ -33,11 +33,9 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.counter = Utils.wrap("counter", "1");
-        html.appendChild(this.counter);
+        this.counter = Utils.wrap("counter", "1", html);
 
-        var icon = Utils.wrap("icon icon-" + this.data.icon);
-        html.appendChild(icon);
+        Utils.wrap("icon icon-" + this.data.icon, null, html);
 
         html.style.order = this.data.order;
 
@@ -88,14 +86,13 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     /**
      * Define this resource amount
      * @param {Number} value - A new amount
-     * @return {Resource} Itself
      */
     set: function (value) {
         this.count = value;
         if (this.count < 0) {
             throw new RangeError("Resources count can't be negative");
         }
-        return this.refresh();
+        this.refresh();
     },
     /**
      * Check if has enough of this resource
@@ -114,27 +111,35 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     },
     /**
      * Format to string
-     * @param {Boolean} [withoutCount=false] -
-     * @return {string}
+     * @return {String}
      */
-    toString: function (withoutCount) {
-        var str = "";
-        if (!withoutCount) {
-            str += this.count + " ";
-        }
-        if (this.data.icon) {
-            str += Resource.iconAsString(this.data.icon) + " ";
-        }
-        str += Utils.pluralize(this.data.name, this.count);
-        return str;
+    toString: function () {
+        return Resource.toString(this.data, this.count);
     }
 });
+/**
+ * Format a resource to string without instantiation
+ * @param {ResourceData} data - Data of the resource
+ * @param {Number} [count] - The amount, ignored if not defined
+ * @return {String}
+ */
+Resource.toString = function toString (data, count) {
+    var str = "";
+    if (!Utils.isUndefined(count)) {
+        str += count + " ";
+    }
+    if (data.icon) {
+        str += Resource.iconAsString(data.icon) + " ";
+    }
+    str += Utils.pluralize(data.name, count);
+    return str;
+};
 /**
  * Give the HTML string for an icon name
  * @param {String} iconName - An icon name
  * @return {String}
  */
-Resource.iconAsString = function (iconName) {
+Resource.iconAsString = function iconAsString (iconName) {
     return Utils.wrap("icon icon-small-" + iconName).outerHTML;
 };
 Resource.LST_ID = "resourceList";

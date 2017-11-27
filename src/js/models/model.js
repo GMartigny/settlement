@@ -13,7 +13,7 @@ function Model (id) {
     args.unshift(null); // No special CSS class
     Model.prototype.super.apply(this, args);
 }
-Model.extends(View, "Model", /** @lends Model.prototype */ {
+Model.extends(View, "Model", /** @lends Model */ {
     toJSON: function () {
         return {
             id: this.data.id

@@ -21,8 +21,7 @@ Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.valueBar = Utils.wrap("value");
-        html.appendChild(this.valueBar);
+        this.valueBar = Utils.wrap("value", null, html);
 
         return html;
     },

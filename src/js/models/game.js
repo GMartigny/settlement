@@ -40,7 +40,7 @@ function GameController (holder, assets) {
 }
 GameController.tickLength = 2000;
 GameController.holder = null;
-GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
+GameController.extends(View, "GameController", /** @lends GameController */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -48,27 +48,21 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     toHTML: function () {
         var html = this._toHTML();
 
-        var topPart = Utils.wrap("topPart");
-        html.appendChild(topPart);
+        var topPart = Utils.wrap("topPart", null, html);
 
-        this.resourcesList = Utils.wrap(Resource.LST_ID);
-        html.appendChild(this.resourcesList);
+        this.resourcesList = Utils.wrap(Resource.LST_ID, null, html);
 
-        this.peopleList = Utils.wrap(People.LST_ID);
-        topPart.appendChild(this.peopleList);
+        this.peopleList = Utils.wrap(People.LST_ID, null, topPart);
 
-        this.logsList = Utils.wrap("logs");
-        topPart.appendChild(this.logsList);
+        this.logsList = Utils.wrap("logs", null, topPart);
 
-        this.visualPane = Utils.wrap("visualPane");
-        html.appendChild(this.visualPane);
+        this.visualPane = Utils.wrap("visualPane", null, html);
 
-        this.incidentsList = Utils.wrap(Incident.LST_ID);
-        html.appendChild(this.incidentsList);
+        this.incidentsList = Utils.wrap(Incident.LST_ID, null, html);
 
         var game = this;
 
-        var bottomOptionsNode = Utils.wrap("bottomOptions");
+        var bottomOptionsNode = Utils.wrap("bottomOptions", null, html);
         var wipeSaveClickable = new Clickable("wipe", "Clear save", function openWipeSavePopup () {
             new Popup({
                 name: "Clear your save",
@@ -109,7 +103,6 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             });
         });
         bottomOptionsNode.appendChild(creditsClickable.html);
-        html.appendChild(bottomOptionsNode);
 
         return html;
     },

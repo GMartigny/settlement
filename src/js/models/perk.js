@@ -26,7 +26,7 @@ Perk.usedId = [];
 Perk.isUsed = function isUsed (perkId) {
     return Perk.usedId.includes(perkId);
 };
-Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
+Perk.extends(Model, "Perk", /** @lends Perk */ {
     /**
      * Initialize object
      * @private

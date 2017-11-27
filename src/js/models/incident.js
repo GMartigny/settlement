@@ -16,7 +16,7 @@ function Incident (id) {
     this.super(id);
 }
 Incident.DROP_RATE = 0.01;
-Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
+Incident.extends(Model, "Incident", /** @lends Incident */ {
     /**
      * Initialize object
      * @private
@@ -44,8 +44,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name));
-        html.appendChild(this.nameNode);
+        this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name), html);
 
         this.progressBar = new Bar("timer animated");
         html.appendChild(this.progressBar.html);

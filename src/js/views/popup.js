@@ -29,12 +29,12 @@ function Popup (data, CSSClasses) {
     this.show();
 }
 Popup.holder = document.body;
-Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
+Popup.extends(View, "Popup", /** @lends Popup */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        html.appendChild(Utils.wrap("title", Utils.capitalize(this.data.name)));
-        html.appendChild(Utils.wrap("description", this.data.desc));
+        Utils.wrap("title", Utils.capitalize(this.data.name), html);
+        Utils.wrap("description", this.data.desc, html);
 
         var self = this;
 

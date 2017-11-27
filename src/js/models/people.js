@@ -56,7 +56,7 @@ function People (name, gender) {
     this.super();
 }
 People.LST_ID = "peopleList";
-People.extends(View, "People", /** @lends People.prototype */ {
+People.extends(View, "People", /** @lends People */ {
     /**
      * Initialise object
      * @private
@@ -81,8 +81,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     toHTML: function () {
         var html = this._toHTML();
 
-        this.nameNode = Utils.wrap("name", Utils.capitalize(this.name));
-        html.appendChild(this.nameNode);
+        this.nameNode = Utils.wrap("name", Utils.capitalize(this.name), html);
 
         this.lifeBar = new Bar("life", 25);
         html.appendChild(this.lifeBar.html);
@@ -90,8 +89,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
         this.energyBar = new Bar("energy");
         html.appendChild(this.energyBar.html);
 
-        this.actionList = Utils.wrap("actionList");
-        html.appendChild(this.actionList);
+        this.actionList = Utils.wrap("actionList", null, html);
 
         html.hide();
 

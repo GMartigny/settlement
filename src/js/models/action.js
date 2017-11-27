@@ -34,7 +34,7 @@ function Action (id, owner, parentAction) {
     this.super(id);
 }
 Action.RUNNING_CLASS = "running";
-Action.extends(Model, "Action", /** @lends Action.prototype */ {
+Action.extends(Model, "Action", /** @lends Action */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -47,9 +47,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         if (Utils.isFunction(this.data.options)) {
             this.clickable.isDropdown(true);
-            this.optionsWrapper = Utils.wrap("options");
+            this.optionsWrapper = Utils.wrap("options", null, html);
             this.optionsWrapper.hide();
-            html.appendChild(this.optionsWrapper);
 
             html.addEventListener("mouseover", this.showOptions.bind(this));
             html.addEventListener("focusin", this.showOptions.bind(this));
