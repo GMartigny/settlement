@@ -19,7 +19,7 @@ function GameController (holder, assets) {
     this.resources = new Map();
     this.buildings = new Map();
     this.incidents = new Map();
-    this.people = [];
+    this.people = new Map();
     this.initialActions = [];
     this.knownLocations = [];
     this.buildingsInProgress = [];
@@ -30,23 +30,29 @@ function GameController (holder, assets) {
         win: false, // The game has been won
         gameOver: false, // the game is lost
         settled: 0, // For how long settled
-        popup: false // A popup is shown
+        popup: false, // A popup is shown
+        incidents: [] // Incidents that can't be rerun (unique or in progress)
     };
     this.lastTick = now;
 
     GameController.holder = holder;
-    this.super(null, holder);
+    this.super(null, assets);
     console.log("Started in " + (Utils.getNow() - now) + "ms");
 }
+/**
+ * Convert from in game hour to ms
+ * @type {Number}
+ */
 GameController.tickLength = 2000;
 GameController.holder = null;
-GameController.extends(View, "GameController", /** @lends GameController */ {
+GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
      */
     toHTML: function () {
         var html = this._toHTML();
+        html.hide();
 
         var topPart = Utils.wrap("topPart", null, html);
 
@@ -93,8 +99,8 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
                 }
             ];
             var credits = "<ul>";
-            creditsData.forEach(function (people) {
-                credits += "<li>" + people.task + ": <a href='" + people.url + "'>" + people.name + "</a></li>";
+            creditsData.forEach(function (hero) {
+                credits += "<li>" + hero.task + ": <a href='" + hero.url + "'>" + hero.name + "</a></li>";
             });
             credits += "</ul>";
             new Popup({
@@ -108,16 +114,19 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
     },
     /**
      * Start a new adventure
-     * @param {HTMLElement} holder - The whole game HTML holder
+     * @param {Object} media - ??
      */
-    init: function (holder) {
+    init: function (media) {
         DataManager.bindAll(this);
 
-        holder.innerHTML = "";
-        holder.appendChild(this.html);
+        GameController.holder.innerHTML = "";
+        GameController.holder.appendChild(this.html);
 
         // Start managers
-        GraphicManager.start(this.visualPane, this.assets.images, this.assets.data);
+        GraphicManager.start(this.visualPane, media.assets, {
+            assets: media.assetsData,
+            positions: media.buildingsData
+        });
         LogManager.start(this.logsList);
 
         this.registerObservers();
@@ -142,13 +151,12 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
                 "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
                 "Thanks for playing !",
-                yes: {
-                    name: "Got it !"
-                }
+                yes: "Got it !"
             });
         }
         // Start the refresh loop
         this.refresh();
+        this.show();
     },
     /**
      * Set off event listeners
@@ -180,17 +188,16 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         // We may build
         .observe(msgType.BUILD, function (buildingId) {
             game.build(buildingId);
-            sendEvent("Building", "built", buildingId);
         })
         .observe(msgType.ARRIVAL, function () {
             sendEvent("People", "arrive", game.getSettledTime());
         })
         // And we may die :'(
         .observe(msgType.LOOSE_SOMEONE, function (person) {
-            game.people.out(person);
+            game.people.delete(person.id);
             sendEvent("People", "die", person.stats.age);
             // The last hope fade away
-            if (game.people.length <= 0) {
+            if (game.people.size <= 0) {
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
             }
         })
@@ -206,9 +213,11 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         })
         .observe(msgType.INCIDENT_END, function (incident) {
             // incident remove its html itself
+            game.incidents.delete(incident.getId());
             if (!incident.data.unique) {
-                game.incidents.delete(incident.data.id);
+                game.flags.incidents.out(incident.getId());
             }
+            game.saveGame();
         })
 
         // Lock or unlock actions for all
@@ -223,7 +232,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
             sendEvent("Game", "win", game.getSettledTime());
             new Popup({
                 name: "You win !!",
-                desc: ""
+                desc: "" // TODO
             });
         })
 
@@ -272,7 +281,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
      * @return {Number}
      */
     getSettledTime: function () {
-        return this.flags.settled ? this.flags.settled / GameController.tickLength : 0;
+        return MathsUtils.floor(this.flags.settled ? this.flags.settled / GameController.tickLength : 0);
     },
     /**
      * Return a well formatted play duration
@@ -300,7 +309,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
      * Loop function called every game tick
      */
     refresh: function () {
-        var elapse = MathUtils.floor((Utils.getNow() - this.lastTick) / GameController.tickLength);
+        var elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.tickLength);
         this.lastTick += elapse * GameController.tickLength;
 
         if (this.flags.paused || this.flags.gameOver) {
@@ -310,33 +319,20 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 10);
 
         if (elapse > 0) {
-            this.flags.incidents = this.incidents.getKeys();
-
             if (this.flags.settled) {
                 this.flags.settled += elapse * GameController.tickLength;
 
                 // People consume resources to survive
-                var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
-                peopleConsumption.forEach(function peopleConsumptionUse (consumption) {
-                    this.flags[consumption[2]] = 0;
-                    var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
-                    if (consumption[1] === DataManager.ids.resources.gatherables.common.water && drought) {
-                        consumption[0] *= drought.data.multiplier;
-                    }
-                    var amount = consumption[0] * this.people.length * elapse;
-                    this.consume(amount, consumption[1], function setLackResource (diff) {
-                        this.flags[consumption[2]] = diff;
-                    });
-                }, this);
+                this.tickConsumption(elapse);
 
                 // Someone arrive
                 var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
-                if (this.canSomeoneArrive() && MathUtils.random() < peopleDropRate) {
+                if (this.canSomeoneArrive() && MathsUtils.random() < peopleDropRate) {
                     this.prepareNewcomer();
                 }
 
                 // Random incident can happen
-                if (!this.flags.popup && MathUtils.random() < Incident.DROP_RATE) {
+                if (!this.flags.popup && MathsUtils.random() < Incident.DROP_RATE) {
                     this.startIncident(this.getRandomIncident());
                 }
             }
@@ -353,6 +349,24 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
 
             MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
         }
+    },
+    /**
+     * Compute and apply people's need
+     * @param {Number} elapse - Number of tick
+     */
+    tickConsumption: function (elapse) {
+        var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
+        peopleConsumption.forEach(function peopleConsumptionUse (consumption) {
+            this.flags[consumption[2]] = 0;
+            var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
+            if (consumption[1] === DataManager.ids.resources.gatherables.common.water && drought) {
+                consumption[0] *= drought.data.multiplier;
+            }
+            var amount = this.people.size + (this.flags.doggy ? 1 : 0);
+            this.consume(consumption[0] * amount * elapse, consumption[1], function setLackResource (diff) {
+                this.flags[consumption[2]] = diff;
+            });
+        }, this);
     },
     /**
      * Check if game has enough of a resource
@@ -425,7 +439,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
             persons.forEach(function (person) {
                 person.addAction(game.initialActions);
 
-                if (!game.people.length) {
+                if (!game.people.size) {
                     person.life = 0;
                     person.energy = 0;
                     person.updateLife(0);
@@ -445,24 +459,28 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         }
 
         people.forEach(function (person) {
-            if (this.people.length) {
+            if (this.people.size) {
                 MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
 
-                if (this.people.length === 1) {
+                // The first newcomer
+                if (this.people.size === 1) {
+                    var description = LogManager.personify("attracted by the explosion a @common approach. " +
+                        "@nominative accept to team up.", person);
+                    new Popup({
+                        name: "Newcomer",
+                        desc: description
+                    });
                     TimerManager.timeout(function () {
-                        var message = person.name + " say that there's other desert-walkers " +
-                            "ready to join you if there's room for them.";
+                        var message = "There's other desert-walkers ready to join if there's room for them.";
                         MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, message);
-                    }, 2000);
+                    }, GameController.tickLength * 3);
                 }
             }
 
             this.people.push(person);
             this.peopleList.appendChild(person.html);
 
-            //noinspection BadExpressionStatementJS - force redraw
-            person.html.offsetHeight;
-            person.show();
+            person.show.defer(person);
         }, this);
     },
     /**
@@ -474,6 +492,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         if (!this.buildings.has(id)) {
             var building = new Building(id);
             this.buildings.push(building);
+            sendEvent("Building", "built", building.data.name);
         }
     },
     /**
@@ -546,12 +565,15 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
     isBuildingDone: function (buildingId) {
         var isDone = false;
         this.buildings.forEach(function (building) {
-            var data = building.data;
-            isDone = isDone || data.id === buildingId;
             if (!isDone) {
-                while (data.upgrade && !isDone) {
-                    data = DataManager.get(data.upgrade);
-                    isDone = isDone || data.id === buildingId;
+                var doneId = building.getId();
+                var doneUpgrade = building.data.upgrade;
+                isDone = isDone || doneId === buildingId;
+                // Follow upgrade cascade
+                while (doneUpgrade && !isDone) {
+                    doneId = doneUpgrade;
+                    doneUpgrade = DataManager.get(doneId).upgrade;
+                    isDone = isDone || doneId === buildingId;
                 }
             }
         }, this);
@@ -562,7 +584,7 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
      * @return {Boolean}
      */
     canSomeoneArrive: function () {
-        return this.hasEnough(DataManager.ids.resources.room, this.people.length + 1);
+        return this.hasEnough(DataManager.ids.resources.room, this.people.size + 1);
     },
     /**
      * Return an id of incident that can happened or null otherwise
@@ -584,26 +606,23 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         // filter incidents already running or with unmatched conditions
         list = list.filter(function filterIncident (incidentId) {
             var incidentData = DataManager.get(incidentId);
-            return !this.flags.incidents.includes(incidentId) &&
+            return !this.incidents.has(incidentId) &&
                 (!incidentData.condition || (Utils.isFunction(incidentData.condition) && incidentData.condition()));
         }, this);
 
-        if (list.length) {
-            return Utils.randomize(list);
-        }
-        else {
-            return null;
-        }
+        return list.length ? Utils.randomize(list) : null;
     },
     /**
      * Start an incident
      * @param {ID} incidentId - The incident's id
      */
     startIncident: function (incidentId) {
-        if (incidentId) {
+        if (incidentId && !this.flags.incidents.includes(incidentId)) {
             var incident = new Incident(incidentId);
+            this.flags.incidents.push(incident.getId());
             incident.start();
-            sendEvent("Incident", "start", incident.data.id);
+            this.saveGame();
+            sendEvent("Incident", "start", incident.data.name);
         }
     },
     /**
@@ -615,27 +634,39 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
         }
     },
     toJSON: function () {
-        return {
-            stl: this.flags.settled,
+        var json = {
+            flg: this.flags,
             res: this.resources.getValues(),
-            plp: this.people,
+            plp: this.people.getValues(),
             iac: this.initialActions,
             bld: this.buildings.getValues(),
             inc: this.incidents.getValues(),
             lct: this.knownLocations,
             bip: this.buildingsInProgress
         };
+        delete json.flg.paused;
+        delete json.flg.popup;
+        return json;
     },
     /**
      * Load the game from storage
      */
     loadGame: function () {
+        sendEvent("Game", "reload");
         var data = SaveManager.load();
+        var game = this;
 
         MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);
-
-        var game = this;
-        data.plp.forEach(function instanciatePeople (personData) {
+        data.bld.forEach(function rebuildBuildings (bld) {
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id);
+        });
+        data.inc.forEach(function restartIncident (inc) {
+            var incident = new Incident(inc.id);
+            if (inc.rmn) {
+                incident.run(inc.rmn);
+            }
+        });
+        data.plp.forEach(function instantiatePeople (personData) {
             var person = new People(personData.nam, personData.gnd);
             person.setLife(personData.lif);
             person.setEnergy(personData.ene);
@@ -643,14 +674,14 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
             if (personData.prk) {
                 person.gainPerk(personData.prk);
             }
-            personData.act.forEach(function instanciateAction (actionData) {
+            personData.act.forEach(function instantiateAction (actionData) {
                 person.addAction(actionData.id);
                 var action = person.actions.get(actionData.id);
-                action.repeated = actionData.repeated;
-                if (actionData.remaining) {
-                    action.choosenOptionId = actionData.optionId;
-                    action.energyDrain = actionData.energyDrain;
-                    action.start(actionData.remaining, actionData.elapsed);
+                action.repeated = actionData.rpt;
+                if (actionData.rmn) {
+                    action.choosenOptionId = actionData.opi;
+                    action.energyDrain = actionData.egd;
+                    action.start(actionData.rmn, actionData.elp);
                 }
             });
 
@@ -659,22 +690,15 @@ GameController.extends(View, "GameController", /** @lends GameController */ {
             person.show();
         });
         this.addToInitialActions(data.iac);
-        data.bld.forEach(function rebuildBuildings (bld) {
-            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id);
-        });
-        data.inc.forEach(function restartIncident (inc) {
-            var incident = new Incident(inc.id);
-            incident.run(inc.remains);
-        });
         this.knownLocations = data.lct;
         this.buildingsInProgress = data.bip;
-        this.flags.settled = data.stl;
+        this.flags = data.flg;
     },
     /**
      * Clear the save
      */
     wipeSave: function () {
-        sendEvent("Save", "wipe");
+        sendEvent("Game", "wipe");
         SaveManager.clear();
     }
 });
@@ -693,5 +717,11 @@ if (IS_DEV) {
     GameController.prototype.nextBuilding = function nextBuilding () {
         var pick = this.possibleBuildings().random();
         MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
+    };
+    GameController.prototype.wannaLoose = function wannaLoose () {
+        this.people.forEach(function (person) {
+            person.setLife(5);
+            person.setEnergy(0);
+        });
     };
 }

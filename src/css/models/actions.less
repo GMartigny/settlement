@@ -12,13 +12,13 @@
         left: -100%;
 
         // animated
-        @duration: .3s;
+        @duration: @appearanceDuration;
         transition: opacity linear @duration, transform ease-out @duration, z-index linear 0s @duration;
         z-index: @optionsZIndex;
         opacity: 1;
         transform: translate(0, 0);
 
-        &[aria-hidden="true"] {
+        &@{hidden} {
             transition: none;
             opacity: 0;
             transform: translate(0, -20px);

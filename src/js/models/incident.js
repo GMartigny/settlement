@@ -16,15 +16,13 @@ function Incident (id) {
     this.super(id);
 }
 Incident.DROP_RATE = 0.01;
-Incident.extends(Model, "Incident", /** @lends Incident */ {
+Incident.DEFAULT_COLOR = "#164b80";
+Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     /**
      * Initialize object
      * @private
      */
     init: function () {
-        if (this.tooltip) {
-            this.tooltip.remove();
-        }
         this.tooltip = new Tooltip(this.html, this.data);
 
         var yes = this.data.yes;
@@ -33,9 +31,10 @@ Incident.extends(Model, "Incident", /** @lends Incident */ {
             action: this.run.bind(this)
         };
         var no = this.data.no;
-        this.data.no = no ? {
-            name: no
-        } : null;
+        this.data.no = {
+            name: no,
+            action: this.end.bind(this)
+        };
     },
     /**
      * Return HTML for display
@@ -43,12 +42,14 @@ Incident.extends(Model, "Incident", /** @lends Incident */ {
      */
     toHTML: function () {
         var html = this._toHTML();
+        if (this.data.time) {
+            this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name), html);
 
-        this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name), html);
+            this.progressBar = new Bar("timer animated", (this.data.color || Incident.DEFAULT_COLOR));
+            html.appendChild(this.progressBar.html);
 
-        this.progressBar = new Bar("timer animated");
-        html.appendChild(this.progressBar.html);
-
+            html.hide();
+        }
         return html;
     },
     /**
@@ -61,24 +62,31 @@ Incident.extends(Model, "Incident", /** @lends Incident */ {
             incident: this.data
         };
 
+        if (Utils.isFunction(this.data.effect)) {
+            this.data.effect(this, this.data, effect);
+        }
+
+        var duration = 0;
         if (this.data.time) {
             MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, this);
+            this.show();
 
-            var duration = 0;
             if (forceTime) {
                 duration = forceTime;
             }
             else {
-                duration = this.data.time * GameController.tickLength;
+                duration = this.data.time;
 
                 if (this.data.deltaTime) {
-                    duration += MathUtils.random(-this.data.deltaTime, this.data.deltaTime);
+                    duration += MathsUtils.random(-this.data.deltaTime, this.data.deltaTime);
                 }
+
+                duration *= GameController.tickLength;
             }
 
             this.progressBar.run(duration);
-            this.timer = TimerManager.timeout(this.end.bind(this), duration);
         }
+        this.timer = TimerManager.timeout(this.end.bind(this), duration);
 
         var rawLog;
         if (Utils.isFunction(this.data.log)) {
@@ -92,11 +100,9 @@ Incident.extends(Model, "Incident", /** @lends Incident */ {
     },
     /**
      * Start the incident (open popup)
-     * @return {boolean} Is incident running
      */
     start: function () {
         new Popup(this.data, "incident");
-        return !!this.data.time;
     },
     /**
      * Cancel a running incident
@@ -122,9 +128,11 @@ Incident.extends(Model, "Incident", /** @lends Incident */ {
      * @returns {Object}
      */
     toJSON: function () {
-        var straight = this._toJSON();
-        straight.remains = TimerManager.getRemaining(this.timer);
-        return straight;
+        var json = this._toJSON();
+        if (this.timer) {
+            json.rmn = TimerManager.getRemaining(this.timer);
+        }
+        return json;
     }
 });
 Incident.LST_ID = "incidentList";

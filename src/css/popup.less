@@ -14,8 +14,8 @@
     transform: scale3d(.8, .8, 1);
     opacity: 0;
 
-    transition: opacity linear .3s,
-                transform ease-out .3s;
+    transition: opacity linear @appearanceDuration,
+                transform ease-out @appearanceDuration;
 
     .title {
         font-size: 25px;
@@ -39,5 +39,5 @@
 .backdrop:before {
     .initPseudo();
     background: rgba(0, 0, 0, .3);
-    z-index: 500;
+    z-index: @backdropZIndex;
 }

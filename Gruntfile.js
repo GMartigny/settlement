@@ -154,21 +154,24 @@ module.exports = function (grunt) {
         },
 
         jasmine: {
-            all: {
-                src: destDir.js,
-                options: {
-                    specs: "tests/**/*Test.js",
-					template: require('grunt-template-jasmine-istanbul'),
-                    templateOptions: {
-                        coverage: "tests/report/coverage.json",
-                        report: "tests/report"
-                    },
-                    polyfills: [
-                        "tests/res/mock.js",
-                        "node_modules/es6-shim/es6-shim.min.js",
-                        "node_modules/es7-shim/dist/es7-shim.min.js"
-                    ]
-                }
+            options: {
+                specs: "tests/**/*Test.js",
+                template: require('grunt-template-jasmine-istanbul'),
+                templateOptions: {
+                    coverage: "tests/report/coverage.json",
+                    report: "tests/report"
+                },
+                polyfills: [
+                    "tests/res/mock.js",
+                    "node_modules/es6-shim/es6-shim.min.js",
+                    "node_modules/es7-shim/dist/es7-shim.min.js"
+                ]
+            },
+            src: {
+                src: sourceDir.js
+            },
+            built: {
+                src: destDir.js
             }
         },
         
@@ -247,5 +250,6 @@ module.exports = function (grunt) {
     grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 
-    grunt.registerTask("test", ["uglify:dev", "jasmine:all"]);
+    grunt.registerTask("test", ["jasmine:src"]);
+    grunt.registerTask("test:built", ["uglify:dev", "jasmine:built"]);
 };

@@ -4,7 +4,7 @@
     Mock globals for tests
  */
 
-var IS_DEV = false;
+var IS_DEV = true;
 var VERSION = "v0.0.1";
 var IS_BETA = false;
 

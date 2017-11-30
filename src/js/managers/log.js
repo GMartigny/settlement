@@ -35,7 +35,8 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.ARRIVAL, function (person) {
-                self.log(person.name + " has arrived.", MessageBus.MSG_TYPES.LOGS.EVENT);
+                var log = "A new person arrive. @nominative present @reflexive as @name.";
+                self.log(self.personify(log, person), MessageBus.MSG_TYPES.LOGS.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
@@ -88,13 +89,13 @@ var LogManager = (function iife () {
          * @return {String}
          */
         personify: function (string, data) {
-            return string.replace(/@([\w.]+)\b/gi, function (match, capture) {
+            return Utils.capitalize(string.replace(/@([\w.]+)\b/gi, function (match, capture) {
                 var replace = data;
                 capture.split(".").forEach(function (part) {
                     replace = replace[part];
                 });
                 return replace || "";
-            });
+            }));
         }
     };
 

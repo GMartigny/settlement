@@ -10,8 +10,11 @@
 
     .Incident {
 
-        .Bar.timer {
-            .colorBar(#f5eb57);
+        opacity: 1;
+        transition: opacity linear @appearanceDuration;
+
+        &@{hidden} {
+            opacity: 0;
         }
     }
 }

@@ -4,14 +4,16 @@
 /**
  * Define a bar component
  * @param {String} CSSClass - A custom css class to add
+ * @param {String} [color] - This bar color (not required, but very advised)
  * @param {Number} [warningThreshold=0] - A threshold to trigger a warning animation
  * @constructor
  * @extends View
  */
-function Bar (CSSClass, warningThreshold) {
+function Bar (CSSClass, color, warningThreshold) {
     this.value = null;
     this.threshold = warningThreshold || 0;
     this.super(CSSClass);
+    this.setColor(color);
 }
 Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
     /**
@@ -24,6 +26,10 @@ Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
         this.valueBar = Utils.wrap("value", null, html);
 
         return html;
+    },
+    setColor: function (color) {
+        this.html.style.backgroundColor = ColorsUtil.fade(color, 0.2);
+        this.valueBar.style.backgroundColor = color;
     },
     /**
      * Set the bar width to a specific value

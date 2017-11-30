@@ -14,7 +14,7 @@ function View (CSSClass) {
     this.init.apply(this, Array.prototype.slice.call(arguments, 1));
 }
 View.enableHTML = true;
-View.extends(Object, "View", /** @lends View */ {
+View.extends(Object, "View", /** @lends View.prototype */ {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */

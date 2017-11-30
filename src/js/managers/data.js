@@ -85,6 +85,7 @@ var DataManager = (function iife () {
      * @prop {String} [yes="Ok"] - Text for the validate button
      * @prop {String} [no] - Text for the cancel button
      * @prop {Number} dropRate - Chance of getting it
+     * @prop {String} [color] - The incident bar color (optional but recommended)
      */
     /**
      * @typedef {Object} PerkData
@@ -206,7 +207,7 @@ var DataManager = (function iife () {
             [1.2 / time.day, ids.resources.gatherables.common.water, "thirsty"],
             [1 / time.day, ids.resources.gatherables.common.food, "starving"]
         ],
-        dropRate: 0.05
+        dropRate: 0.02
     });
 
     /** GATHERABLES UNCOMMON **/
@@ -373,7 +374,7 @@ var DataManager = (function iife () {
             var lifeChange = 99;
             var hasPharma = this.buildings.has(ids.buildings.small.pharmacy);
             var isHealer = action.owner.hasPerk(ids.perks.healer);
-            if (!hasPharma && !isHealer && MathUtils.random() < 2 / 5) {
+            if (!hasPharma && !isHealer && MathsUtils.random() < 2 / 5) {
                 lifeChange = -10;
                 // remember for log
                 effect.wasBad = true;
@@ -398,7 +399,7 @@ var DataManager = (function iife () {
         time: 7,
         energy: 0,
         effect: function (action) {
-            action.owner.updateEnergy(99);
+            action.owner.setEnergy(this.incidents.has(ids.incidents.medium.fever) ? 40 : 100);
         },
         unlock: [
             ids.actions.heal
@@ -658,11 +659,21 @@ var DataManager = (function iife () {
         effect: function () {
             TimerManager.timeout(function () {
                 MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "We need a shelter.");
-            }, 1500);
+            }, GameController.tickLength / 2);
+            new Popup({
+                name: "The attack !",
+                desc: "You were on board of a federate spaceship, in charge to transfer the <b>Rising star</b> " +
+                    "to the security of the <b>Farast</b>'s headquarter.<br/>" +
+                    "Somehow, this secret delivery has been known and the <b>Gohunta Group</b> attacked.<br/>" +
+                    "You manage to bail out in time with the package. " +
+                    "But now, you're crashed on the other side of the planet !<br/><br/>" +
+                    "You need to find a way to cover the distance.",
+                yes: "Let's go"
+            });
         },
         give: [
-            [10, ids.resources.gatherables.common.water],
-            [8, ids.resources.gatherables.common.food],
+            [8, ids.resources.gatherables.common.water],
+            [6, ids.resources.gatherables.common.food],
             [2, ids.resources.craftables.basic.component]
         ],
         unlock: [
@@ -1185,15 +1196,76 @@ var DataManager = (function iife () {
 
     /** EASY INCIDENTS **/
 
-    // found chest (add some resources, condition: resource run low)
-    // fortune teller (no impact)
+    ids.incidents.easy.chest = insert({
+        id: "chs",
+        name: "Strange old chest",
+        desc: "While exploring, a rusty container was found in the middle of rubbles. " +
+            "It might contains rare resources, but can we take the risk to fiddle with it ?",
+        yes: "Open it up",
+        no: "Leave it",
+        effect: function (incident, data, effect) {
+            if (MathsUtils.random() < 0.7) {
+                var give = Utils.randomize(ids.resources.craftables);
+                this.earn(1, give);
+                effect.give = Utils.formatArray([[1, give]]);
+            }
+            else {
+                var person = this.people.getValues().random();
+                var amount = MathsUtils.constrain(MathsUtils.random(10, 30), 0, person.life - 1);
+                person.updateLife(-amount);
+                effect.person = person;
+                effect.lost = amount;
+            }
+        },
+        dropRate: 30,
+        log: function (effect) {
+            var log;
+            if (effect.give) {
+                log = LogManager.personify("nothing to fear, @give was found inside the chest.", effect);
+            }
+            else if (effect.person) {
+                var message = "a loud explosion blast @name away as soon as @nominative try to open the chest. ";
+                if (effect.lost < 20) {
+                    message += "thankfully, more scared than hurt, @name get out with some scratches.";
+                }
+                else {
+                    message += "@name is badly hurt in the process.";
+                }
+                log = LogManager.personify(message, effect.person);
+            }
+            return log;
+        }
+    });
+    ids.incidents.easy.fortune = insert({
+        id: "frt",
+        name: "an old woman approach",
+        desc: "Someone point out to a silhouette in the distance. " +
+            "What seams to be a very old woman is coming toward your camp.<br/>" +
+            "As she get closer, you can see that she's point a finger towards you and mumble incomprehensible chatter.",
+        yes: "Listen to her",
+        no: "Fend her away",
+        effect: function () {
+            new Popup({
+                name: "Fortune teller",
+                desc: "You calmly sit her down and try to get what she's trying to say.<br/>" +
+                    "<i class='quote'>Long path ahead, full of danger ... you may do it ... " +
+                    "but at what cost ?</i><br/>" +
+                    "<i class='quote'>If you show mercy, success will follow !</i>",
+                yes: "Humm ... ok."
+            }, "incident");
+        },
+        unique: true,
+        dropRate: 70,
+        log: "You decide to listen to your fate. Does knowing your future is helpful ?"
+    });
     ids.incidents.easy.sandstorm = insert({
         id: "ssm",
         name: "sandstorm",
-        desc: "The wind is blowing hard, impossible to go out for now.",
+        desc: "The wind is blowing hard, carrying sand and dust. It will be impossible to go out until it end.",
         time: 16,
         timeDelta: 4,
-        dropRate: 100,
+        color: "#f7ed33",
+        dropRate: 90,
         log: "A sandstorm has started and prevent anyone from leaving the camp."
     });
 
@@ -1203,15 +1275,53 @@ var DataManager = (function iife () {
         id: "acr",
         name: "acid rain",
         desc: "A big dark cloud is coming from the north, " +
-            "which means that it's going to rain acid droplet like stingers from the sky",
+            "which means that it's going to rain acid droplet, like stingers from the sky.<br/>" +
+            "Going out now will be dangerous.",
         time: time.day,
         timeDelta: time.day / 2,
+        color: "#d351e8",
         dropRate: 50,
         lifeLose: 3,
         log: ""
     });
     // strange beggar (giving may return investment)
-    // Someone get sick (low max energy)
+    ids.incidents.medium.fever = insert({
+        id: "fvr",
+        name: "fever rash",
+        desc: "In few hours, everyone develop a very bad rash and extreme fever. " +
+            "With cotton leg and heads about to explode, no one is willing to do much.",
+        time: 2 * time.day,
+        timeDelta: 6 * time.hour,
+        color: "#9def39",
+        dropRate: 50,
+        log: "Illness spread out and weaken everyone."
+    });
+    ids.incidents.medium.harmonica = insert({
+        id: "hrm",
+        name: "a song into the wild",
+        desc: "At night everyone gather around the camp-fire to alleviate the day's burden." +
+            "Someone draw out a harmonica and a melody wander slowly into the night.",
+        unique: true,
+        yes: "Take some time to appreciate",
+        dropRate: 40,
+        log: "Relaxing for a moment remotivate everyone."
+    });
+    ids.incidents.medium.strayDog = insert({
+        id: "std",
+        name: "stray dog",
+        desc: "Looks like a wild dog is lurking around your food stash.<br/>" +
+            "He seams really weakened by his hunger and thirst. Can you afford to have another mouth to feed ?",
+        unique: true,
+        yes: "Give him some water and food",
+        no: "Ignore him",
+        effect: function () {
+            this.consume(3, ids.resources.gatherables.common.water);
+            this.consume(3, ids.resources.gatherables.common.food);
+            this.flags.doggy = true;
+        },
+        log: "With caution, he accept your offering. " +
+            "He then proceed to hide under your forum shadow and quickly fall asleep."
+    });
 
     /** HARD INCIDENTS **/
 
@@ -1221,11 +1331,24 @@ var DataManager = (function iife () {
         desc: "The climate is so hot, we consume more water.",
         time: 3 * time.day,
         timeDelta: 10,
+        color: "#f73a18",
         dropRate: 10,
         multiplier: 3,
         log: "A harsh drought has fall, water will be more important than ever."
     });
-    // conversation between people (no impact)
+    ids.incidents.hard.lookBack = insert({
+        id: "lkb",
+        name: "look back",
+        desc: "It's been so long since you settle here that it feel like a new life now.",
+        unique: true,
+        yes: "Remember",
+        effect: function (incident, data, effect) {
+            effect.duration = this.getSurvivalDuration();
+        },
+        dropRate: 30,
+        log: "For @duration you manage to survive in this harsh environment. Good job !"
+    });
+    // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
 
     /***** PERKS *****/

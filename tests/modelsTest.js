@@ -34,7 +34,7 @@ describe("Test all model's instantiations", function modelDescribe () {
 
             expect(this.model.toJSON()).toEqual({
                 id: settleId,
-                repeated: 0
+                rpt: 0
             });
 
         });

@@ -46,6 +46,7 @@ describe("Test all general helper", function utilsDescribe () {
 
         expect(Utils.formatTime(0)).toEqual("0 hour");
         expect(Utils.formatTime(0.5)).toEqual("30 minutes");
+        expect(Utils.formatTime(1)).toEqual("1 hour");
         expect(Utils.formatTime(1 + 6 / 60)).toEqual("1 hour and 6 minutes");
         expect(Utils.formatTime(5)).toEqual("5 hours");
         expect(Utils.formatTime(24 + 5)).toEqual("1 day and 5 hours");
@@ -74,10 +75,66 @@ describe("Test all general helper", function utilsDescribe () {
 
     });
 
-    xit("randomize", function utilsRandomize () {
+    it("randomize", function utilsRandomize () {
+
+        expect(Utils.randomize).toThrow();
+
+        var rock = DataManager.ids.resources.gatherables.common.rock;
+        var water = DataManager.ids.resources.gatherables.common.water;
+        var tool = DataManager.ids.resources.craftables.basic.tool;
+        var list = {
+            sub: {
+                rock: rock
+            },
+            tool: tool,
+            sub2: {
+                water: water
+            }
+        };
+        var possibilities = [rock, water, tool];
+
+        var pick = Utils.randomize(list);
+        expect(possibilities).toContain(pick);
+
+        function run (list, amount) {
+            var res = {
+                min: Infinity,
+                max: 0
+            };
+
+            for (var i = 0; i < 666; ++i) {
+                pick = Utils.randomize(list, amount);
+                expect(possibilities).toContain(pick[1]);
+                var x = pick[0];
+                if (x < res.min) {
+                    res.min = x;
+                }
+                if (x > res.max) {
+                    res.max = x;
+                }
+            }
+
+            return res;
+        }
+
+        var res = run(list, 10);
+        expect(res.min >= 0).toBe(true);
+        expect(res.max <= 10).toBe(true);
+
+        res = run(list, [5, 15]);
+        expect(res.min >= 5).toBe(true);
+        expect(res.max <= 15).toBe(true);
+
+        res = run(list, "42-55");
+        expect(res.min >= 42).toBe(true);
+        expect(res.max <= 55).toBe(true);
+
     });
 
     xit("randomizeMultiple", function utilsRandomizeMultiple () {
+    });
+
+    xit("log", function utilsLog () {
     });
 
     it("randomStr", function utilsRandomStr () {
@@ -94,8 +151,8 @@ describe("Test all general helper", function utilsDescribe () {
         var drawn = [];
         for (var i = 0; i < 999; ++i) {
             var pick = Utils.pickUniqueID();
-            expect(pick).toMatch(/\w{6}/);
-            expect(drawn).not.toContain(pick);
+            expect(pick).toBeDefined();
+            expect(drawn.includes(pick)).toBe(false);
             drawn.push(pick);
         }
 

@@ -1,7 +1,7 @@
 "use strict";
-/* exported MathUtils */
+/* exported MathsUtils */
 
-var MathUtils = {
+var MathsUtils = {
     /**
      * Floor a number
      * @param {Number} x - Any number
@@ -17,7 +17,7 @@ var MathUtils = {
      * @return {Number}
      */
     round: function (x) {
-        return MathUtils.floor(x + 0.5);
+        return MathsUtils.floor(x + 0.5);
     },
 
     /**
@@ -26,10 +26,32 @@ var MathUtils = {
      * @return {Number}
      */
     ceil: function ceil (x) {
-        return MathUtils.floor(x + 1);
+        return MathsUtils.floor(x + 1);
     },
 
+    /**
+     * Get the absolute value of a number
+     * @param {Number} x - Any number
+     * @return {Number}
+     */
     abs: Math.abs,
+
+    /**
+     * Apply a power to a number
+     * @param {Number} x - Any number
+     * @param {Number} n - Power to apply
+     * @return {Number}
+     */
+    pow: Math.pow,
+
+    /**
+     * Square a number
+     * @param {Number} x - Any number
+     * @returns {Number}
+     */
+    sq: function (x) {
+        return x * x;
+    },
 
     /**
      * Return the absolute difference between two number
@@ -38,7 +60,25 @@ var MathUtils = {
      * @returns {Number}
      */
     diff: function (a, b) {
-        return MathUtils.abs(a - b);
+        return MathsUtils.abs(a - b);
+    },
+
+    /**
+     * Return the average number for a set
+     * @param {...Number} value - Number to compute
+     * @return {Number}
+     */
+    average: function () {
+        var length = arguments.length;
+        if (!length) {
+            throw new RangeError("Can't get mean from no value");
+        }
+
+        var sum = 0;
+        for (var i = 0; i < length; ++i) {
+            sum += arguments[i];
+        }
+        return sum / length;
     },
 
     /**
@@ -70,8 +110,8 @@ var MathUtils = {
         var rand = Math.random;
 
         return function random (from, to) {
-            if (to === undefined) {
-                if (from === undefined) {
+            if (Utils.isUndefined(to)) {
+                if (Utils.isUndefined(from)) {
                     to = 1;
                 }
                 else {
@@ -85,5 +125,23 @@ var MathUtils = {
             }
             return rand() * (to - from) + from;
         };
-    })()
+    })(),
+
+    /**
+     * Convert a number to hexadecimal
+     * @param {Number} number - Any number
+     * @returns {String}
+     */
+    toHexa: function (number) {
+        return MathsUtils.round(number).toString(16).toUpperCase();
+    },
+
+    /**
+     * Convert from hexadecimal to integer
+     * @param {String} hexa - Any valid hexa string
+     * @returns {Number}
+     */
+    toDeci: function (hexa) {
+        return parseInt(hexa, 16);
+    }
 };

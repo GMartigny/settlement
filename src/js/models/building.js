@@ -10,7 +10,7 @@
 function Building (id) {
     this.super(id);
 }
-Building.extends(Model, "Building", /** @lends Building */ {
+Building.extends(Model, "Building", /** @lends Building.prototype */ {
     toHTML: Utils.noop,
     /**
      * Initialize object

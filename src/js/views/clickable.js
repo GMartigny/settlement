@@ -16,7 +16,7 @@ function Clickable (CSSClass, text, action) {
 
     this.setAction(action);
 }
-Clickable.extends(View, "Clickable", /** @lends Clickable */ {
+Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}

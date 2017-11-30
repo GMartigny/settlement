@@ -14,7 +14,7 @@ function Resource (id, count) {
 
     this.super(id, count);
 }
-Resource.extends(Model, "Resource", /** @lends Resource */ {
+Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     /**
      * Initialise object
      * @param {Number} count - The resource amount
@@ -59,7 +59,7 @@ Resource.extends(Model, "Resource", /** @lends Resource */ {
         var prevAmount = this.count;
         this.set(this.count + amount);
 
-        if (MathUtils.floor(prevAmount) !== MathUtils.floor(this.count)) {
+        if (MathsUtils.floor(prevAmount) !== MathsUtils.floor(this.count)) {
             var node = this.html;
             var toClear = false;
             if (amount > 0 && !node.classList.contains("more")) {
@@ -81,7 +81,7 @@ Resource.extends(Model, "Resource", /** @lends Resource */ {
      * @return {Number}
      */
     get: function () {
-        return MathUtils.floor(this.count);
+        return MathsUtils.floor(this.count);
     },
     /**
      * Define this resource amount
@@ -107,7 +107,7 @@ Resource.extends(Model, "Resource", /** @lends Resource */ {
      * @returns {Object}
      */
     toJSON: function () {
-        return [this.count, this.data.id];
+        return [this.count, this.getId()];
     },
     /**
      * Format to string

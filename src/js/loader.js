@@ -11,29 +11,25 @@
  * @param {Object} globalScope - A scope to put the game controller object (DEV only)
  */
 function starter (globalScope) {
+    var container = document.body;
+    container.classList.add("loading");
     console.groupCollapsed("Loading");
 
-    var _assetsURL = "dist/img/assets.png";
-    var _assetsDataURL = "dist/json/assets.json";
-    var _buildingsDataURL = "dist/json/buildingsData.json";
-
     var loadStart = Utils.getNow();
-    Utils.loadAsync([
-        "dist/img/icons.png", // just preload
-        _assetsURL,
-        _assetsDataURL,
-        _buildingsDataURL
-    ], function (percent, file) {
-        console.log(file + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart));
-    }).then(function (media) {
+    // Preload
+    Utils.loadAsync({
+        Dosis: "https://fonts.gstatic.com/s/dosis/v7/xIAtSaglM8LZOYdGmG1JqQ.woff",
+        icons: "dist/img/icons.png",
+        assets: "dist/img/assets.png",
+        assetsData: "dist/json/assets.json",
+        buildingsData: "dist/json/buildingsData.json"
+    }, function loadedFile (percent, name) {
+        console.log(name + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart));
+    }).then(function allLoaded (media) {
         console.groupEnd();
-        var Game = new GameController(document.body, {
-            images: media[Utils.sanitize(_assetsURL)],
-            data: {
-                assets: media[Utils.sanitize(_assetsDataURL)],
-                positions: media[Utils.sanitize(_buildingsDataURL)]
-            }
-        });
+        container.classList.remove("loading");
+        document.head.appendChild(media.Dosis);
+        var Game = new GameController(container, media);
         if (IS_DEV) {
             globalScope.G = Game;
         }

@@ -34,7 +34,7 @@ function Action (id, owner, parentAction) {
     this.super(id);
 }
 Action.RUNNING_CLASS = "running";
-Action.extends(Model, "Action", /** @lends Action */ {
+Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
@@ -100,7 +100,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
             var newOptions = this.data.options(this);
             // Looks for options not available anymore
             this.options.forEach(function (option) {
-                if (!newOptions.includes(option.data.id)) {
+                if (!newOptions.includes(option.getId())) {
                     option.lock();
                 }
             });
@@ -155,7 +155,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
         if (!this.owner.busy && !this.locked) {
 
             if (this.parentAction) {
-                return this.parentAction.click(this.data.id);
+                return this.parentAction.click(this.getId());
             }
             else if (optionId || !this.options) {
                 // Merge data from this and selected option
@@ -178,7 +178,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
                 this.energyDrain = data.energy / duration;
 
                 this.start(duration * GameController.tickLength);
-                sendEvent("Action", "start", this.data.id);
+                sendEvent("Action", "start", this.data.name);
 
                 MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
                 return true;
@@ -197,7 +197,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
         var duration = (data.time || 0);
 
         if (data.timeDelta) {
-            duration += MathUtils.random(-data.timeDelta, data.timeDelta);
+            duration += MathsUtils.random(-data.timeDelta, data.timeDelta);
         }
         if (data.timeBonus) {
             duration -= duration * data.timeBonus;
@@ -212,7 +212,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
     start: function (duration, consumed) {
         consumed = consumed || 0;
         var totalActionDuration = duration + consumed;
-        this.owner.setBusy(this.data.id, this.energyDrain);
+        this.owner.setBusy(this.getId(), this.energyDrain);
         this.clickable.startCoolDown(totalActionDuration, consumed, this.end.bind(this));
 
         this.html.classList.add(Action.RUNNING_CLASS);
@@ -320,7 +320,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
             MessageBus.notify(MessageBus.MSG_TYPES.BUILD, result.build);
         }
 
-        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, Utils.capitalize(result.log));
+        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, result.log);
 
         MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
     },
@@ -357,16 +357,14 @@ Action.extends(Model, "Action", /** @lends Action */ {
             }
         });
 
-        var repeated = this.repeated;
-
         // Unlock
         if (Utils.isArray(this.data.unlockAfter)) {
             this.data.unlockAfter.forEach(function (couple) {
-                if (repeated > couple[0]) {
+                if (this.repeated > couple[0]) {
                     result.unlock.forOne.push(couple[1]);
-                    result.lock.forOne.push(this.data.id);
+                    result.lock.forOne.push(this.getId());
                 }
-            });
+            }, this);
         }
         if (Utils.isArray(data.unlock)) {
             var unlock = data.unlock.filter(function (id) {
@@ -391,10 +389,10 @@ Action.extends(Model, "Action", /** @lends Action */ {
         // Lock
         if (Utils.isArray(this.data.lockAfter)) {
             this.data.lockAfter.forEach(function (couple) {
-                if (repeated > couple[0]) {
+                if (this.repeated > couple[0]) {
                     result.lock.forOne.push(couple[1]);
                 }
-            });
+            }, this);
         }
         if (Utils.isArray(data.lock)) {
             // Unique actions have to lock for everyone
@@ -410,7 +408,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
         }
         // Unique action lock itself
         if (this.data.unique) {
-            result.lock.forAll.push(this.data.id);
+            result.lock.forAll.push(this.getId());
         }
 
         // Build
@@ -443,7 +441,7 @@ Action.extends(Model, "Action", /** @lends Action */ {
             });
         }
         else if (this.parentAction) {
-            this.parentAction.options.delete(this.data.id);
+            this.parentAction.options.delete(this.getId());
         }
 
         this.html.remove();
@@ -463,14 +461,14 @@ Action.extends(Model, "Action", /** @lends Action */ {
      * @returns {Object}
      */
     toJSON: function () {
-        var straight = this._toJSON();
-        straight.repeated = this.repeated;
+        var json = this._toJSON();
+        json.rpt = this.repeated;
         if (this.clickable.isRunning()) {
-            straight.elapsed = this.clickable.getElapsed();
-            straight.remaining = this.clickable.getRemaining();
-            straight.energyDrain = this.energyDrain;
-            straight.optionId = this.chosenOptionId;
+            json.elp = this.clickable.getElapsed();
+            json.rmn = this.clickable.getRemaining();
+            json.egd = this.energyDrain;
+            json.opi = this.chosenOptionId;
         }
-        return straight;
+        return json;
     }
 });

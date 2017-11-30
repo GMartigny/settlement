@@ -66,13 +66,11 @@ describe("Test functions added to Map prototype", function mapDescribe () {
         expect(returnedKey).toBeDefined();
         expect(map.get(returnedKey)).toEqual(value);
 
-        value = {
-            id: askedKey,
-            data: "ok"
-        };
+        askedKey = DataManager.ids.buildings.special.forum;
+        value = new Building(askedKey);
         returnedKey = map.push(value); // value with id prop
         expect(returnedKey).toEqual(askedKey);
-        expect(map.get(returnedKey)).toEqual(value);
+        expect(map.get(askedKey)).toEqual(value);
 
     });
 
@@ -84,6 +82,17 @@ describe("Test functions added to Map prototype", function mapDescribe () {
             map.set(Math.random(), value);
         });
         expect(map.getValues()).toEqual(values);
+
+    });
+
+    it("getKeys", function mapGetValues () {
+
+        var map = new Map();
+        var keys = [true, 2, "3", [4]];
+        keys.forEach(function mapGetKeysForEach (key) {
+            map.set(key, 1);
+        });
+        expect(map.getKeys()).toEqual(keys);
 
     });
 
@@ -161,6 +170,20 @@ describe("Test functions added to Object prototype", function objectDescribe () 
             clone.someRandomProp = true;
             expect(value.someRandomProp).not.toBeDefined();
         });
+
+    });
+
+});
+
+describe("Test functions added to HTMLElement prototype", function htmlElementDescribe () {
+
+    it("hide / show", function htmlElementHideShow () {
+
+        var html = document.createElement("div");
+        html.hide();
+        expect(html.hasAttribute("aria-hidden")).toBe(true);
+        html.show();
+        expect(html.hasAttribute("aria-hidden")).toBe(false);
 
     });
 

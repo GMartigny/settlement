@@ -22,7 +22,7 @@ function Tooltip (container, data) {
 
     this.super(null, data);
 }
-Tooltip.extends(View, "Tooltip", /** @lends Tooltip */ {
+Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
     _holderWidth: null,
     _holderHeight: null,
     init: function (data) {
@@ -52,8 +52,8 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip */ {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = MathUtils.constrain(x + 10, 0, this._holderWidth - this.width);
-        var top = MathUtils.constrain(y + 10, 0, this._holderHeight - this.height);
+        var left = MathsUtils.constrain(x + 10, 0, this._holderWidth - this.width);
+        var top = MathsUtils.constrain(y + 10, 0, this._holderHeight - this.height);
         this.html.style.left = left + "px";
         this.html.style.top = top + "px";
     },

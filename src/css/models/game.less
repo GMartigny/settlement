@@ -5,6 +5,13 @@
     overflow: hidden;
     height: 100%;
 
+    opacity: 1;
+    transition: opacity linear @appearanceDuration;
+
+    &@{hidden} {
+        opacity: 0;
+    }
+
     .bottomOptions {
         position: absolute;
         right: 5px;

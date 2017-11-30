@@ -1,5 +1,4 @@
 @import (reference) "animations";
-@import (reference) "theme";
 
 .initPseudo () {
     content: "";
@@ -14,27 +13,68 @@
 @firstPartHeight: ~'calc(60% -' @resourceListHeight/2 ~')';
 @secondPartHeight: ~'calc(40% -' @resourceListHeight/2 ~')';
 
-@mainBackgroundColor: #F0F0F0;
+@mainBackgroundColor: #333;
 @shadowColor: rgba(0, 0, 0, .5);
 
 @optionsZIndex: 10;
-@tooltipZIndex: 100;
-@backdropZIndex: 500;
-@popupZIndex: 510;
-@pauseZIndex: 600;
+@tooltipZIndex: 700;
+@backdropZIndex: 1000;
+@popupZIndex: 1010;
+@pauseZIndex: 1020;
 
-div {
-    position: relative;
-    box-sizing: border-box;
-}
+@appearanceDuration: .3s;
 
-html, body {
+@container: body;
+@hidden: ~'[aria-hidden="true"]';
+
+// Reset rules
+html {
     height: 100%;
-    overflow: hidden;
 }
-
 body {
     margin: 0;
+}
+
+// Game container
+@{container} {
+    width: 100%;
+    height: 100%;
     font-size: 16px;
     background-color: @mainBackgroundColor;
+    font-family: Dosis, sans-serif;
+
+    &.loading:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        width: 60px;
+        height: 60px;
+        border: 2px solid #FFF;
+        border-radius: 50%;
+        top: ~'calc(50% - 30px)';
+        z-index: -1;
+
+        animation: pulse ease-in infinite 1s;
+    }
+
+    div {
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    .quote {
+        font-style: italic;
+        color: #888;
+
+        &:before, &:after {
+            content: ' " ';
+        }
+    }
+
+    b {
+        font-weight: bold;
+        color: #164b80;
+    }
 }

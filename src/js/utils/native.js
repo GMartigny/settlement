@@ -1,7 +1,7 @@
 "use strict";
 
 Number.prototype.equals = function equals (number) {
-    return Utils.isNumber(number) && MathUtils.diff(this, number) <= Number.EPSILON;
+    return Utils.isNumber(number) && MathsUtils.diff(this, number) <= Number.EPSILON;
 };
 
 /**
@@ -17,7 +17,7 @@ Array.prototype.last = function last () {
  * @return {*}
  */
 Array.prototype.random = function random () {
-    return this[MathUtils.floor(MathUtils.random(0, this.length))];
+    return this[MathsUtils.floor(MathsUtils.random(0, this.length))];
 };
 
 /**
@@ -51,7 +51,7 @@ Array.prototype.insert = function insert (array) {
 Map.prototype.push = function push (key, value) {
     if (Utils.isUndefined(value)) {
         value = key;
-        key = value.id || (value.data && value.data.id) || new String();
+        key = value.id || (value instanceof Model && value.getId()) || Utils.pickUniqueID();
     }
     this.set(key, value);
     return key;
@@ -157,14 +157,6 @@ Object.prototype.clone = function clone () {
     return clone;
 };
 
-HTMLElement.prototype.show = function show () {
-    this.removeAttribute("aria-hidden");
-};
-
-HTMLElement.prototype.hide = function hide () {
-    this.setAttribute("aria-hidden", "true");
-};
-
 /**
  * Set aria-hidden to false (should be handled in CSS)
  */
@@ -205,4 +197,17 @@ Function.prototype.extends = function _extends (parent, name, override) {
             self.prototype[funcName] = func;
         });
     }
+};
+
+/**
+ * Put this function call at the end of the call-stack
+ * @param {*} ctx - Context for the call
+ * @return {undefined} /!\ Not the result of the function's call
+ */
+Function.prototype.defer = function defer (ctx) {
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    setTimeout(function () {
+        self.apply(ctx, args);
+    }, 0);
 };

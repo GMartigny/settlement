@@ -21,7 +21,7 @@ function peopleFactory (amount) {
         return People.randomName(amount).then(function (response) {
             var people = [];
             response.results.forEach(function (data) {
-                var name = Utils.capitalize(data.name.first + "")/* + " " + Utils.capitalize(data.name.last)*/;
+                var name = Utils.capitalize(data.name.first)/* + " " + Utils.capitalize(data.name.last)*/;
                 var person = new People(name, data.gender);
                 people.push(person);
             });
@@ -38,6 +38,7 @@ function peopleFactory (amount) {
  * @extends View
  */
 function People (name, gender) {
+    this.id = Utils.pickUniqueID();
     this.name = name;
     this.gender = gender || "other";
     this.actions = new Map();
@@ -55,8 +56,9 @@ function People (name, gender) {
 
     this.super();
 }
+People.counter = 500;
 People.LST_ID = "peopleList";
-People.extends(View, "People", /** @lends People */ {
+People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
      * @private
@@ -80,13 +82,14 @@ People.extends(View, "People", /** @lends People */ {
      */
     toHTML: function () {
         var html = this._toHTML();
+        html.style.zIndex = People.counter--;
 
         this.nameNode = Utils.wrap("name", Utils.capitalize(this.name), html);
 
-        this.lifeBar = new Bar("life", 25);
+        this.lifeBar = new Bar("life", "#f52158", 25);
         html.appendChild(this.lifeBar.html);
 
-        this.energyBar = new Bar("energy");
+        this.energyBar = new Bar("energy", "#19f5ba");
         html.appendChild(this.energyBar.html);
 
         this.actionList = Utils.wrap("actionList", null, html);
@@ -128,18 +131,21 @@ People.extends(View, "People", /** @lends People */ {
     setPronouns: function () {
         switch (this.gender) {
             case "female":
+                this.common = "woman";
                 this.nominative = "she";
                 this.accusative = "her";
                 this.possessive = "her";
                 this.reflexive = "herself";
                 break;
             case "male":
+                this.common = "man";
                 this.nominative = "he";
                 this.accusative = "him";
                 this.possessive = "his";
                 this.reflexive = "himself";
                 break;
             default:
+                this.common = "robot";
                 this.nominative = "it";
                 this.accusative = "it";
                 this.possessive = "its";
@@ -192,6 +198,10 @@ People.extends(View, "People", /** @lends People */ {
 
         return this.energy;
     },
+    /**
+     * Set energy to a new value
+     * @param {Number} value - Any number between 0 and 100
+     */
     setEnergy: function (value) {
         this.energy = value;
         this.energyBar.set(value);
@@ -219,6 +229,10 @@ People.extends(View, "People", /** @lends People */ {
 
         return value;
     },
+    /**
+     * Set life to a new value (and die if needed be)
+     * @param {Number} value - Any number between 0 and 100
+     */
     setLife: function (value) {
         this.life = value;
         this.lifeBar.set(value);
@@ -291,7 +305,7 @@ People.extends(View, "People", /** @lends People */ {
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
-                            if (done && MathUtils.random() < done) {
+                            if (done && MathsUtils.random() < done) {
                                 // perk is unlocked
                                 self.gainPerk(perkId);
                                 MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, self);
@@ -319,24 +333,22 @@ People.extends(View, "People", /** @lends People */ {
      * @returns {Boolean}
      */
     hasPerk: function (perkId) {
-        return this.perk && this.perk.data.id === perkId;
+        return this.perk && this.perk.getId() === perkId;
     },
     /**
      * Kill it for good
      */
     die: function () {
-        if (this.html.classList.contains("arrived")) {
-            MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
-            this.html.classList.remove("arrived");
+        MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
+        this.hide();
 
-            this.actions.forEach(function (action) {
-                action.cancel();
-                action.tooltip.remove();
-            });
-            TimerManager.timeout(function () {
-                this.html.remove();
-            }.bind(this), 400);
-        }
+        this.actions.forEach(function (action) {
+            action.cancel();
+            action.tooltip.remove();
+        });
+        TimerManager.timeout(function () {
+            this.html.remove();
+        }.bind(this), 400);
     },
     /**
      * Get this data in plain object
@@ -349,7 +361,7 @@ People.extends(View, "People", /** @lends People */ {
             lif: this.life,
             ene: this.energy,
             sts: this.stats,
-            prk: this.perk && this.perk.data.id,
+            prk: this.perk && this.perk.getId(),
             act: this.actions.getValues()
         };
     }

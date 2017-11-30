@@ -1,3 +1,5 @@
+@import (reference) "base";
+
 @keyframes shout {
     0% {
         opacity: 0;
@@ -37,5 +39,24 @@
     }
     to {
         opacity: .3;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        background: #FFF;
+        box-shadow: 0 0 0 30px @mainBackgroundColor inset;
+    }
+    50% {
+        background: #FFF;
+        box-shadow: 0 0 0 -1px @mainBackgroundColor inset;
+    }
+    50.1% {
+        background: @mainBackgroundColor;
+        box-shadow: 0 0 0 30px #FFF inset;
+    }
+    to {
+        background: @mainBackgroundColor;
+        box-shadow: 0 0 0 -1px #FFF inset;
     }
 }

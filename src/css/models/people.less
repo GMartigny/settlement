@@ -21,10 +21,10 @@
 
         // animated
         opacity: 1;
-        transition: opacity linear .4s,
-            transform ease-out .4s;
+        transition: opacity linear @appearanceDuration,
+            transform ease-out @appearanceDuration;
 
-        &[aria-hidden="true"] {
+        &@{hidden} {
             transform: translate(-100%, 0);
             opacity: 0;
         }
@@ -45,16 +45,6 @@
                 margin-left: 1em;
                 font-style: italic;
                 color: #333;
-            }
-        }
-
-        .Bar {
-            &.life {
-                .colorBar(#f52158);
-            }
-
-            &.energy {
-                .colorBar(#19f5ba);
             }
         }
 

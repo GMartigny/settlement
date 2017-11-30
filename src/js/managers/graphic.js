@@ -29,8 +29,8 @@ var GraphicManager = (function iife () {
         this.destination = {};
         this.defineSource(sourceData);
 
-        this.destination.x = MathUtils.floor(+destData.x * Asset.ENLARGE);
-        this.destination.y = MathUtils.floor(+destData.y * Asset.ENLARGE);
+        this.destination.x = MathsUtils.floor(+destData.x * Asset.ENLARGE);
+        this.destination.y = MathsUtils.floor(+destData.y * Asset.ENLARGE);
     }
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.prototype = {
@@ -42,7 +42,7 @@ var GraphicManager = (function iife () {
             this.source = {
                 x: sourceData.x,
                 y: sourceData.y,
-                width: MathUtils.floor(sourceData.width / this.animationSteps),
+                width: MathsUtils.floor(sourceData.width / this.animationSteps),
                 height: sourceData.height
             };
             this.destination.width = this.source.width * Asset.ENLARGE;
@@ -55,7 +55,7 @@ var GraphicManager = (function iife () {
          */
         render: function (image, layer) {
             this.animationState = (this.animationState + this.animationSpeed) % this.animationSteps;
-            var animationShift = MathUtils.floor(this.animationState) * this.source.width;
+            var animationShift = MathsUtils.floor(this.animationState) * this.source.width;
             var posX = this.destination.x;
             var posY = this.destination.y;
             layer.drawImage(image,

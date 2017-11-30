@@ -73,8 +73,8 @@ var Utils = {
             timeMatch = DataManager.time;
 
         units.forEach(function (unit) {
-            if (time > timeMatch[unit]) {
-                var y = MathUtils.floor(time / timeMatch[unit]);
+            if (time >= timeMatch[unit]) {
+                var y = MathsUtils.floor(time / timeMatch[unit]);
                 time = time % timeMatch[unit];
                 res.push(y + " " + Utils.pluralize(unit, y));
             }
@@ -100,7 +100,7 @@ var Utils = {
      */
     capitalize: function (string) {
         if (string) {
-            string = string.replace(/([.!?]) ([a-z])/g, function (match, punctuation, letter) {
+            string = string.replace(/([.!?])\s([a-z])/g, function (match, punctuation, letter) {
                 return punctuation + " " + letter.toUpperCase();
             });
             return string[0].toUpperCase() + string.slice(1);
@@ -112,17 +112,17 @@ var Utils = {
 
     /**
      * Pick a random item from nested object
-     * @param {Object} list - A potentially nested object
-     * @param {String|Array} [amount=1] - Interval for random "-" separated or array
+     * @param {Object<ID>} list - A potentially nested object
+     * @param {String|Array|Number} [amount=1] - Interval for random "-" separated or array
      * @example
      * Utils.randomize(data, "2-5") // between 2 and 5
      * Utils.randomize(data, [2, 5]) // between 2 and 5
-     * Utils.randomize(data, "5") // between 0 and 5
+     * Utils.randomize(data, 5) // between 0 and 5
      * Utils.randomize(data) // 1 result
-     * @returns {Array|Object} An array of Object or one Object if no amount requested
+     * @returns {Array|ID} An array of Object or one Object if no amount requested
      */
     randomize: function (list, amount) {
-        if (!list.values().length) {
+        if (!list || !list.values().length) {
             throw new TypeError("Can't pick from empty list");
         }
         var all = {},
@@ -130,13 +130,13 @@ var Utils = {
             dropRateSum = 0;
         list.deepBrowse(function (id) {
             var item = DataManager.get(id);
-            if (item.dropRate) {
+            if (item && item.dropRate) {
                 dropRateSum += item.dropRate;
                 dropRateScale.push(dropRateSum);
                 all[dropRateSum] = id;
             }
         });
-        var pick = MathUtils.floor(MathUtils.random(dropRateSum));
+        var pick = MathsUtils.floor(MathsUtils.random(dropRateSum));
         dropRateScale.sort(function (a, b) {
             return a - b;
         });
@@ -157,7 +157,7 @@ var Utils = {
                     amount = [+amount];
                 }
             }
-            return [MathUtils.round(MathUtils.random.apply(null, amount)), all[pick]];
+            return [MathsUtils.round(MathsUtils.random.apply(null, amount)), all[pick]];
         }
         else {
             return all[pick];
@@ -185,7 +185,7 @@ var Utils = {
                 amount = [+amount];
             }
         }
-        var total = MathUtils.round(MathUtils.random.apply(null, amount));
+        var total = MathsUtils.round(MathsUtils.random.apply(null, amount));
         var sum = 0;
 
         while (sum++ < total) {
@@ -213,7 +213,7 @@ var Utils = {
     randomStr: function (length) {
         length = length || 6;
         return (new Array(length)).fill("-").join("").replace(/-/g, function () {
-            return MathUtils.floor(MathUtils.random(36)).toString(36);
+            return MathsUtils.floor(MathsUtils.random(36)).toString(36);
         });
     },
 
@@ -221,20 +221,9 @@ var Utils = {
      * Give a random unique ID without collision
      * @returns {String}
      */
-    pickUniqueID: (function iife () {
-        var IDS = [];
-
-        return function pickUniqueID () {
-            var ID = Utils.randomStr();
-            if (!IDS.includes(ID)) {
-                IDS.push(ID);
-                return ID;
-            }
-            else {
-                return Utils.pickUniqueID();
-            }
-        };
-    })(),
+    pickUniqueID: function () {
+        return new String("");
+    },
 
     /**
      * Test if is a function
@@ -342,20 +331,22 @@ var Utils = {
      * @return {Number}
      */
     getNow: function getNow () {
-        return MathUtils.floor(performance.now());
+        return MathsUtils.floor(performance.now());
     },
 
     /**
      * Load some image with a promise
-     * @param {Array<String>} urls - An array of url string
+     * @param {Object} urls - Set of urls to load with name as key
      * @param {Function} action - A function called with each loading
      * @return {Promise}
      */
     loadAsync: function loadAsync (urls, action) {
         var loaded = {};
         var loadCount = 0;
-        var toLoad = urls.length;
-        return Promise.all(urls.map(function (url) {
+        var keys = Object.keys(urls);
+        var toLoad = keys.length;
+        return Promise.all(keys.map(function (key) {
+            var url = urls[key];
             var request = fetch(url).then(function (response) {
                 if (response.ok) {
                     return response;
@@ -365,10 +356,9 @@ var Utils = {
                 }
             });
             var promise;
-            switch (url.substr(url.lastIndexOf(".") + 1)) {
+            var format = url.substr(url.lastIndexOf(".") + 1);
+            switch (format) {
                 case "png":
-                case "jpg":
-                case "gif":
                     promise = request.then(function (response) {
                         var img = new Image();
                         return response.blob().then(function (blob) {
@@ -382,13 +372,25 @@ var Utils = {
                         return response.json();
                     });
                     break;
+                case "woff":
+                case "woff2":
+                case "ttf":
+                    promise = request.then(function () {
+                        var style = document.createElement("style");
+                        style.innerHTML = "@font-face {\n" +
+                            "    font-family: " + key + ";\n" +
+                            "    src: url(" + url + ") format('" + format + "');\n" +
+                            "}";
+                        return style;
+                    });
+                    break;
                 default :
                     promise = Promise.resolve();
             }
             return promise.then(function (file) {
                 // Each step
-                loaded[Utils.sanitize(url)] = file;
-                action(++loadCount / toLoad * 100, url);
+                loaded[key] = file;
+                action(++loadCount / toLoad * 100, key);
             });
         })).then(function () {
             return loaded;

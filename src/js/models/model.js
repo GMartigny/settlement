@@ -8,15 +8,18 @@
  * @extends View
  */
 function Model (id) {
-    this.data = DataManager.get(id);
+    this.data = DataManager.get(id).clone();
     var args = Array.prototype.slice.call(arguments, 1);
     args.unshift(null); // No special CSS class
     Model.prototype.super.apply(this, args);
 }
-Model.extends(View, "Model", /** @lends Model */ {
+Model.extends(View, "Model", /** @lends Model.prototype */ {
+    getId: function () {
+        return this.data.id;
+    },
     toJSON: function () {
         return {
-            id: this.data.id
+            id: this.getId()
         };
     }
 });
