@@ -62,8 +62,8 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             incident: this.data
         };
 
-        if (Utils.isFunction(this.data.effect)) {
-            this.data.effect(this, this.data, effect);
+        if (Utils.isFunction(this.data.onStart)) {
+            this.data.onStart(this, effect);
         }
 
         var duration = 0;
@@ -102,6 +102,9 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * Start the incident (open popup)
      */
     start: function () {
+        if (Utils.isFunction(this.data.effect)) {
+            this.data.effect(this);
+        }
         new Popup(this.data, "incident");
     },
     /**
@@ -119,6 +122,10 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     end: function () {
         this.timer = null;
         MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_END, this);
+
+        if (Utils.isFunction(this.data.onEnd)) {
+            this.data.onEnd(this);
+        }
 
         this.html.remove();
         this.tooltip.remove();

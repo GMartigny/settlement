@@ -85,6 +85,8 @@ var DataManager = (function iife () {
      * @prop {String} [yes="Ok"] - Text for the validate button
      * @prop {String} [no] - Text for the cancel button
      * @prop {Number} dropRate - Chance of getting it
+     * @prop {Function} [onStart] - Function to execute on start (user validate popup)
+     * @prop {Function} [onEnd] - Function to execute on end (The incident time run-out or instantly if no time)
      * @prop {String} [color] - The incident bar color (optional but recommended)
      */
     /**
@@ -1203,7 +1205,7 @@ var DataManager = (function iife () {
             "It might contains rare resources, but can we take the risk to fiddle with it ?",
         yes: "Open it up",
         no: "Leave it",
-        effect: function (incident, data, effect) {
+        onStart: function (incident, effect) {
             if (MathsUtils.random() < 0.7) {
                 var give = Utils.randomize(ids.resources.craftables);
                 this.earn(1, give);
@@ -1244,7 +1246,7 @@ var DataManager = (function iife () {
             "As she get closer, you can see that she's point a finger towards you and mumble incomprehensible chatter.",
         yes: "Listen to her",
         no: "Fend her away",
-        effect: function () {
+        onStart: function () {
             new Popup({
                 name: "Fortune teller",
                 desc: "You calmly sit her down and try to get what she's trying to say.<br/>" +
@@ -1284,7 +1286,38 @@ var DataManager = (function iife () {
         lifeLose: 3,
         log: ""
     });
-    // strange beggar (giving may return investment)
+    ids.incidents.medium.beggar = insert({
+        id: "bgr",
+        name: "Strange beggar",
+        desc: "",
+        condition: function () {
+            return this.resources.has(ids.resources.special.quartz) &&
+                this.resources.get(ids.resources.special.quartz).has(2);
+        },
+        yes: "Acquiesce",
+        no: "No way",
+        onStart: function () {
+            MessageBus.notify(MessageBus.MSG_TYPES.USE, [
+                [2, ids.resources.special.quartz]
+            ]);
+        },
+        onEnd: function () {
+            if (MathsUtils.random() < 0.2) {
+                LogManager.log("Looks like the beggar is not coming back this time.", LogManager.LOG_TYPES.EVENT);
+            }
+            else {
+                var give = Utils.randomizeMultiple([ids.resources.gatherables, ids.resources.craftables.basic], 5);
+                var log = LogManager.personify("as promised, the beggar came back. He thank you with @give.", {
+                    give: give
+                });
+                LogManager.log(log, LogManager.LOG_TYPES.EVENT);
+                MessageBus.notify(MessageBus.MSG_TYPES.GIVE, give);
+            }
+        },
+        time: 8 * time.day,
+        dropRate: 20,
+        log: ""
+    });
     ids.incidents.medium.fever = insert({
         id: "fvr",
         name: "fever rash",
@@ -1314,9 +1347,11 @@ var DataManager = (function iife () {
         unique: true,
         yes: "Give him some water and food",
         no: "Ignore him",
-        effect: function () {
-            this.consume(3, ids.resources.gatherables.common.water);
-            this.consume(3, ids.resources.gatherables.common.food);
+        onStart: function () {
+            MessageBus.notify(MessageBus.MSG_TYPES.USE, [
+                [3, ids.resources.gatherables.common.water],
+                [3, ids.resources.gatherables.common.food]
+            ]);
             this.flags.doggy = true;
         },
         log: "With caution, he accept your offering. " +
@@ -1342,12 +1377,13 @@ var DataManager = (function iife () {
         desc: "It's been so long since you settle here that it feel like a new life now.",
         unique: true,
         yes: "Remember",
-        effect: function (incident, data, effect) {
+        onStart: function (incident, effect) {
             effect.duration = this.getSurvivalDuration();
         },
         dropRate: 30,
         log: "For @duration you manage to survive in this harsh environment. Good job !"
     });
+    // launch attack on another camp: just loose health for some resource (loss)
     // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
 

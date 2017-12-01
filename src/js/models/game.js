@@ -417,14 +417,14 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Earn some resource
      * @param {Number} amount - Amount to earn
-     * @param {ID} id - Resource id
+     * @param {ID} resourceId - Resource id
      */
-    earn: function (amount, id) {
-        if (this.resources.has(id)) {
-            this.resources.get(id).update(amount);
+    earn: function (amount, resourceId) {
+        if (this.resources.has(resourceId)) {
+            this.resources.get(resourceId).update(amount);
         }
         else {
-            var resource = new Resource(id, amount);
+            var resource = new Resource(resourceId, amount);
             this.resources.push(resource);
             this.resourcesList.appendChild(resource.html);
         }
