@@ -187,7 +187,7 @@ var DataManager = (function iife () {
     ids.resources.gatherables.common.rock = insert({
         id: "rck",
         name: "rock",
-        desc: "\"There's rocks everywhere ! Why would you bring this back ?\"",
+        desc: "<i class='quote'>There's rocks everywhere ! Why would you bring this back ?</i>",
         icon: "rock",
         dropRate: 100,
         order: 30
@@ -204,7 +204,7 @@ var DataManager = (function iife () {
     ids.people = insert({
         id: "plp",
         name: "people",
-        desc: "The workforce and the bane of you camp.",
+        desc: "The workforce and the bane of the camp.",
         needs: [
             [1.2 / time.day, ids.resources.gatherables.common.water, "thirsty"],
             [1 / time.day, ids.resources.gatherables.common.food, "starving"]
@@ -263,7 +263,7 @@ var DataManager = (function iife () {
     ids.resources.special.ruins = insert({
         id: "run",
         name: "location",
-        desc: "Directions to a point of interest we found earlier.",
+        desc: "Directions to a point of interest found earlier.",
         icon: "map",
         order: 80,
         dropRate: 0.6
@@ -303,7 +303,7 @@ var DataManager = (function iife () {
 
     /***** ACTIONS *****/
 
-    ids.actions.launch = insert({
+    ids.actions.launch = insert({ // TODO
         id: "lnc",
         name: "launch",
         desc: "Finally set off this module to get out of that damn wasteland.",
@@ -318,9 +318,9 @@ var DataManager = (function iife () {
             MessageBus.notify(MessageBus.MSG_TYPES.WIN, this.getSettledTime());
         },
         log: function () {
-            return "After " + this.getSurvivalDuration() + ", you finally leave this damn crash-site.<br/>" +
-                "You have to leave everyone behind. You make a promise to yourself to come back " +
-                "as soon as you can.";
+            var duration = this.getSurvivalDuration();
+            return "After " + duration + ", it's finally possible to leave this damned crash-site.<br/>" +
+                "It means having to leave everyone behind. But, promise is made to come back as soon as possible.";
         },
         order: 15
     });
@@ -512,7 +512,7 @@ var DataManager = (function iife () {
     ids.actions.explore = insert({
         id: "xpl",
         name: "explore",
-        desc: "Remember that location we saw the other day ? Let's see what we can find there.",
+        desc: "Remember that location found the other day ? Let's see what can be gather there.",
         time: time.day,
         energy: 100,
         isOut: 1,
@@ -609,7 +609,7 @@ var DataManager = (function iife () {
     ids.actions.gather = insert({
         id: "gtr",
         name: "gather resources",
-        desc: "Go out to bring back resources, that's the best you can do.",
+        desc: "Go out to bring back resources, that's the best way to survive.",
         time: 3,
         isOut: 1,
         unlock: [
@@ -660,18 +660,19 @@ var DataManager = (function iife () {
         energy: 0,
         effect: function () {
             TimerManager.timeout(function () {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "We need a shelter.");
+                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "A shelter will be needed.");
             }, GameController.tickLength / 2);
-            new Popup({
-                name: "The attack !",
-                desc: "You were on board of a federate spaceship, in charge to transfer the <b>Rising star</b> " +
-                    "to the security of the <b>Farast</b>'s headquarter.<br/>" +
-                    "Somehow, this secret delivery has been known and the <b>Gohunta Group</b> attacked.<br/>" +
-                    "You manage to bail out in time with the package. " +
-                    "But now, you're crashed on the other side of the planet !<br/><br/>" +
-                    "You need to find a way to cover the distance.",
-                yes: "Let's go"
-            });
+            // TODO: don't know if this is a good idea
+            // new Popup({
+            //     name: "The attack !",
+            //     desc: "While on board of a federate spaceship, in charge to transfer the <b>Rising star</b> " +
+            //         "to the security of the headquarter.<br/>" +
+            //         "Somehow, this secret delivery has been known and the <b>Gohunta Group</b> attacked.<br/>" +
+            //         "You manage to bail out in time with the package. " +
+            //         "But now, you're crashed on the other side of the planet !<br/><br/>" +
+            //         "You need to find a way to cover the distance.",
+            //     yes: "Let's go"
+            // });
         },
         give: [
             [8, ids.resources.gatherables.common.water],
@@ -790,7 +791,7 @@ var DataManager = (function iife () {
     ids.buildings.small.pharmacy = insert({
         id: "phr",
         name: "pharmacy",
-        desc: "\"Maybe we should avoid letting medications rot in plain sunlight ?!\"",
+        desc: "<i class='quote'>Maybe we should avoid letting medications rot in plain sunlight ?!</i>",
         time: 6,
         consume: [
             [5, ids.resources.gatherables.rare.medication],
@@ -877,7 +878,7 @@ var DataManager = (function iife () {
         upgrade: ids.buildings.small.furnace,
         asset: "furnace+1",
         order: 27,
-        log: "We can now work metal better and make more complex part."
+        log: "A big fire is now roaring in the forge. It should now be possible to forge more complex parts."
     });
 
     /** CRAFTABLES COMPLEX **/
@@ -911,7 +912,7 @@ var DataManager = (function iife () {
     ids.resources.craftables.complex.metalPipe = insert({
         id: "mtp",
         name: "metal pipe",
-        desc: "Pipes that you forge from junk metal.",
+        desc: "Pipes that was forged from junk metal.",
         icon: "pipes-small",
         ifHas: ids.buildings.medium.forge,
         consume: [
@@ -927,7 +928,7 @@ var DataManager = (function iife () {
     ids.resources.craftables.advanced.jewelry = insert({
         id: "jwl",
         name: "jewelry",
-        desc: "A really beautiful ornament you could use for trading.",
+        desc: "A really beautiful ornament useful for trading.",
         icon: "jewelry",
         ifHas: ids.buildings.small.furnace,
         consume: [
@@ -943,7 +944,7 @@ var DataManager = (function iife () {
     ids.buildings.big.workshop = insert({
         id: "wrs",
         name: "workshop",
-        desc: "Organizing your workforce make them more efficient at crafting.",
+        desc: "Having a dedicated place to store and arrange tools would allow to make more complex crafts.",
         time: 3 * time.day,
         energy: 90,
         ifHas: ids.buildings.medium.forge,
@@ -955,7 +956,7 @@ var DataManager = (function iife () {
         ],
         asset: "workshop",
         order: 35,
-        log: "Good organisation allow you to prepare project and do much more complex crafting."
+        log: "Good organisation enable to put together new work."
     });
     ids.resources.craftables.complex.furniture = insert({
         id: "fnt",
@@ -991,7 +992,7 @@ var DataManager = (function iife () {
     ids.resources.craftables.advanced.engine = insert({
         id: "egn",
         name: "engine",
-        desc: "Amazing what you manage to do with all those scraps !",
+        desc: "Amazing what can be done with all those scraps !",
         icon: "engine",
         ifHas: ids.buildings.big.workshop,
         consume: [
@@ -1019,7 +1020,7 @@ var DataManager = (function iife () {
     ids.buildings.big.radio = insert({
         id: "rdo",
         name: "radio-station",
-        desc: "Broadcasting could finally bring us some help.",
+        desc: "Putting together a radio could allow to call for help.",
         time: 6,
         ifHas: ids.buildings.big.workshop,
         consume: [
@@ -1031,8 +1032,9 @@ var DataManager = (function iife () {
         },
         asset: "radio",
         order: 37,
-        log: "\"Message received. We thought no one survive the crash. Glad you still have the cube." +
-        "Unfortunately we can't risk being located, bring it to sent position. Over.\""
+        log: "<i class='quote'>Message received. We thought no one survive the crash. " +
+            "Glad the cube is still preserved. " +
+            "Unfortunately we can't risk being located, bring it to sent coordinate. Over.</i>"
     });
     ids.buildings.big.pump = insert({
         id: "pmp",
@@ -1055,7 +1057,7 @@ var DataManager = (function iife () {
         ],
         asset: "pump",
         order: 36,
-        log: "A big upgrade to your well ! Now we have a continuous flow of water coming."
+        log: "A big upgrade to the well ! Now there's a continuous flow of water coming up."
     });
     ids.buildings.big.trading = insert({
         id: "trd",
@@ -1076,10 +1078,10 @@ var DataManager = (function iife () {
         order: 38,
         log: "Arranging some space allow us to trade with merchant caravan passing by."
     });
-    ids.buildings.big.module = insert({
+    ids.buildings.big.module = insert({ // TODO
         id: "mdl",
         name: "module",
-        desc: "With that, we can finally deliver the cube to security.",
+        desc: "With it, it's possible to finally deliver the cube to security.",
         time: time.week,
         energy: 100,
         ifHas: ids.buildings.big.radio,
@@ -1094,8 +1096,7 @@ var DataManager = (function iife () {
         ],
         asset: "module",
         order: 40,
-        log: "What a journey, but there we are. We build so many things and explore lots of places.<br/>" +
-        "Now it's time to end it all !"
+        log: ""
     });
 
     /** NEAR LOCATIONS **/
@@ -1127,7 +1128,7 @@ var DataManager = (function iife () {
     ids.locations.near.supermarket = insert({
         id: "hng",
         name: "hangar",
-        desc: "A huge hangar. It was certainly raided before by others, but you may grab something.",
+        desc: "A huge hangar. It was certainly raided before by others, but there may be something to grab.",
         giveList: [
             ids.resources.gatherables.common.food,
             ids.resources.gatherables.rare.medication,
@@ -1158,7 +1159,7 @@ var DataManager = (function iife () {
         id: "orn",
         name: "old ruin",
         desc: "This is a huge underground network of rooms linked by narrow hallways. " +
-        "This should have provided shelter a long time ago.",
+            "This should have provided shelter a long time ago.",
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.component,
@@ -1173,20 +1174,19 @@ var DataManager = (function iife () {
     ids.locations.epic.building = insert({
         id: "bld",
         name: "buried building",
-        desc: "By digging up this building, you uncover stuff preserved from looting and environment.",
+        desc: "Digging up this building, uncover stuff preserved from looting and environment.",
         giveList: [
             ids.resources.gatherables.rare.medication,
             ids.resources.craftables.basic.glass,
             ids.resources.craftables.complex.circuit
         ],
-        log: "No-one could guess what that building was, but it sure was interesting. " +
-        "@people.name find @give.",
+        log: "No-one could guess what that building was, but it sure was interesting. @people.name find @give.",
         dropRate: 10
     });
     ids.locations.epic.spaceship = insert({
         id: "swr",
         name: "spaceship wreck",
-        desc: "This wreckage seems to be in a fairly good shape and allow you to find useful part inside.",
+        desc: "This wreckage seems to be in a fairly good shape and allow to find useful part inside.",
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.tool,
@@ -1202,7 +1202,7 @@ var DataManager = (function iife () {
         id: "chs",
         name: "Strange old chest",
         desc: "While exploring, a rusty container was found in the middle of rubbles. " +
-            "It might contains rare resources, but can we take the risk to fiddle with it ?",
+            "It might contains rare resources, but there's risks to fiddle with it ?",
         yes: "Open it up",
         no: "Leave it",
         onStart: function (incident, effect) {
@@ -1242,23 +1242,24 @@ var DataManager = (function iife () {
         id: "frt",
         name: "an old woman approach",
         desc: "Someone point out to a silhouette in the distance. " +
-            "What seams to be a very old woman is coming toward your camp.<br/>" +
-            "As she get closer, you can see that she's point a finger towards you and mumble incomprehensible chatter.",
+            "What seams to be a very old woman is coming toward the camp.<br/>" +
+            "As she get closer, she's visibly pointing her finger in a menacing manner " +
+            "and mumble incomprehensible chatter.",
         yes: "Listen to her",
         no: "Fend her away",
         onStart: function () {
             new Popup({
                 name: "Fortune teller",
-                desc: "You calmly sit her down and try to get what she's trying to say.<br/>" +
-                    "<i class='quote'>Long path ahead, full of danger ... you may do it ... " +
+                desc: "After being calmly sit down, try to get what she's trying to say.<br/>" +
+                    "<i class='quote'>Long path ahead, full of danger ... may do it ... " +
                     "but at what cost ?</i><br/>" +
-                    "<i class='quote'>If you show mercy, success will follow !</i>",
+                    "<i class='quote'>If mercy is shown, success will follow !</i>",
                 yes: "Humm ... ok."
             }, "incident");
         },
         unique: true,
         dropRate: 70,
-        log: "You decide to listen to your fate. Does knowing your future is helpful ?"
+        log: "Listening to the fate that await can give chills. Does knowing the future is really helpful ?"
     });
     ids.incidents.easy.sandstorm = insert({
         id: "ssm",
@@ -1289,10 +1290,12 @@ var DataManager = (function iife () {
     ids.incidents.medium.beggar = insert({
         id: "bgr",
         name: "Strange beggar",
-        desc: "",
+        desc: "A lone traveler come with a deal: " +
+            "give him 2 " + Resource.iconAsString(db[ids.resources.special.quartz].icon) + " quartz now and " +
+            "<i class='quote'>for sure</i>, he'll return with more worth of goods.",
         condition: function () {
             return this.resources.has(ids.resources.special.quartz) &&
-                this.resources.get(ids.resources.special.quartz).has(2);
+                this.resources.get(ids.resources.special.quartz).has(3);
         },
         yes: "Acquiesce",
         no: "No way",
@@ -1307,8 +1310,8 @@ var DataManager = (function iife () {
             }
             else {
                 var give = Utils.randomizeMultiple([ids.resources.gatherables, ids.resources.craftables.basic], 5);
-                var log = LogManager.personify("as promised, the beggar came back. He thank you with @give.", {
-                    give: give
+                var log = LogManager.personify("as promised, the beggar came back. He gratefully give back @give.", {
+                    give: Utils.formatArray(give)
                 });
                 LogManager.log(log, LogManager.LOG_TYPES.EVENT);
                 MessageBus.notify(MessageBus.MSG_TYPES.GIVE, give);
@@ -1342,8 +1345,9 @@ var DataManager = (function iife () {
     ids.incidents.medium.strayDog = insert({
         id: "std",
         name: "stray dog",
-        desc: "Looks like a wild dog is lurking around your food stash.<br/>" +
-            "He seams really weakened by his hunger and thirst. Can you afford to have another mouth to feed ?",
+        desc: "Looks like a wild dog is lurking around the food stash.<br/>" +
+            "He seams really weakened by his hunger and thirst. " +
+            "Does there's enough resources to have another mouth to feed ?",
         unique: true,
         yes: "Give him some water and food",
         no: "Ignore him",
@@ -1354,8 +1358,8 @@ var DataManager = (function iife () {
             ]);
             this.flags.doggy = true;
         },
-        log: "With caution, he accept your offering. " +
-            "He then proceed to hide under your forum shadow and quickly fall asleep."
+        log: "With caution, he accept this offering. " +
+            "He then proceed to hide in the forum's shadow and quickly fall asleep."
     });
 
     /** HARD INCIDENTS **/
@@ -1363,7 +1367,7 @@ var DataManager = (function iife () {
     ids.incidents.hard.drought = insert({
         id: "drg",
         name: "drought",
-        desc: "The climate is so hot, we consume more water.",
+        desc: "The climate is so hot, everyone needs more water.",
         time: 3 * time.day,
         timeDelta: 10,
         color: "#f73a18",
@@ -1374,14 +1378,14 @@ var DataManager = (function iife () {
     ids.incidents.hard.lookBack = insert({
         id: "lkb",
         name: "look back",
-        desc: "It's been so long since you settle here that it feel like a new life now.",
+        desc: "It's been so long since this settlement start that it feel like a new life now.",
         unique: true,
         yes: "Remember",
         onStart: function (incident, effect) {
             effect.duration = this.getSurvivalDuration();
         },
         dropRate: 30,
-        log: "For @duration you manage to survive in this harsh environment. Good job !"
+        log: "The camp hold well for @duration in this harsh environment. Good job !"
     });
     // launch attack on another camp: just loose health for some resource (loss)
     // conversation between people (no impact) TODO: find a good way to manage blab
@@ -1404,32 +1408,19 @@ var DataManager = (function iife () {
         desc: "All group has a rookie, all @people.nominative want is to prove @people.nominative's efficient.",
         condition: function () {
             return this.people.length > 2;
-        },
-        effect: function (actionData) {
-            actionData.timeBonus = 0.9;
         }
     });
     ids.perks.explorer = insert({
         id: "xpr",
         name: "gadabout",
         desc: "The veteran of the camp and leader of the exploration. " +
-        "@people.nominative knows the best spot of resources.",
+            "@people.nominative knows the best spot of resources.",
         actions: [
             ids.actions.roam,
             ids.actions.scour,
             ids.actions.explore
         ],
-        iteration: 30,
-        effect: function (actionData) {
-            // Always find epic locations
-            // And get an extras when exploring
-            if (actionData.id === ids.actions.explore) {
-                var extra = 2;
-                actionData.giveSpan = actionData.giveSpan.map(function (value) {
-                    return value + extra;
-                });
-            }
-        }
+        iteration: 30
     });
     ids.perks.tinkerer = insert({
         id: "tnr",
@@ -1439,10 +1430,7 @@ var DataManager = (function iife () {
             ids.actions.craft,
             ids.actions.build
         ],
-        iteration: 30,
-        effect: function (actionData) {
-            actionData.timeBonus = 0.5;
-        }
+        iteration: 30
     });
     ids.perks.healer = insert({
         id: "hlr",
@@ -1451,11 +1439,13 @@ var DataManager = (function iife () {
         actions: [
             ids.actions.heal
         ],
-        ifHas: ids.buildings.small.pharmacy,
+        condition: function () {
+            this.buildings.has(ids.buildings.small.pharmacy);
+        },
         iteration: 5,
-        unlock: [
-            ids.actions.nurse
-        ]
+        // unlock: [
+        //     ids.actions.nurse
+        // ]
     });
     ids.perks.harvester = insert({
         id: "hvt",
@@ -1468,13 +1458,7 @@ var DataManager = (function iife () {
             ids.actions.drawFromRiver,
             ids.actions.drawFromWell
         ],
-        iteration: 40,
-        effect: function (actionData) {
-            var ratio = 1.5;
-            actionData.giveSpan = actionData.giveSpan.map(function (value) {
-                return value * ratio;
-            });
-        }
+        iteration: 40
     });
     ids.perks.lounger = insert({
         id: "lng",
@@ -1485,25 +1469,16 @@ var DataManager = (function iife () {
         ],
         condition: function (person) {
             return person.stats.idle > (3 * time.day);
-        },
-        effect: function (actionData) {
-            // Won't use energy while idle
-            // Sleep longer
-            actionData.timeBonus = -0.2;
         }
     });
     ids.perks.merchant = insert({
         id: "mrc",
         name: "merchant",
-        desc: "The ancient art of trading have been one of the most important skill you could have.",
+        desc: "The ancient art of trading is a boon if used well.",
         action: [
             ids.actions.exchange
         ],
-        iteration: 10,
-        effect: function (actionData) {
-            // Consume only 1 jewel per trade
-            actionData.consume[0] = 1;
-        }
+        iteration: 10
     });
     /* eslint-enable valid-jsdoc */
 

@@ -68,7 +68,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
         // Tooltip on health bar
         new Tooltip(this.lifeBar.html, {
             name: "Health",
-            desc: "The first thing you want is a good health."
+            desc: "The first thing anyone want is a good health."
         });
         // Tooltip on energy bar
         new Tooltip(this.energyBar.html, {
@@ -111,8 +111,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
         if (flags.settled) {
             this.stats.age += elapse;
             this.stats.idle += elapse;
-            var ratio = this.perk && this.perk.id === DataManager.ids.perks.lounger ? 0 : this.energyDrain;
-            this.updateEnergy(-elapse * (ratio + flags.starving * 30)); // getting tired
+            this.updateEnergy(-elapse * (this.energyDrain + flags.starving * 30)); // getting tired
             var lifeLose = 0;
             if (flags.thirsty) { // drying
                 lifeLose += flags.thirsty * 30;
@@ -323,9 +322,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {ID} perkId - The perk data
      */
     gainPerk: function (perkId) {
-        var perk = new Perk(perkId, this);
-        this.perk = perk;
-        this.nameNode.appendChild(perk.html);
+        this.perk = new Perk(perkId, this);
+        this.nameNode.appendChild(this.perk.html);
     },
     /**
      * Check for perk
@@ -355,15 +353,18 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @returns {Object}
      */
     toJSON: function () {
-        return {
+        var json = {
             nam: this.name,
             gnd: this.gender,
             lif: this.life,
             ene: this.energy,
             sts: this.stats,
-            prk: this.perk && this.perk.getId(),
             act: this.actions.getValues()
         };
+        if (this.perk) {
+            json.prk = this.perk.getId();
+        }
+        return json;
     }
 });
 /**

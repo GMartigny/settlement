@@ -71,8 +71,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var bottomOptionsNode = Utils.wrap("bottomOptions", null, html);
         var wipeSaveClickable = new Clickable("wipe", "Clear save", function openWipeSavePopup () {
             new Popup({
-                name: "Clear your save",
-                desc: "Completely wipe your saved game. Careful, this is irreversible.",
+                name: "Clear save",
+                desc: "Completely wipe the saved game. Careful, this is irreversible.",
                 yes: {
                     name: "Restart anew",
                     action: function () {
@@ -230,9 +230,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         .observe(msgType.WIN, function () {
             this.flags.win = true;
             sendEvent("Game", "win", game.getSettledTime());
-            new Popup({
+            new Popup({ // TODO
                 name: "You win !!",
-                desc: "" // TODO
+                desc: ""
             });
         })
 
@@ -642,7 +642,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             bld: this.buildings.getValues(),
             inc: this.incidents.getValues(),
             lct: this.knownLocations,
-            bip: this.buildingsInProgress
+            bip: this.buildingsInProgress,
+            upk: Perk.usedId
         };
         delete json.flg.paused;
         delete json.flg.popup;
@@ -689,6 +690,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             game.peopleList.appendChild(person.html);
             person.show();
         });
+        Perk.usedId = data.upk;
         this.addToInitialActions(data.iac);
         this.knownLocations = data.lct;
         this.buildingsInProgress = data.bip;

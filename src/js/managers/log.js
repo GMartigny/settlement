@@ -40,19 +40,19 @@ var LogManager = (function iife () {
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-                var message = "We lost " + person.name + ".";
-                self.log(message, self.LOG_TYPES.WARN);
+                var message = "@name just died, @possessive body is dragged outside and buried.";
+                self.log(this.personify(message, person), self.LOG_TYPES.WARN);
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 sendEvent("Death", "survival duration", survivalDuration);
-                var message = "We held up for " + Utils.formatTime(survivalDuration) + ", but all is lost now.";
+                var message = "After holding up for " + Utils.formatTime(survivalDuration) + ", everyone.";
                 self.log(message, self.LOG_TYPES.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceId) {
-                var data = DataManager.get(resourceId);
-                var message = "We run out of " + Resource.toString(data) + ", we need to do something.";
+                var message = "There's no more " + Resource.toString(resourceId) + " available, " +
+                    "something needs to be done quickly.";
                 self.log(message, self.LOG_TYPES.WARN);
             })
 

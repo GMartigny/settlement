@@ -114,16 +114,17 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {String}
      */
     toString: function () {
-        return Resource.toString(this.data, this.count);
+        return Resource.toString(this.getId(), this.count);
     }
 });
 /**
  * Format a resource to string without instantiation
- * @param {ResourceData} data - Data of the resource
+ * @param {ID} id - Id of the resource
  * @param {Number} [count] - The amount, ignored if not defined
  * @return {String}
  */
-Resource.toString = function toString (data, count) {
+Resource.toString = function toString (id, count) {
+    var data = DataManager.get(id);
     var str = "";
     if (!Utils.isUndefined(count)) {
         str += count + " ";

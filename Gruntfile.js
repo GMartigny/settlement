@@ -14,7 +14,10 @@ module.exports = function (grunt) {
     });
 
     var sourceDir = {
-        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js", "src/js/views/view.js", "src/js/models/model.js", "src/js/**/*.js"], // Load in order
+        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js",
+            "src/js/views/view.js", "src/js/models/model.js",
+            "src/js/models/resource.js",
+            "src/js/**/*.js"], // Load in order
         json: ["src/json/**/*.json"],
         css: ["src/css/**/*.less"],
         img: {

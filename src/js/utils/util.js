@@ -51,8 +51,7 @@ var Utils = {
     formatArray: function (array) {
         View.enableHTML = false;
         var str = Utils.formatJoin(array.map(function (item) {
-            var data = DataManager.get(item[1]);
-            return Resource.toString(data, item[0]);
+            return Resource.toString(item[1], item[0]);
         }));
         View.enableHTML = true;
         return str;
