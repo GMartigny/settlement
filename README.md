@@ -23,8 +23,6 @@ Here's the few rules I try to follow making this game :
 
 ### v0.5 - WIP
 
-Redo all buildings assets.
-
 More texts and story building. Add lots of events.
 
 
