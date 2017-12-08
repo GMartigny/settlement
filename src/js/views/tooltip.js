@@ -172,19 +172,27 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
     }
 });
 
-Tooltip.static(/** @lends Tooltip */{
+Tooltip.static( /** @lends Tooltip */ {
+    wrapperSizeCache: null,
     /**
      * Return tooltips wrapper dimension
      * @return {{width: Number, height: Number}}
      */
     getWrapperSize: function () {
-        if (!this.cache) {
+        if (!this.wrapperSizeCache) {
             var holderMeasures = GameController.holder.getBoundingClientRect();
-            this.cache = {
+            this.wrapperSizeCache = {
                 width: holderMeasures.width,
                 height: holderMeasures.height
             };
         }
-        return this.cache;
+        return this.wrapperSizeCache;
     }
+});
+
+/**
+ * Reset wrapperSizeCache if the screen size is changed
+ */
+window.addEventListener("resize", function viewportResizeOrRotation () {
+    Tooltip.wrapperSizeCache = null;
 });

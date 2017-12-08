@@ -660,7 +660,7 @@ var DataManager = (function iife () {
         energy: 0,
         effect: function () {
             TimerManager.timeout(function () {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "A shelter will be needed.");
+                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "I'll need a shelter.");
             }, GameController.tickLength / 2);
             // TODO: don't know if this is a good idea
             // new Popup({

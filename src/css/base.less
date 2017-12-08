@@ -68,8 +68,11 @@ body {
         font-style: italic;
         color: #888;
 
-        &:before, &:after {
-            content: ' " ';
+        &:before {
+            content: "\201C";
+        }
+        &:after {
+            content: "\201D";
         }
     }
 
