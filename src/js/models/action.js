@@ -51,9 +51,13 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.optionsWrapper.hide();
 
             html.addEventListener("mouseover", this.showOptions.bind(this));
-            html.addEventListener("focusin", this.showOptions.bind(this));
             html.addEventListener("mouseout", this.hideOption.bind(this));
-            html.addEventListener("focusout", this.hideOption.bind(this));
+
+            /**
+             * For keyboard control (but with downside as is)
+             * html.addEventListener("focusin", this.showOptions.bind(this));
+             * html.addEventListener("focusout", this.hideOption.bind(this));
+             */
         }
         else {
             this.clickable.setAction(this.click.bind(this, null));
@@ -80,10 +84,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @private
      */
     init: function () {
-        this.data.time = this.data.time || 0;
-        if (Utils.isUndefined(this.data.energy)) {
-            this.data.energy = this.data.time * 5;
-        }
+        Action.timeAndEnergyFallback(this.data);
 
         this.tooltip = new Tooltip(this.clickable.html, this.data);
 
@@ -229,6 +230,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         if (optionId) {
             option = DataManager.get(optionId);
+            Action.timeAndEnergyFallback(option);
         }
 
         var build = {};
@@ -240,6 +242,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
             else {
                 build = DataManager.get(buildId);
+                Action.timeAndEnergyFallback(build);
             }
         }
 
@@ -470,5 +473,18 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             json.opi = this.chosenOptionId;
         }
         return json;
+    }
+});
+
+Action.static(/** @lends Action */{
+    /**
+     * Set time and energy according to Action fallback rule (time is 0 if omitted, energy is time * 5 if omitted)
+     * @param {ActionData} data - Some data to fill (will be modified)
+     */
+    timeAndEnergyFallback: function (data) {
+        data.time = data.time || 0;
+        if (Utils.isUndefined(data.energy)) {
+            data.energy = data.time * 5;
+        }
     }
 });

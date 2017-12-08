@@ -100,6 +100,10 @@ Object.prototype.values = function values () {
     return Object.values(this);
 };
 
+/**
+ * Turn a deep object into a simple array
+ * @return {Array}
+ */
 Object.prototype.flatten = function () {
     var res = [];
     this.deepBrowse(function (value) {
@@ -172,12 +176,12 @@ HTMLElement.prototype.hide = function hide () {
 };
 
 /**
- * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent functions can be accessed with a leading "_".
+ * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent values can be accessed with a leading "_".
  * @param {Function} parent - A parent to draw prototype from
  * @param {String} name - The constructor's name
- * @param {Object} override - A map like object with overrides
+ * @param {Object} values - Set of key/values for this class prototype
  */
-Function.prototype.extends = function _extends (parent, name, override) {
+Function.prototype.extends = function _extends (parent, name, values) {
     if (parent) {
         this.prototype = Object.create(parent.prototype);
         /**
@@ -187,16 +191,30 @@ Function.prototype.extends = function _extends (parent, name, override) {
         this.prototype.constructor = this;
         this.prototype.modelName = name;
     }
-    if (override) {
+    if (values) {
         var self = this;
-        override.browse(function (func, funcName) {
+        values.browse(function (value, key) {
             // Save parent inherited function with leading "_"
-            if (self.prototype[funcName]) {
-                self.prototype["_" + funcName] = self.prototype[funcName];
+            if (self.prototype[key]) {
+                self.prototype["_" + key] = self.prototype[key];
             }
-            self.prototype[funcName] = func;
+            self.prototype[key] = value;
         });
     }
+};
+
+/**
+ * Register some static value to a class. Overridden values can be accessed with a leading "_"
+ * @param {Object} values - Set of key/values for this class
+ */
+Function.prototype.static = function _static (values) { // TODO: factorise with Function.prototype.extends
+    var self = this;
+    values.browse(function (value, key) {
+        if (self[key]) {
+            self["_" + key] = self[key];
+        }
+        self[key] = value;
+    });
 };
 
 /**

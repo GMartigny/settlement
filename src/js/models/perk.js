@@ -17,15 +17,6 @@ function Perk (id, owner) {
 
     this.super(id);
 }
-Perk.usedId = [];
-/**
- * Tell if this perk has already been used
- * @param {ID} perkId - Any perk ID
- * @returns {Boolean}
- */
-Perk.isUsed = function isUsed (perkId) {
-    return Perk.usedId.includes(perkId);
-};
 Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
     /**
      * Initialize object
@@ -53,5 +44,17 @@ Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
         var html = this._toHTML();
         html.textContent = "the \"" + Utils.capitalize(this.data.name) + "\"";
         return html;
+    }
+});
+
+Perk.static(/** @lends Perk */{
+    usedId: [],
+    /**
+     * Tell if this perk has already been used
+     * @param {ID} perkId - Any perk ID
+     * @returns {Boolean}
+     */
+    isUsed: function (perkId) {
+        return this.usedId.includes(perkId);
     }
 });

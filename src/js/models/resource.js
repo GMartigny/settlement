@@ -117,30 +117,33 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         return Resource.toString(this.getId(), this.count);
     }
 });
-/**
- * Format a resource to string without instantiation
- * @param {ID} id - Id of the resource
- * @param {Number} [count] - The amount, ignored if not defined
- * @return {String}
- */
-Resource.toString = function toString (id, count) {
-    var data = DataManager.get(id);
-    var str = "";
-    if (!Utils.isUndefined(count)) {
-        str += count + " ";
+
+Resource.static(/** @lends Resource */{
+    LST_ID: "resourceList",
+    /**
+     * Format a resource to string without instantiation
+     * @param {ID} id - Id of the resource
+     * @param {Number} [count] - The amount, ignored if not defined
+     * @return {String}
+     */
+    toString: function (id, count) {
+        var data = DataManager.get(id);
+        var str = "";
+        if (!Utils.isUndefined(count)) {
+            str += count + " ";
+        }
+        if (data.icon) {
+            str += Resource.iconAsString(data.icon) + " ";
+        }
+        str += Utils.pluralize(data.name, count);
+        return str;
+    },
+    /**
+     * Give the HTML string for an icon name
+     * @param {String} iconName - An icon name
+     * @return {String}
+     */
+    iconAsString: function (iconName) {
+        return Utils.wrap("icon icon-small-" + iconName).outerHTML;
     }
-    if (data.icon) {
-        str += Resource.iconAsString(data.icon) + " ";
-    }
-    str += Utils.pluralize(data.name, count);
-    return str;
-};
-/**
- * Give the HTML string for an icon name
- * @param {String} iconName - An icon name
- * @return {String}
- */
-Resource.iconAsString = function iconAsString (iconName) {
-    return Utils.wrap("icon icon-small-" + iconName).outerHTML;
-};
-Resource.LST_ID = "resourceList";
+});

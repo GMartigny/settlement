@@ -39,12 +39,16 @@ function GameController (holder, assets) {
     this.super(null, assets);
     console.log("Started in " + (Utils.getNow() - now) + "ms");
 }
-/**
- * Convert from in game hour to ms
- * @type {Number}
- */
-GameController.tickLength = 2000;
-GameController.holder = null;
+
+GameController.static(/** @lends GameController */{
+    /**
+     * Convert from in game hour to ms
+     * @type {Number}
+     */
+    tickLength: 2000,
+    holder: null
+});
+
 GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
     /**
      * Return HTML for display
@@ -80,9 +84,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                         location.reload();
                     }
                 },
-                no: {
-                    name: "Cancel"
-                }
+                no: "Cancel"
             }, "wipeIt");
         });
         bottomOptionsNode.appendChild(wipeSaveClickable.html);
@@ -114,7 +116,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     },
     /**
      * Start a new adventure
-     * @param {Object} media - ??
+     * @param {Object} media - Pre-loaded assets
      */
     init: function (media) {
         DataManager.bindAll(this);
@@ -140,10 +142,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             this.initialActions.push(DataManager.ids.actions.wakeUp);
 
             // First person arrives
-            TimerManager.timeout(this.prepareNewcomer.bind(this, 1), 500);
+            this.prepareNewcomer.defer(this);
         }
 
-        if (!IS_DEV && IS_BETA) {
+        if (!IS_DEV && IS_BETA && !localStorage.getItem("eaWarning")) {
             // early access warning
             new Popup({
                 name: "Early access [" + VERSION + "]",
@@ -151,7 +153,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
                 "Thanks for playing !",
-                yes: "Got it !"
+                yes: {
+                    name: "Got it !",
+                    action: function () {
+                        localStorage.setItem("eaWarning", "1");
+                    }
+                }
             });
         }
         // Start the refresh loop
@@ -435,7 +442,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      */
     prepareNewcomer: function (amount) {
         var game = this;
-        peopleFactory(amount || 1).then(function (persons) {
+        People.peopleFactory(amount || 1).then(function (persons) {
             persons.forEach(function (person) {
                 person.addAction(game.initialActions);
 
@@ -643,7 +650,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             inc: this.incidents.getValues(),
             lct: this.knownLocations,
             bip: this.buildingsInProgress,
-            upk: Perk.usedId
+            upk: Perk.usedId,
+            vrn: VERSION
         };
         delete json.flg.paused;
         delete json.flg.popup;
@@ -656,6 +664,24 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         sendEvent("Game", "reload");
         var data = SaveManager.load();
         var game = this;
+
+        var loadedVersion = data.vrn && data.vrn.substr(0, data.vrn.lastIndexOf("."));
+        var currentVersion = VERSION.substr(0, VERSION.lastIndexOf("."));
+        if (loadedVersion !== currentVersion) {
+            new Popup({
+                name: "New version",
+                desc: "Since the last time you played, a new version of the game has been released.<br/>" +
+                    "You may want to restart to experience all the cool new features. ;)<br/>",
+                no: "Continue last save",
+                yes: {
+                    name: "Restart anew",
+                    action: function () {
+                        game.wipeSave();
+                        location.reload();
+                    }
+                }
+            }, "wipeIt");
+        }
 
         MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);
         data.bld.forEach(function rebuildBuildings (bld) {

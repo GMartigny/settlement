@@ -24,7 +24,7 @@ function starter (globalScope) {
         assetsData: "dist/json/assets.json",
         buildingsData: "dist/json/buildingsData.json"
     }, function loadedFile (percent, name) {
-        console.log(name + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart));
+        console.log(name + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart) + "ms");
     }).then(function allLoaded (media) {
         console.groupEnd();
         container.classList.remove("loading");

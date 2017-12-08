@@ -23,18 +23,13 @@ function Tooltip (container, data) {
     this.super(null, data);
 }
 Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
-    _holderWidth: null,
-    _holderHeight: null,
+    /**
+     * Initialise object
+     * @param {TooltipData} data - Data for the tooltip
+     * @private
+     */
     init: function (data) {
         this.refresh(new Map(), data);
-
-        // Save body size to avoid overflow
-        if (!(this._holderWidth && this._holderHeight)) {
-            Tooltip._holder = GameController.holder; // meh
-            var holderMeasures = Tooltip._holder.getBoundingClientRect();
-            this._holderWidth = holderMeasures.width;
-            this._holderHeight = holderMeasures.height;
-        }
 
         // Measure the box
         this._mouseOver(); //  add to DOM
@@ -52,8 +47,9 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @private
      */
     _setPosition: function (x, y) {
-        var left = MathsUtils.constrain(x + 10, 0, this._holderWidth - this.width);
-        var top = MathsUtils.constrain(y + 10, 0, this._holderHeight - this.height);
+        var wrapperSize = Tooltip.getWrapperSize();
+        var left = MathsUtils.constrain(x + 10, 0, wrapperSize.width - this.width);
+        var top = MathsUtils.constrain(y + 10, 0, wrapperSize.height - this.height);
         this.html.style.left = left + "px";
         this.html.style.top = top + "px";
     },
@@ -62,7 +58,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @private
      */
     _mouseOver: function () {
-        Tooltip._holder.appendChild(this.html);
+        GameController.holder.appendChild(this.html);
     },
     /**
      * Handle mouse out events
@@ -173,5 +169,22 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      */
     remove: function () {
         this.html.remove();
+    }
+});
+
+Tooltip.static(/** @lends Tooltip */{
+    /**
+     * Return tooltips wrapper dimension
+     * @return {{width: Number, height: Number}}
+     */
+    getWrapperSize: function () {
+        if (!this.cache) {
+            var holderMeasures = GameController.holder.getBoundingClientRect();
+            this.cache = {
+                width: holderMeasures.width,
+                height: holderMeasures.height
+            };
+        }
+        return this.cache;
     }
 });

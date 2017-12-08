@@ -2,35 +2,6 @@
 /* exported peopleFactory People */
 
 /**
- * Factory for people
- * @param {Number} [amount=1] - Number of people to create
- * @return {Promise}
- */
-function peopleFactory (amount) {
-    amount = amount || 1;
-    // We don't want to spam the webservice when in dev
-    if (IS_DEV) {
-        var res = [];
-        for (var i = 0; i < amount; ++i) {
-            var code = "Bot-" + Utils.randomStr(3).toUpperCase();
-            res.push(new People(code));
-        }
-        return Promise.resolve(res);
-    }
-    else {
-        return People.randomName(amount).then(function (response) {
-            var people = [];
-            response.results.forEach(function (data) {
-                var name = Utils.capitalize(data.name.first)/* + " " + Utils.capitalize(data.name.last)*/;
-                var person = new People(name, data.gender);
-                people.push(person);
-            });
-            return people;
-        });
-    }
-}
-
-/**
  * Class for people
  * @param {String} name - It's name
  * @param {"male"|"female"} [gender="other"] - It's gender
@@ -367,24 +338,55 @@ People.extends(View, "People", /** @lends People.prototype */ {
         return json;
     }
 });
-/**
- * Return a promise for a random name
- * @param {Number} [amount=1] - Number of name to get
- * @returns {Promise}
- */
-People.randomName = function (amount) {
-    return new Promise(function (resolve, reject) {
-        var baseUrl = "https://randomuser.me/api?inc=gender,name";
-        var countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
-        var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + (amount || 1);
 
-        fetch(url).then(function (response) {
-            if (response.ok) {
-                return response.json().then(resolve);
+People.static(/** @lends People */{
+    /**
+     * Factory for people
+     * @param {Number} [amount=1] - Number of people to create
+     * @return {Promise}
+     */
+    peopleFactory: function (amount) {
+        amount = amount || 1;
+        // We don't want to spam the webservice when in dev
+        if (IS_DEV) {
+            var res = [];
+            for (var i = 0; i < amount; ++i) {
+                var code = "Bot-" + Utils.randomStr(3).toUpperCase();
+                res.push(new People(code));
             }
-            else {
-                reject(new URIError("[" + response.status + "] " + url + " " + response.statusText));
-            }
+            return Promise.resolve(res);
+        }
+        else {
+            return this.randomName(amount).then(function (response) {
+                var people = [];
+                response.results.forEach(function (data) {
+                    var name = Utils.capitalize(data.name.first)/* + " " + Utils.capitalize(data.name.last)*/;
+                    var person = new People(name, data.gender);
+                    people.push(person);
+                });
+                return people;
+            });
+        }
+    },
+    /**
+     * Return a promise for a random name
+     * @param {Number} [amount=1] - Number of name to get
+     * @returns {Promise}
+     */
+    randomName: function (amount) {
+        return new Promise(function (resolve, reject) {
+            var baseUrl = "https://randomuser.me/api?inc=gender,name";
+            var countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
+            var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + (amount || 1);
+
+            fetch(url).then(function (response) {
+                if (response.ok) {
+                    return response.json().then(resolve);
+                }
+                else {
+                    reject(new URIError("[" + response.status + "] " + url + " " + response.statusText));
+                }
+            });
         });
-    });
-};
+    }
+});

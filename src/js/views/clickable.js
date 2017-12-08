@@ -26,7 +26,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
         var html = this._toHTML();
 
         html.textContent = this.text;
-        html.tabIndex = 0;
+        // html.tabIndex = 0;
 
         return html;
     },
@@ -82,7 +82,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      */
     toggle: function (enable) {
         this.html.classList.toggle("disabled", !enable);
-        this.html.tabIndex = enable ? 0 : -1;
+        // this.html.tabIndex = enable ? 0 : -1;
     },
     /**
      * Change the clickable text

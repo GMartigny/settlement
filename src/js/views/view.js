@@ -13,8 +13,8 @@ function View (CSSClass) {
     }
     this.init.apply(this, Array.prototype.slice.call(arguments, 1));
 }
-View.enableHTML = true;
-View.extends(Object, "View", /** @lends View.prototype */ {
+
+View.extends(null, "View", /** @lends View.prototype */ {
     /**
      * Initialise the object (fill missing data and prepare properties)
      */
@@ -38,4 +38,11 @@ View.extends(Object, "View", /** @lends View.prototype */ {
     hide: function () {
         this.html.hide();
     }
+});
+
+View.static({
+    /**
+     * Does the view bother to create its html element
+     */
+    enableHTML: true,
 });
