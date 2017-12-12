@@ -21,7 +21,13 @@ Here's the few rules I try to follow making this game :
 
 ## Changelog
 
-### v0.5 - WIP
+### v0.6 - WIP
+
+Final game assets
+
+Last few polish (hopefully last development's version)
+
+### [v0.5](https://github.com/GMartigny/settlement/releases/tag/v0.5.0)
 
 More texts and story building. Add lots of events.
 
