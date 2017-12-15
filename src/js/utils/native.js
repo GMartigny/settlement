@@ -219,13 +219,13 @@ Function.prototype.static = function _static (values) { // TODO: factorise with 
 
 /**
  * Put this function call at the end of the call-stack
- * @param {*} ctx - Context for the call
+ * @param {*} [ctx] - Context for the call
  * @return {undefined} /!\ Not the result of the function's call
  */
 Function.prototype.defer = function defer (ctx) {
     var self = this;
     var args = Array.prototype.slice.call(arguments, 1);
-    setTimeout(function () {
+    requestAnimationFrame(function deferFunctionCall () {
         self.apply(ctx, args);
-    }, 0);
+    });
 };

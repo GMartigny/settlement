@@ -46,7 +46,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         html.appendChild(this.clickable.html);
 
         if (Utils.isFunction(this.data.options)) {
-            this.clickable.isDropdown(true);
+            this.clickable.setAsDropdown(true);
             this.optionsWrapper = Utils.wrap("options", null, html);
             this.optionsWrapper.hide();
 
@@ -181,7 +181,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.start(duration * GameController.tickLength);
                 sendEvent("Action", "start", this.data.name);
 
-                MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
+                MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
                 return true;
             }
         }
@@ -230,7 +230,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         if (optionId) {
             option = DataManager.get(optionId);
-            Action.timeAndEnergyFallback(option);
         }
 
         var build = {};
@@ -242,7 +241,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
             else {
                 build = DataManager.get(buildId);
-                Action.timeAndEnergyFallback(build);
             }
         }
 
@@ -268,6 +266,9 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 merge[prop] = Object.assign({}, (data[prop] || {}), (option[prop] || {}), (build[prop] || {}));
             }
         });
+
+        Action.timeAndEnergyFallback(merge);
+        console.log(merge);
 
         return merge;
     },
@@ -295,7 +296,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // Give
         if (result.give.length) {
-            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, result.give);
+            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, {
+                give: result.give,
+                initiator: this
+            });
         }
 
         // Unlock
@@ -325,7 +329,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, result.log);
 
-        MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
+        MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
     },
     /**
      * Resolve all function of this action
@@ -447,7 +451,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.parentAction.options.delete(this.getId());
         }
 
-        this.html.remove();
+        this.remove();
     },
     /**
      * Cancel this action
@@ -482,9 +486,9 @@ Action.static(/** @lends Action */{
      * @param {ActionData} data - Some data to fill (will be modified)
      */
     timeAndEnergyFallback: function (data) {
-        data.time = data.time || 0;
-        if (Utils.isUndefined(data.energy)) {
+        if (Utils.isUndefined(data.energy) && !Utils.isUndefined(data.time)) {
             data.energy = data.time * 5;
         }
+        data.time = data.time || 0;
     }
 });

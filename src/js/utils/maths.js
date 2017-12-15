@@ -8,6 +8,7 @@ var MathsUtils = {
      * @return {Number}
      */
     floor: function (x) {
+        // Bitshifting force number to integer
         return x << 0;
     },
 
@@ -17,7 +18,7 @@ var MathsUtils = {
      * @return {Number}
      */
     round: function (x) {
-        return MathsUtils.floor(x + 0.5);
+        return MathsUtils.floor(x + MathsUtils.sign(x) / 2);
     },
 
     /**
@@ -26,7 +27,7 @@ var MathsUtils = {
      * @return {Number}
      */
     ceil: function ceil (x) {
-        return MathsUtils.floor(x + 1);
+        return MathsUtils.floor(x + MathsUtils.sign(x));
     },
 
     /**
@@ -35,6 +36,15 @@ var MathsUtils = {
      * @return {Number}
      */
     abs: Math.abs,
+
+    /**
+     * Get the sign of a number
+     * @param {Number} x - Any number
+     * @return {Number}
+     */
+    sign: function (x) {
+        return x < 0 ? -1 : 1;
+    },
 
     /**
      * Apply a power to a number
@@ -52,6 +62,24 @@ var MathsUtils = {
     sq: function (x) {
         return x * x;
     },
+
+    /**
+     * Get the square root of a number
+     * @param {Number} x - Any number
+     * @return {Number}
+     */
+    sqrt: function (x) {
+        return MathsUtils.pow(x, 0.5);
+    },
+
+    /**
+     * 2 times PI (full trigo rotation)
+     * @constant
+     */
+    PI2: Math.PI * 2,
+
+    cos: Math.cos,
+    sin: Math.sin,
 
     /**
      * Return the absolute difference between two number
@@ -104,7 +132,7 @@ var MathsUtils = {
      * Return a random number between marks
      * @param {Number} [from=0]
      * @param {Number} [to=1]
-     * @return {*}
+     * @return {Number}
      */
     random: (function iife () {
         var rand = Math.random;

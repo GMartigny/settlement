@@ -29,6 +29,7 @@ function starter (globalScope) {
         console.groupEnd();
         container.classList.remove("loading");
         document.head.appendChild(media.Dosis);
+        container.innerHTML = "";
         var Game = new GameController(container, media);
         if (IS_DEV) {
             globalScope.G = Game;

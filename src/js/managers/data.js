@@ -495,8 +495,8 @@ var DataManager = (function iife () {
         id: "crf",
         name: "craft",
         desc: "Use some resources to tinker something useful.",
-        time: 5,
-        energy: 15,
+        time: 4,
+        energy: 10,
         options: function () {
             return this.unlockedCraftables();
         },
@@ -566,7 +566,7 @@ var DataManager = (function iife () {
     ids.actions.roam = insert({
         id: "ram",
         name: "roam",
-        desc: "Explore the surroundings hoping to find something interesting.",
+        desc: "Explore the surroundings hoping to find " + Utils.an(Resource.toString(db[ids.resources.special.ruins])) + ".",
         time: 5,
         isOut: 1,
         consume: [
@@ -662,17 +662,6 @@ var DataManager = (function iife () {
             TimerManager.timeout(function () {
                 MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "I'll need a shelter.");
             }, GameController.tickLength / 2);
-            // TODO: don't know if this is a good idea
-            // new Popup({
-            //     name: "The attack !",
-            //     desc: "While on board of a federate spaceship, in charge to transfer the <b>Rising star</b> " +
-            //         "to the security of the headquarter.<br/>" +
-            //         "Somehow, this secret delivery has been known and the <b>Gohunta Group</b> attacked.<br/>" +
-            //         "You manage to bail out in time with the package. " +
-            //         "But now, you're crashed on the other side of the planet !<br/><br/>" +
-            //         "You need to find a way to cover the distance.",
-            //     yes: "Let's go"
-            // });
         },
         give: [
             [8, ids.resources.gatherables.common.water],
@@ -758,7 +747,7 @@ var DataManager = (function iife () {
     ids.buildings.small.forum1 = insert({
         id: "fr1",
         name: "forum+1",
-        desc: "Add one room.",
+        desc: "Add " + Resource.toString(db[ids.resources.room], 1) + ".",
         time: 2,
         upgrade: ids.buildings.special.forum,
         consume: [
@@ -770,7 +759,7 @@ var DataManager = (function iife () {
         ],
         asset: "forum1",
         order: 10,
-        log: "It'll be nice to have someone else helping."
+        log: "More space to sleep means more people joining and helping."
     });
     ids.buildings.small.plot = insert({
         id: "plt",
@@ -786,7 +775,7 @@ var DataManager = (function iife () {
         ],
         asset: "plot",
         order: 12,
-        log: "More crops required more care but that's going to help us keeping a constant stock of food."
+        log: "Crops required care but that's going to help keeping a constant stock of food."
     });
     ids.buildings.small.pharmacy = insert({
         id: "phr",
@@ -829,7 +818,7 @@ var DataManager = (function iife () {
     ids.buildings.medium.forum2 = insert({
         id: "fr2",
         name: "forum+2",
-        desc: "Add one room.",
+        desc: "Add " + Resource.toString(db[ids.resources.room], 1) + ".",
         time: 5,
         consume: [
             [10, ids.resources.gatherables.uncommon.sand],
@@ -974,7 +963,7 @@ var DataManager = (function iife () {
     ids.buildings.big.forum3 = insert({
         id: "fr3",
         name: "forum+3",
-        desc: "Add two rooms.",
+        desc: "Add " + Resource.toString(db[ids.resources.room], 2) + ".",
         time: 6,
         consume: [
             [10, ids.resources.craftables.complex.brick],
@@ -1076,7 +1065,7 @@ var DataManager = (function iife () {
         ],
         asset: "trading",
         order: 38,
-        log: "Arranging some space allow us to trade with merchant caravan passing by."
+        log: "Arranging some space allow to trade with merchant caravan passing by."
     });
     ids.buildings.big.module = insert({ // TODO
         id: "mdl",
@@ -1122,7 +1111,7 @@ var DataManager = (function iife () {
             ids.resources.gatherables.uncommon.oil,
             ids.resources.gatherables.uncommon.sand
         ],
-        log: "Dunes everywhere give a felling of hopelessness. Anyway, here's @give for the stock.",
+        log: "Dunes everywhere give a felling of hopelessness. Here's @give for the stock.",
         dropRate: 100
     });
     ids.locations.near.supermarket = insert({
@@ -1180,7 +1169,7 @@ var DataManager = (function iife () {
             ids.resources.craftables.basic.glass,
             ids.resources.craftables.complex.circuit
         ],
-        log: "No-one could guess what that building was, but it sure was interesting. @people.name find @give.",
+        log: "Impossible to guess what that building was, but it sure was interesting. @people.name find @give.",
         dropRate: 10
     });
     ids.locations.epic.spaceship = insert({
@@ -1192,7 +1181,7 @@ var DataManager = (function iife () {
             ids.resources.craftables.basic.tool,
             ids.resources.craftables.complex.furniture
         ],
-        log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
+        log: "What a chance to find a wreckage with stuff not melted inside. It was possible to get @give.",
         dropRate: 5
     });
 
@@ -1285,13 +1274,13 @@ var DataManager = (function iife () {
         color: "#d351e8",
         dropRate: 50,
         lifeLose: 3,
-        log: ""
+        log: "Rain is pouring and it burn the skin pretty badly. A pretty good reason to stay inside."
     });
     ids.incidents.medium.beggar = insert({
         id: "bgr",
         name: "Strange beggar",
         desc: "A lone traveler come with a deal: " +
-            "give him 2 " + Resource.iconAsString(db[ids.resources.special.quartz].icon) + " quartz now and " +
+            "give him " + Resource.toString(db[ids.resources.special.quartz], 2) + " now and " +
             "<i class='quote'>for sure</i>, he'll return with more worth of goods.",
         condition: function () {
             return this.resources.has(ids.resources.special.quartz) &&
@@ -1330,7 +1319,7 @@ var DataManager = (function iife () {
         timeDelta: 6 * time.hour,
         color: "#9def39",
         dropRate: 50,
-        log: "Illness spread out and weaken everyone."
+        log: "Illness spread out in no time and weaken everyone."
     });
     ids.incidents.medium.harmonica = insert({
         id: "hrm",
@@ -1340,13 +1329,18 @@ var DataManager = (function iife () {
         unique: true,
         yes: "Take some time to appreciate",
         dropRate: 40,
-        log: "Relaxing for a moment remotivate everyone."
+        log: "It's good to remember to relax from time to time."
     });
     ids.incidents.medium.strayDog = insert({
         id: "std",
         name: "stray dog",
         desc: "Looks like a wild dog is lurking around the food stash.<br/>" +
-            "He seams really weakened by his hunger and thirst. " +
+            "He seams really weakened by his hunger and thirst. Giving him " +
+            Utils.formatJoin([
+                Resource.toString(db[ids.resources.gatherables.common.water], 3),
+                Resource.toString(db[ids.resources.gatherables.common.food], 3)
+            ]) +
+            " should make him stay.<br/>" +
             "Does there's enough resources to have another mouth to feed ?",
         unique: true,
         yes: "Give him some water and food",
@@ -1359,7 +1353,7 @@ var DataManager = (function iife () {
             this.flags.doggy = true;
         },
         log: "With caution, he accept this offering. " +
-            "He then proceed to hide in the forum's shadow and quickly fall asleep."
+            "He then proceed to hide in the forum's shadow and quickly falls asleep."
     });
 
     /** HARD INCIDENTS **/
@@ -1373,7 +1367,7 @@ var DataManager = (function iife () {
         color: "#f73a18",
         dropRate: 10,
         multiplier: 3,
-        log: "A harsh drought has fall, water will be more important than ever."
+        log: "A harsh drought has fallen, water will be consumed faster as a result."
     });
     ids.incidents.hard.lookBack = insert({
         id: "lkb",
@@ -1385,7 +1379,7 @@ var DataManager = (function iife () {
             effect.duration = this.getSurvivalDuration();
         },
         dropRate: 30,
-        log: "The camp hold well for @duration in this harsh environment. Good job !"
+        log: "The camp hold well for @duration in this harsh environment. Amazing !"
     });
     // launch attack on another camp: just loose health for some resource (loss)
     // conversation between people (no impact) TODO: find a good way to manage blab
@@ -1495,7 +1489,7 @@ var DataManager = (function iife () {
                 return db[id];
             }
         },
-        bindAll: function (context) { // FIXME:
+        bindAll: function (context) { // FIXME: not very good design
             db.browse(function (data) {
                 data.browse(function (field, key) {
                     if (Utils.isFunction(field)) {

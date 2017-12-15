@@ -127,7 +127,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             this.data.onEnd(this);
         }
 
-        this.html.remove();
+        this.remove();
         this.tooltip.remove();
     },
     /**

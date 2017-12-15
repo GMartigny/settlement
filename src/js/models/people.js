@@ -315,9 +315,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
             action.cancel();
             action.tooltip.remove();
         });
-        TimerManager.timeout(function () {
-            this.html.remove();
-        }.bind(this), 400);
+        TimerManager.timeout(this.remove.bind(this), 400);
     },
     /**
      * Get this data in plain object

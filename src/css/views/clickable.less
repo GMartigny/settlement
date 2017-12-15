@@ -1,4 +1,4 @@
-@import (reference) "base";
+@import (reference) "../base";
 
 .Clickable {
     display: inline-block;
@@ -14,16 +14,19 @@
 
     // Focus
     &:not(.disabled):not(.cooldown):not(.dropdown) {
-        &:hover, &:focus {
-            transform: translate(0, -2px);
+        &:hover {
+            transform: translate3d(0, -2px, 0);
             box-shadow: 0 3px 7px @shadowColor;
         }
     }
     &.dropdown.cooldown + .options .Clickable {
-        &:hover, &:focus {
-            transform: translate(0, 0);
+        &:hover {
             box-shadow: 0 1px 3px @shadowColor;
         }
+    }
+
+    &:focus {
+        outline: none;
     }
 
     &.dropdown {

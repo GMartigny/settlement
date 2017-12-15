@@ -1,4 +1,4 @@
-/* exported ColorsUtil Color */
+/* exported ColorsUtils Color */
 
 /**
  * Model of a color
@@ -71,7 +71,7 @@ Color.prototype = {
     }
 };
 
-var ColorsUtil = {
+var ColorsUtils = {
     /**
      * Fade a color to an opacity
      * @param {String} rgb - RGB Hexa representation of a color

@@ -1,0 +1,13 @@
+@import (reference) "../base";
+
+.Particle {
+    position: fixed;
+    z-index: @particleZIndex;
+
+    transition-property: transform, opacity;
+    transition-timing-function: ease-out;
+
+    &@{hidden} {
+        opacity: 0;
+    }
+}

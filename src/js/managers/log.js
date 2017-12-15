@@ -41,17 +41,18 @@ var LogManager = (function iife () {
 
             .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
                 var message = "@name just died, @possessive body is dragged outside and buried.";
-                self.log(this.personify(message, person), self.LOG_TYPES.WARN);
+                self.log(self.personify(message, person), self.LOG_TYPES.WARN);
             })
 
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 sendEvent("Death", "survival duration", survivalDuration);
-                var message = "After holding up for " + Utils.formatTime(survivalDuration) + ", everyone.";
+                var message = "After holding up for " + Utils.formatTime(survivalDuration) +
+                    ", everyone die and the camp is left to rot under the sun.";
                 self.log(message, self.LOG_TYPES.EVENT);
             })
 
             .observe(MessageBus.MSG_TYPES.RUNS_OUT, function (resourceId) {
-                var message = "There's no more " + Resource.toString(resourceId) + " available, " +
+                var message = "There's no more " + Resource.toString(DataManager.get(resourceId)) + " available, " +
                     "something needs to be done quickly.";
                 self.log(message, self.LOG_TYPES.WARN);
             })

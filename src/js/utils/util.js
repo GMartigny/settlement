@@ -51,7 +51,7 @@ var Utils = {
     formatArray: function (array) {
         View.enableHTML = false;
         var str = Utils.formatJoin(array.map(function (item) {
-            return Resource.toString(item[1], item[0]);
+            return Resource.toString(DataManager.get(item[1]), item[0]);
         }));
         View.enableHTML = true;
         return str;
@@ -322,7 +322,9 @@ var Utils = {
                 reduced.push(item);
             }
             return reduced;
-        }, []);
+        }, []).sort(function (a, b) {
+            return b[0] - a[0];
+        });
     },
 
     /**
@@ -346,7 +348,7 @@ var Utils = {
         var toLoad = keys.length;
         return Promise.all(keys.map(function (key) {
             var url = urls[key];
-            var request = fetch(url).then(function (response) {
+            var promise = fetch(url).then(function (response) {
                 if (response.ok) {
                     return response;
                 }
@@ -354,11 +356,10 @@ var Utils = {
                     throw new URIError("[" + response.status + "] " + url + " " + response.statusText);
                 }
             });
-            var promise;
             var format = url.substr(url.lastIndexOf(".") + 1);
             switch (format) {
                 case "png":
-                    promise = request.then(function (response) {
+                    promise = promise.then(function (response) {
                         var img = new Image();
                         return response.blob().then(function (blob) {
                             img.src = URL.createObjectURL(blob);
@@ -367,14 +368,14 @@ var Utils = {
                     });
                     break;
                 case "json":
-                    promise = request.then(function (response) {
+                    promise = promise.then(function (response) {
                         return response.json();
                     });
                     break;
                 case "woff":
                 case "woff2":
                 case "ttf":
-                    promise = request.then(function () {
+                    promise = promise.then(function () {
                         var style = document.createElement("style");
                         style.innerHTML = "@font-face {\n" +
                             "    font-family: " + key + ";\n" +
@@ -383,8 +384,6 @@ var Utils = {
                         return style;
                     });
                     break;
-                default :
-                    promise = Promise.resolve();
             }
             return promise.then(function (file) {
                 // Each step

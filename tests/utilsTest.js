@@ -134,7 +134,14 @@ describe("Test all general helper", function utilsDescribe () {
     xit("randomizeMultiple", function utilsRandomizeMultiple () {
     });
 
-    xit("log", function utilsLog () {
+    it("log", function utilsLog () {
+
+        expect(Utils.log).toBeDefined();
+        spyOn(console, "log");
+        Utils.log("Yeah");
+        expect(console.log).toHaveBeenCalled();
+        expect(console.log).toHaveBeenCalledWith("Yeah");
+
     });
 
     it("randomStr", function utilsRandomStr () {
@@ -254,7 +261,7 @@ describe("Test all general helper", function utilsDescribe () {
 
         expect(Utils.compactResources([])).toEqual([]);
         var resources = [[1, "test"], [5, "lines"], [2, "test"], [0, "fail"]];
-        expect(Utils.compactResources(resources)).toEqual([[3, "test"], [5, "lines"]]);
+        expect(Utils.compactResources(resources)).toEqual([[5, "lines"], [3, "test"]]);
 
     });
 
@@ -277,19 +284,21 @@ describe("Test all general helper", function utilsDescribe () {
 
     xit("loadAsync", function utilsLoadAsync (done) { // fetch not available in node
 
-        var url = "tests/res/testLoad.js";
-        Utils.loadAsync([url], function loadAsyncCb (percentage, path) {
+        var url = "tests/res/testLoad.json";
+        Utils.loadAsync({
+            json: url
+        }, function loadAsyncCb (percentage, path) {
 
             expect(percentage).toBeLessThan(1);
             expect(path).toEqual(url);
 
         }).catch(function loadAsyncCatch () {
 
-            fail("Loading promise has failed");
+            done.fail("Loading promise has failed");
 
-        }).then(function loadAsyncSuccess (object) {
+        }).then(function loadAsyncSuccess (result) {
 
-            expect(object[url].isLoaded).toBe(true);
+            expect(result.json.isLoaded).toBe(true);
             done();
 
         });

@@ -188,3 +188,30 @@ describe("Test functions added to HTMLElement prototype", function htmlElementDe
     });
 
 });
+
+describe("Test functions added to Function prototype", function () {
+
+    xit("extends", function () {
+    });
+
+    xit("static", function () {
+    });
+
+    it("defer", function (done) {
+
+        var test = {
+            func: function (arg1, arg2) {
+
+                expect(this).toEqual({});
+                expect(arg1).toEqual("hell");
+                expect(arg2).toEqual("yeah");
+
+                done();
+            }
+        };
+
+        test.func.defer({}, "hell", "yeah");
+
+    });
+
+});

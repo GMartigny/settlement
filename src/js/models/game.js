@@ -174,10 +174,34 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         // We may find resources
         MessageBus.observe(msgType.GIVE, function (given) {
+            var initiator = null;
+            if (given.initiator) {
+                initiator = given.initiator;
+                given = given.give;
+            }
             if (Utils.isArray(given)) {
                 given.forEach(function (r) {
                     game.earn.apply(game, r);
                 });
+
+                if (initiator) {
+                    var particles = [];
+                    var particlesFragment = document.createDocumentFragment();
+                    given.forEach(function (info) {
+                        var id = info[1];
+                        var data = DataManager.get(id);
+                        if (data.icon) {
+                            var destination = game.resources.get(id);
+                            for (var i = 0; i < info[0]; ++i) {
+                                var particle = new Particle(data.icon, initiator, destination);
+                                particlesFragment.appendChild(particle.html);
+                                particles.push(particle);
+                            }
+                        }
+                    });
+                    GameController.holder.appendChild(particlesFragment);
+                    Particle.batch.defer(null, particles);
+                }
             }
         })
         // We may use resources
@@ -354,7 +378,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 people.refresh(this.resources, elapse, this.flags);
             }, this);
 
-            MessageBus.notify(MessageBus.MSG_TYPES.SAVE);
+            MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
         }
     },
     /**
@@ -471,12 +495,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
                 // The first newcomer
                 if (this.people.size === 1) {
-                    var description = LogManager.personify("attracted by the explosion a @common approach. " +
+                    var description = LogManager.personify("attracted by the explosions a @common approach. " +
                         "@nominative accept to team up.", person);
-                    new Popup({
-                        name: "Newcomer",
-                        desc: description
-                    });
+                    MessageBus.notify(MessageBus.MSG_TYPES.LOGS.EVENT, description);
                     TimerManager.timeout(function () {
                         var message = "There's other desert-walkers ready to join if there's room for them.";
                         MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, message);

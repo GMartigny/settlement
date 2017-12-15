@@ -60,20 +60,16 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
         this.set(this.count + amount);
 
         if (MathsUtils.floor(prevAmount) !== MathsUtils.floor(this.count)) {
-            var node = this.html;
-            var toClear = false;
-            if (amount > 0 && !node.classList.contains("more")) {
-                node.classList.add("more");
-                toClear = true;
+            if (amount < 0) {
+                this.animate("less");
             }
-            else if (amount < 0 && !node.classList.contains("less")) {
-                node.classList.add("less");
-                toClear = true;
-            }
-            if (toClear) {
-                var animationDuration = 700;
-                TimerManager.timeout(node.classList.remove.bind(node.classList, "more", "less"), animationDuration);
-            }
+        }
+    },
+    animate: function (change) {
+        if (!this.html.classList.contains(change)) {
+            this.html.classList.add(change);
+            var animationDuration = 700;
+            setTimeout(this.html.classList.remove.bind(this.html.classList, change), animationDuration);
         }
     },
     /**
@@ -114,7 +110,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @return {String}
      */
     toString: function () {
-        return Resource.toString(this.getId(), this.count);
+        return Resource.toString(this.data, this.count);
     }
 });
 
@@ -122,12 +118,11 @@ Resource.static(/** @lends Resource */{
     LST_ID: "resourceList",
     /**
      * Format a resource to string without instantiation
-     * @param {ID} id - Id of the resource
+     * @param {ResourceData} data - Data of the resource
      * @param {Number} [count] - The amount, ignored if not defined
      * @return {String}
      */
-    toString: function (id, count) {
-        var data = DataManager.get(id);
+    toString: function (data, count) {
         var str = "";
         if (!Utils.isUndefined(count)) {
             str += count + " ";
@@ -135,7 +130,7 @@ Resource.static(/** @lends Resource */{
         if (data.icon) {
             str += Resource.iconAsString(data.icon) + " ";
         }
-        str += Utils.pluralize(data.name, count);
+        str += "<b>" + Utils.pluralize(data.name, count) + "</b>";
         return str;
     },
     /**

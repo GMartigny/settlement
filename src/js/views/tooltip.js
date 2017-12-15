@@ -125,7 +125,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
     refresh: function (resources, data) {
         this.nodes.name.textContent = Utils.capitalize(data.name);
         if (data.desc) {
-            this.nodes.desc.textContent = data.desc;
+            this.nodes.desc.innerHTML = data.desc;
         }
         else {
             this.nodes.desc.remove();
@@ -147,7 +147,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
                     var wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
                     wrapperNode.style.order = data.order;
                     var counterNode = Utils.wrap("counter", null, wrapperNode);
-                    Utils.wrap(null, resource[0] + " " + data.name, wrapperNode);
+                    Utils.wrap(null, Resource.toString(data, resource[0]), wrapperNode);
                     resourceNodes = {
                         node: wrapperNode,
                         counter: counterNode
@@ -163,12 +163,6 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
         else {
             this.nodes.resourcesContainer.remove();
         }
-    },
-    /**
-     * Remove tooltip from DOM
-     */
-    remove: function () {
-        this.html.remove();
     }
 });
 

@@ -30,6 +30,10 @@ function Popup (data, CSSClasses) {
 }
 Popup.holder = document.body;
 Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
+    /**
+     * Return HTML for display
+     * @return {HTMLElement}
+     */
     toHTML: function () {
         var html = this._toHTML();
 
@@ -58,6 +62,9 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
 
         return html;
     },
+    /**
+     * Display the popup
+     */
     show: function () {
         Popup.holder.classList.add("backdrop");
         Popup.holder.appendChild(this.html);
@@ -70,7 +77,7 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
      * Remove popup from DOM
      */
     remove: function () {
-        this.html.remove();
+        this._remove();
         Popup.holder.classList.remove("backdrop");
     }
 });

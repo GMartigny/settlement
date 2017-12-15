@@ -37,6 +37,9 @@ View.extends(null, "View", /** @lends View.prototype */ {
      */
     hide: function () {
         this.html.hide();
+    },
+    remove: function () {
+        this.html.remove();
     }
 });
 

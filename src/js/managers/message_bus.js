@@ -31,7 +31,7 @@ var MessageBus = (function iife () {
          * Fire an event
          * @param {Number} type - Type of event
          * @param {*} [message] - Additional data attached
-         * @param {Boolean} [silent=false] - True to output log
+         * @param {Boolean} [silent=false] - True to not output log
          * @return {MessageBus} Itself
          */
         notify: function (type, message, silent) {

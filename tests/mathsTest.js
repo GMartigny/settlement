@@ -1,30 +1,36 @@
-describe("Test all math helper", function mathUtilsDescribe () {
+describe("Test all math helper", function mathsUtilsDescribe () {
 
-    it("floor", function mathUtilsFloor () {
+    it("floor", function mathsUtilsFloor () {
 
         expect(MathsUtils.floor(5.4)).toBe(5);
-        expect(MathsUtils.floor(5.5)).toBe(5);
         expect(MathsUtils.floor(5.6)).toBe(5);
 
+        expect(MathsUtils.floor(-5.4)).toBe(-5);
+        expect(MathsUtils.floor(-5.6)).toBe(-5);
+
     });
 
-    it("round", function mathUtilsRound () {
+    it("round", function mathsUtilsRound () {
 
         expect(MathsUtils.round(5.4)).toBe(5);
-        expect(MathsUtils.round(5.5)).toBe(6);
         expect(MathsUtils.round(5.6)).toBe(6);
 
+        expect(MathsUtils.round(-5.4)).toBe(-5);
+        expect(MathsUtils.round(-5.6)).toBe(-6);
+
     });
 
-    it("ceil", function mathUtilsCeil () {
+    it("ceil", function mathsUtilsCeil () {
 
         expect(MathsUtils.ceil(5.4)).toBe(6);
-        expect(MathsUtils.ceil(5.5)).toBe(6);
         expect(MathsUtils.ceil(5.6)).toBe(6);
+
+        expect(MathsUtils.ceil(-5.4)).toBe(-6);
+        expect(MathsUtils.ceil(-5.6)).toBe(-6);
 
     });
 
-    it("abs", function mathUtilsAbs () {
+    it("abs", function mathsUtilsAbs () {
 
         expect(MathsUtils.abs(0)).toBe(0);
         expect(MathsUtils.abs(5)).toBe(5);
@@ -32,7 +38,15 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("pow", function mathUtilsPow () {
+    it("sign", function mathsUtilsSign () {
+
+        expect(MathsUtils.sign(5)).toBe(1);
+        expect(MathsUtils.sign(0)).toBe(1);
+        expect(MathsUtils.sign(-5)).toBe(-1);
+
+    });
+
+    it("pow", function mathsUtilsPow () {
 
         expect(MathsUtils.pow(5, 2)).toBe(25);
         expect(MathsUtils.pow(0, 19)).toBe(0);
@@ -40,7 +54,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("sq", function mathUtilsSq () {
+    it("sq", function mathsUtilsSq () {
 
         expect(MathsUtils.sq(5)).toBe(25);
         expect(MathsUtils.sq(0)).toBe(0);
@@ -48,7 +62,15 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("diff", function mathUtilsDiff () {
+    it("sqrt", function mathsUtilsSqrt () {
+
+        expect(MathsUtils.sqrt(25)).toBe(5);
+        expect(MathsUtils.sqrt(1)).toBe(1);
+        expect(MathsUtils.sqrt(0)).toBe(0);
+
+    });
+
+    it("diff", function mathsUtilsDiff () {
 
         expect(MathsUtils.diff(3, 3)).toBe(0);
         expect(MathsUtils.diff(-2, 5)).toBe(7);
@@ -56,7 +78,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("average", function mathUtilsAverage () {
+    it("average", function mathsUtilsAverage () {
 
         expect(MathsUtils.average(3)).toBe(3);
         expect(MathsUtils.average(1, 2, 3)).toBe(2);
@@ -65,7 +87,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("constrain", function mathUtilsConstrain () {
+    it("constrain", function mathsUtilsConstrain () {
 
         expect(MathsUtils.constrain(10, 5, 15)).toBe(10);
         expect(MathsUtils.constrain(2, 5, 15)).toBe(5);
@@ -73,7 +95,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("random", function mathUtilsRandom () {
+    it("random", function mathsUtilsRandom () {
 
         /**
          * Run 666 random and return results
@@ -118,7 +140,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("toHexa", function mathUtilsToHexa () {
+    it("toHexa", function mathsUtilsToHexa () {
 
         expect(MathsUtils.toHexa(0)).toBe("0");
         expect(MathsUtils.toHexa(10)).toBe("A");
@@ -126,7 +148,7 @@ describe("Test all math helper", function mathUtilsDescribe () {
 
     });
 
-    it("toDeci", function mathUtilsToDeci () {
+    it("toDeci", function mathsUtilsToDeci () {
 
         expect(MathsUtils.toDeci("0")).toBe(0);
         expect(MathsUtils.toDeci("A")).toBe(10);
