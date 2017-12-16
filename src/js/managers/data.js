@@ -154,6 +154,16 @@ var DataManager = (function iife () {
         return id;
     }
 
+    /**
+     * Return an HTML formated string for resources
+     * @param {ID} id - Any resource ID
+     * @param {Number} [amount] - Optional number of resources
+     * @returns {String}
+     */
+    function formatResource (id, amount) {
+        return Resource.toString(db[id], amount);
+    }
+
     /* eslint-disable valid-jsdoc */
 
     ids.option = "opt";
@@ -442,7 +452,7 @@ var DataManager = (function iife () {
     ids.actions.drawFromRiver = insert({
         id: "dfr",
         name: "draw water",
-        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " from the river.",
+        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " from the river.",
         time: 8,
         energy: 50,
         isOut: 1,
@@ -459,7 +469,7 @@ var DataManager = (function iife () {
     ids.actions.drawFromWell = insert({
         id: "dfw",
         name: "draw water",
-        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " from our well.",
+        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " from our well.",
         time: 2,
         energy: 15,
         giveSpan: [1, 3],
@@ -472,7 +482,7 @@ var DataManager = (function iife () {
     ids.actions.drawFromPump = insert({
         id: "dfp",
         name: "draw water",
-        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " at the pump.",
+        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " at the pump.",
         time: 2,
         giveSpan: [3, 3],
         giveList: [
@@ -512,7 +522,8 @@ var DataManager = (function iife () {
     ids.actions.explore = insert({
         id: "xpl",
         name: "explore",
-        desc: "Remember that location found the other day ? Let's see what can be gather there.",
+        desc: "Remember that " + formatResource(ids.resources.special.ruins) +
+            " found the other day ? Let's see what can be gather there.",
         time: time.day,
         energy: 100,
         isOut: 1,
@@ -566,7 +577,8 @@ var DataManager = (function iife () {
     ids.actions.roam = insert({
         id: "ram",
         name: "roam",
-        desc: "Explore the surroundings hoping to find " + Utils.an(Resource.toString(db[ids.resources.special.ruins])) + ".",
+        desc: "Explore the surroundings hoping to find a " +
+            formatResource(ids.resources.special.ruins) + ".",
         time: 5,
         isOut: 1,
         consume: [
@@ -655,7 +667,7 @@ var DataManager = (function iife () {
     ids.actions.look = insert({
         id: "lok",
         name: "look around",
-        desc: "What am I doing here ?",
+        desc: "<i class='quote'>What am I doing here ?</i>",
         time: 1,
         energy: 0,
         effect: function () {
@@ -672,7 +684,7 @@ var DataManager = (function iife () {
             ids.actions.settle
         ],
         log: "After some thinking, @people.name remembers the attack. " +
-        "@people.nominative grabs @give laying around.",
+            "@people.nominative grabs @give laying around.",
         order: 0,
         unique: true
     });
@@ -730,7 +742,9 @@ var DataManager = (function iife () {
         ],
         asset: "furnace",
         order: 15,
-        log: "A simple furnace that can smelt small things like sand or little electronics."
+        log: "A simple furnace that can smelt small things like " +
+            formatResource(ids.resources.gatherables.uncommon.sand) + " or " +
+            formatResource(ids.resources.gatherables.rare.electronic) + "."
     });
     ids.resources.craftables.basic.glass = insert({
         id: "gls",
@@ -747,7 +761,7 @@ var DataManager = (function iife () {
     ids.buildings.small.forum1 = insert({
         id: "fr1",
         name: "forum+1",
-        desc: "Add " + Resource.toString(db[ids.resources.room], 1) + ".",
+        desc: "Add " + formatResource(ids.resources.room, 1) + " to the forum.",
         time: 2,
         upgrade: ids.buildings.special.forum,
         consume: [
@@ -764,7 +778,8 @@ var DataManager = (function iife () {
     ids.buildings.small.plot = insert({
         id: "plt",
         name: "farm plot",
-        desc: "A little arranged plot of soil to grow some food.",
+        desc: "A little arranged plot of soil to grow some " +
+            formatResource(ids.resources.gatherables.common.food) + ".",
         time: 9,
         consume: [
             [5, ids.resources.gatherables.common.food],
@@ -775,12 +790,14 @@ var DataManager = (function iife () {
         ],
         asset: "plot",
         order: 12,
-        log: "Crops required care but that's going to help keeping a constant stock of food."
+        log: "Crops required care but that's going to help keeping a constant stock of " +
+            formatResource(ids.resources.gatherables.common.food) + "."
     });
     ids.buildings.small.pharmacy = insert({
         id: "phr",
         name: "pharmacy",
-        desc: "<i class='quote'>Maybe we should avoid letting medications rot in plain sunlight ?!</i>",
+        desc: "<i class='quote'>Maybe we should avoid letting " +
+            formatResource(ids.resources.gatherables.rare.medication) + " rot in plain sunlight !</i>",
         time: 6,
         consume: [
             [5, ids.resources.gatherables.rare.medication],
@@ -788,7 +805,8 @@ var DataManager = (function iife () {
         ],
         asset: "pharmacy",
         order: 16,
-        log: "Sorting our medications should prevent further mistakes and bad reaction."
+        log: "Sorting the " + formatResource(ids.resources.gatherables.rare.medication) +
+            "s should prevent further mistakes and bad reaction."
     });
     ids.buildings.small.well = insert({
         id: "wel",
@@ -810,7 +828,9 @@ var DataManager = (function iife () {
         ],
         asset: "well",
         order: 13,
-        log: "Drawing water from the ground should allow to further polish stone into bricks."
+        log: "Drawing " + formatResource(ids.resources.gatherables.common.water) +
+            " from the ground should allow to further polish " + formatResource(ids.resources.gatherables.common.rock) +
+            "."
     });
 
     /** BUILDINGS MEDIUM **/
@@ -818,7 +838,7 @@ var DataManager = (function iife () {
     ids.buildings.medium.forum2 = insert({
         id: "fr2",
         name: "forum+2",
-        desc: "Add " + Resource.toString(db[ids.resources.room], 1) + ".",
+        desc: "Add " + formatResource(ids.resources.room, 1) + " to the camp.",
         time: 5,
         consume: [
             [10, ids.resources.gatherables.uncommon.sand],
@@ -836,7 +856,7 @@ var DataManager = (function iife () {
     ids.buildings.medium.plot1 = insert({
         id: "fil",
         name: "field",
-        desc: "A larger crop field to produce more food.",
+        desc: "A larger crop field to produce more " + formatResource(ids.resources.gatherables.common.food) + ".",
         time: 10,
         lockForAll: [
             ids.actions.harvestPlot
@@ -852,7 +872,8 @@ var DataManager = (function iife () {
         upgrade: ids.buildings.small.plot,
         asset: "plot+1",
         order: 25,
-        log: "This should be enough to provide food for our small encampment."
+        log: "This should be enough to provide " + formatResource(ids.resources.gatherables.common.food) +
+            " for our small encampment."
     });
     ids.buildings.medium.forge = insert({
         id: "frg",
@@ -875,7 +896,7 @@ var DataManager = (function iife () {
     ids.resources.craftables.complex.brick = insert({
         id: "brk",
         name: "brick",
-        desc: "Bricks will give walls for larger constructions.",
+        desc: "Will give walls for larger constructions.",
         icon: "brick",
         ifHas: ids.buildings.small.well,
         consume: [
@@ -901,7 +922,7 @@ var DataManager = (function iife () {
     ids.resources.craftables.complex.metalPipe = insert({
         id: "mtp",
         name: "metal pipe",
-        desc: "Pipes that was forged from junk metal.",
+        desc: "Forged from junk metal.",
         icon: "pipes-small",
         ifHas: ids.buildings.medium.forge,
         consume: [
@@ -933,7 +954,7 @@ var DataManager = (function iife () {
     ids.buildings.big.workshop = insert({
         id: "wrs",
         name: "workshop",
-        desc: "Having a dedicated place to store and arrange tools would allow to make more complex crafts.",
+        desc: "Having a dedicated place for the crafting work would allow to make more complex crafts.",
         time: 3 * time.day,
         energy: 90,
         ifHas: ids.buildings.medium.forge,
@@ -963,7 +984,7 @@ var DataManager = (function iife () {
     ids.buildings.big.forum3 = insert({
         id: "fr3",
         name: "forum+3",
-        desc: "Add " + Resource.toString(db[ids.resources.room], 2) + ".",
+        desc: "Add " + formatResource(ids.resources.room, 2) + " to the camp.",
         time: 6,
         consume: [
             [10, ids.resources.craftables.complex.brick],
@@ -1028,7 +1049,8 @@ var DataManager = (function iife () {
     ids.buildings.big.pump = insert({
         id: "pmp",
         name: "water pump",
-        desc: "A buried contraption that collect water from the earth moisture.",
+        desc: "A buried contraption that collect " + formatResource(ids.resources.gatherables.common.water) +
+            " from the earth moisture.",
         time: 3 * time.day,
         energy: 120,
         consume: [
@@ -1046,7 +1068,8 @@ var DataManager = (function iife () {
         ],
         asset: "pump",
         order: 36,
-        log: "A big upgrade to the well ! Now there's a continuous flow of water coming up."
+        log: "A big upgrade to the well ! Now there's a continuous flow of " +
+            formatResource(ids.resources.gatherables.common.water) + " coming up."
     });
     ids.buildings.big.trading = insert({
         id: "trd",
@@ -1105,7 +1128,8 @@ var DataManager = (function iife () {
     ids.locations.near.desert = insert({
         id: "dst",
         name: "desert",
-        desc: "Not much to find in a desert, but that's for sure the best place to get sand.",
+        desc: "Not much to find in a desert, but that's for sure the best place to get " +
+            formatResource(ids.resources.gatherables.uncommon.sand) + ".",
         giveList: [
             ids.resources.gatherables.common.scrap,
             ids.resources.gatherables.uncommon.oil,
@@ -1132,7 +1156,8 @@ var DataManager = (function iife () {
     ids.locations.far.river = insert({
         id: "rvr",
         name: "river",
-        desc: "Quite rare to find water around here. This is a valuable location to find.",
+        desc: "Quite rare to find " + formatResource(ids.resources.gatherables.common.water) +
+            " on those wastelands. This is a valuable location to find.",
         unlockForAll: [
             ids.actions.drawFromRiver
         ],
@@ -1175,13 +1200,13 @@ var DataManager = (function iife () {
     ids.locations.epic.spaceship = insert({
         id: "swr",
         name: "spaceship wreck",
-        desc: "This wreckage seems to be in a fairly good shape and allow to find useful part inside.",
+        desc: "This wreckage seems to be in a fairly good shape and allow to find useful parts inside.",
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.tool,
             ids.resources.craftables.complex.furniture
         ],
-        log: "What a chance to find a wreckage with stuff not melted inside. It was possible to get @give.",
+        log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
         dropRate: 5
     });
 
@@ -1274,13 +1299,13 @@ var DataManager = (function iife () {
         color: "#d351e8",
         dropRate: 50,
         lifeLose: 3,
-        log: "Rain is pouring and it burn the skin pretty badly. A pretty good reason to stay inside."
+        log: "Rain is pouring and it burn the skin pretty badly. A pretty good reason to stay inside for now."
     });
     ids.incidents.medium.beggar = insert({
         id: "bgr",
         name: "Strange beggar",
         desc: "A lone traveler come with a deal: " +
-            "give him " + Resource.toString(db[ids.resources.special.quartz], 2) + " now and " +
+            "give him " + formatResource(ids.resources.special.quartz, 2) + " now and " +
             "<i class='quote'>for sure</i>, he'll return with more worth of goods.",
         condition: function () {
             return this.resources.has(ids.resources.special.quartz) &&
@@ -1337,8 +1362,8 @@ var DataManager = (function iife () {
         desc: "Looks like a wild dog is lurking around the food stash.<br/>" +
             "He seams really weakened by his hunger and thirst. Giving him " +
             Utils.formatJoin([
-                Resource.toString(db[ids.resources.gatherables.common.water], 3),
-                Resource.toString(db[ids.resources.gatherables.common.food], 3)
+                formatResource(ids.resources.gatherables.common.water, 3),
+                formatResource(ids.resources.gatherables.common.food, 3)
             ]) +
             " should make him stay.<br/>" +
             "Does there's enough resources to have another mouth to feed ?",
@@ -1361,13 +1386,15 @@ var DataManager = (function iife () {
     ids.incidents.hard.drought = insert({
         id: "drg",
         name: "drought",
-        desc: "The climate is so hot, everyone needs more water.",
+        desc: "The climate is so hot, everyone needs more " +
+            formatResource(ids.resources.gatherables.common.water) + ".",
         time: 3 * time.day,
         timeDelta: 10,
         color: "#f73a18",
         dropRate: 10,
         multiplier: 3,
-        log: "A harsh drought has fallen, water will be consumed faster as a result."
+        log: "A harsh drought has fallen, " + formatResource(ids.resources.gatherables.common.water) +
+            " will be consumed faster as a result."
     });
     ids.incidents.hard.lookBack = insert({
         id: "lkb",
