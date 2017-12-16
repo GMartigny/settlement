@@ -206,9 +206,6 @@ People.extends(View, "People", /** @lends People.prototype */ {
     setLife: function (value) {
         this.life = value;
         this.lifeBar.set(value);
-        if (value < 0) {
-            this.die();
-        }
     },
     /**
      * Add some actions
@@ -303,6 +300,13 @@ People.extends(View, "People", /** @lends People.prototype */ {
      */
     hasPerk: function (perkId) {
         return this.perk && this.perk.getId() === perkId;
+    },
+    /**
+     * Define if this one's dead
+     * @returns {Boolean}
+     */
+    isDead: function () {
+        return this.life < 0;
     },
     /**
      * Kill it for good

@@ -268,7 +268,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         });
 
         Action.timeAndEnergyFallback(merge);
-        console.log(merge);
 
         return merge;
     },

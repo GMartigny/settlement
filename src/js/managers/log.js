@@ -39,11 +39,6 @@ var LogManager = (function iife () {
                 self.log(self.personify(log, person), MessageBus.MSG_TYPES.LOGS.EVENT);
             })
 
-            .observe(MessageBus.MSG_TYPES.LOOSE_SOMEONE, function (person) {
-                var message = "@name just died, @possessive body is dragged outside and buried.";
-                self.log(self.personify(message, person), self.LOG_TYPES.WARN);
-            })
-
             .observe(MessageBus.MSG_TYPES.LOOSE, function (survivalDuration) {
                 sendEvent("Death", "survival duration", survivalDuration);
                 var message = "After holding up for " + Utils.formatTime(survivalDuration) +

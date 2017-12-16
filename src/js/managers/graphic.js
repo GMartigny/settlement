@@ -113,14 +113,9 @@ var GraphicManager = (function iife () {
                 if (building && building.asset && _imageData[building.asset]) {
                     var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
                     if (building.upgrade) {
-                        var upgradedId = building.upgrade;
-                        if (_buildingsList.has(upgradedId)) {
-                            _buildingsList.set(upgradedId, asset);
-                        }
+                        _buildingsList.delete(building.upgrade);
                     }
-                    else {
-                        _buildingsList.push(building.id, asset);
-                    }
+                    _buildingsList.push(building.id, asset);
                 }
             }.bind(this));
 

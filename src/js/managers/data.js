@@ -442,7 +442,7 @@ var DataManager = (function iife () {
     ids.actions.drawFromRiver = insert({
         id: "dfr",
         name: "draw water",
-        desc: "Get some water from the river.",
+        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " from the river.",
         time: 8,
         energy: 50,
         isOut: 1,
@@ -459,26 +459,26 @@ var DataManager = (function iife () {
     ids.actions.drawFromWell = insert({
         id: "dfw",
         name: "draw water",
-        desc: "Get some water from our well.",
+        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " from our well.",
         time: 2,
         energy: 15,
         giveSpan: [1, 3],
         giveList: [
             ids.resources.gatherables.common.water
         ],
-        log: "Using our well, @people.name get @give.",
+        log: "Using our well, @people.name draw @give.",
         order: 60
     });
     ids.actions.drawFromPump = insert({
         id: "dfp",
         name: "draw water",
-        desc: "Get some water at the pump.",
+        desc: "Get some " + Resource.toString(db[ids.resources.gatherables.common.water]) + " at the pump.",
         time: 2,
         giveSpan: [3, 3],
         giveList: [
             ids.resources.gatherables.common.water
         ],
-        log: "Using our pump, @people.name get @give.",
+        log: "Using our pump, @people.name draw @give.",
         order: 60
     });
     ids.actions.build = insert({

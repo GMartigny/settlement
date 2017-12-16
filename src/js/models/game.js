@@ -93,7 +93,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 {
                     task: "Design and code",
                     name: "Guillaume Martigny",
-                    url: "https://www.guillaume-martigny.fr"
+                    url: "https://www.guillaume-martigny.fr/#en"
                 }, {
                     task: "Graphics",
                     name: "if you want your name here, send me an email",
@@ -225,10 +225,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         })
         // And we may die :'(
         .observe(msgType.LOOSE_SOMEONE, function (person) {
-            game.people.delete(person.id);
             sendEvent("People", "die", person.stats.age);
+
             // The last hope fade away
-            if (game.people.size <= 0) {
+            var isGameOver = game.people.size <= 0;
+            var message = isGameOver ? "The last @common standing passed away. The last hope fade away in silence." :
+                "@name just died, @possessive body is dragged outside and buried.";
+            LogManager.log(LogManager.personify(message, person), LogManager.LOG_TYPES.WARN);
+
+            if (isGameOver) {
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
             }
         })
@@ -374,8 +379,14 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             });
 
             // Refresh people
-            this.people.forEach(function (people) {
-                people.refresh(this.resources, elapse, this.flags);
+            this.people.forEach(function (person, id, list) {
+                if (person.isDead()) {
+                    list.delete(id);
+                    person.die();
+                }
+                else {
+                    person.refresh(this.resources, elapse, this.flags);
+                }
             }, this);
 
             MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
