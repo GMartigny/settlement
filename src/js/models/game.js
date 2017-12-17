@@ -147,7 +147,6 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         // early access warning
         if (!IS_DEV && IS_BETA && localStorage.getItem("ea-warn")) {
-            localStorage.setItem("ea-warn", "1");
             new Popup({
                 name: "Early access [" + VERSION + "]",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
@@ -157,7 +156,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 yes: {
                     name: "Got it !",
                     action: function () {
-                        localStorage.setItem("eaWarning", "1");
+                        localStorage.setItem("ea-warn", "1");
                     }
                 }
             });
