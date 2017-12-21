@@ -8,7 +8,7 @@ var Utils = {
      * @param {String} [CSSClasses] - A string of CSS classes separated by spaces
      * @param {String} [innerHTML] - An string of inside content
      * @param {HTMLElement} [holder] - A parent to insert the newly created element into
-     * @returns {HTMLElement}
+     * @return {HTMLElement}
      */
     wrap: function (CSSClasses, innerHTML, holder) {
         var html = document.createElement("div");
@@ -60,7 +60,7 @@ var Utils = {
     /**
      * Format a time with multiple units
      * @param {Number} time - Number of hour
-     * @returns {String}
+     * @return {String}
      */
     formatTime: function (time) {
         if (!time) {
@@ -86,7 +86,7 @@ var Utils = {
      * Add "s" when plural
      * @param {String} string - Origin string
      * @param {Number} number - How many
-     * @returns {String}
+     * @return {String}
      */
     pluralize: function (string, number) {
         return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
@@ -95,7 +95,7 @@ var Utils = {
     /**
      * Start every sentence with a capital letter
      * @param {String} string - Origin string
-     * @returns {String}
+     * @return {String}
      */
     capitalize: function (string) {
         if (string) {
@@ -118,7 +118,7 @@ var Utils = {
      * Utils.randomize(data, [2, 5]) // between 2 and 5
      * Utils.randomize(data, 5) // between 0 and 5
      * Utils.randomize(data) // 1 result
-     * @returns {Array|ID} An array of Object or one Object if no amount requested
+     * @return {Array|ID} An array of Object or one Object if no amount requested
      */
     randomize: function (list, amount) {
         if (!list || !list.values().length) {
@@ -218,7 +218,7 @@ var Utils = {
 
     /**
      * Give a random unique ID without collision
-     * @returns {String}
+     * @return {String}
      */
     pickUniqueID: function () {
         return new String("");
@@ -227,7 +227,7 @@ var Utils = {
     /**
      * Test if is a function
      * @param {*} func - Anything to test
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isFunction: function (func) {
         return func instanceof Function;

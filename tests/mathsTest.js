@@ -101,7 +101,7 @@ describe("Test all math helper", function mathsUtilsDescribe () {
          * Run 666 random and return results
          * @param {Number} [min] - The first param for random
          * @param {Number} [max] - The second param for random
-         * @returns {{min: {Number}, max: {Number}}} - The min and max value attained by random
+         * @return {{min: {Number}, max: {Number}}} - The min and max value attained by random
          */
         function runRandom (min, max) {
             var res = {

@@ -192,7 +192,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Determine the duration of the action
      * @param {ActionData} data - This action's data
-     * @returns {Number} In "in game" hours
+     * @return {Number} In "in game" hours
      */
     defineDuration: function (data) {
         var duration = (data.time || 0);
@@ -221,7 +221,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Take this action, its option and what it may build and merge all together
      * @param {ID} [optionId] - Any ID for the chosen option
-     * @returns {ActionData}
+     * @return {ActionData}
      */
     mergeWithOption: function (optionId) {
         var merge = {};
@@ -357,6 +357,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         else if (data.giveSpan && data.giveList) {
             result.give = Utils.randomizeMultiple(data.giveList, data.giveSpan);
         }
+        // Replace option token with chosen option
         result.give.forEach(function (couple, index, array) {
             if (couple[1] === DataManager.ids.option) {
                 array[index] = [couple[0], data.optionId];
@@ -464,7 +465,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     },
     /**
      * Get this data in plain object
-     * @returns {Object}
+     * @return {Object}
      */
     toJSON: function () {
         var json = this._toJSON();

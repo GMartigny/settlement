@@ -93,14 +93,14 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
     /**
      * Check if has enough of this resource
      * @param {Number} amount - Amount needed
-     * @returns {boolean}
+     * @return {boolean}
      */
     has: function (amount) {
         return this.count > amount || this.count.equals(amount);
     },
     /**
      * Get this data in plain object
-     * @returns {Object}
+     * @return {Object}
      */
     toJSON: function () {
         return [this.count, this.getId()];

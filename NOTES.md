@@ -43,7 +43,7 @@ Plus a tool to place graphical assets with each others.
 
 ## What could be done
 
-Here's some ideas that I scrap to limit scope (and keep my sanity) :
+Here's some ideas that I discard to limit scope (*: things I like and might do in the future) :
   * Adaptive difficulty
   * I18n *
   * Display water and food level

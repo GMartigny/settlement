@@ -57,7 +57,7 @@ var MathsUtils = {
     /**
      * Square a number
      * @param {Number} x - Any number
-     * @returns {Number}
+     * @return {Number}
      */
     sq: function (x) {
         return x * x;
@@ -85,7 +85,7 @@ var MathsUtils = {
      * Return the absolute difference between two number
      * @param {Number} a - Any number
      * @param {Number} b - Any number
-     * @returns {Number}
+     * @return {Number}
      */
     diff: function (a, b) {
         return MathsUtils.abs(a - b);
@@ -158,7 +158,7 @@ var MathsUtils = {
     /**
      * Convert a number to hexadecimal
      * @param {Number} number - Any number
-     * @returns {String}
+     * @return {String}
      */
     toHexa: function (number) {
         return MathsUtils.round(number).toString(16).toUpperCase();
@@ -167,7 +167,7 @@ var MathsUtils = {
     /**
      * Convert from hexadecimal to integer
      * @param {String} hexa - Any valid hexa string
-     * @returns {Number}
+     * @return {Number}
      */
     toDeci: function (hexa) {
         return parseInt(hexa, 16);

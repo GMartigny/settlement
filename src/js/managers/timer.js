@@ -75,7 +75,7 @@ var TimerManager = (function iife () {
     /**
      * Return a timer matching an ID
      * @param {ID} timerId - Existing ID in the timer list
-     * @returns {Timer}
+     * @return {Timer}
      * @throws RangeError
      */
     function getTimer (timerId) {
@@ -161,7 +161,7 @@ var TimerManager = (function iife () {
         /**
          * Return elapsed time on a timer
          * @param {ID} timerId - Id of a running timer
-         * @returns {Number} Elapsed time in ms
+         * @return {Number} Elapsed time in ms
          * @throws RangeError
          */
         getElapsed: function (timerId) {

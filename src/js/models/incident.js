@@ -132,7 +132,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     },
     /**
      * Get this data in plain object
-     * @returns {Object}
+     * @return {Object}
      */
     toJSON: function () {
         var json = this._toJSON();

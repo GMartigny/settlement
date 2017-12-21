@@ -18,7 +18,7 @@ var SaveManager = (function iife () {
     /**
      * "Compress" a string to non-readable format
      * @param {String} str - Any string
-     * @returns {String}
+     * @return {String}
      */
     function compress (str) {
         return btoa(salt + btoa(str));
@@ -27,7 +27,7 @@ var SaveManager = (function iife () {
     /**
      * Turn back
      * @param {String} compressed - A string from the "compress" function
-     * @returns {String}
+     * @return {String}
      */
     function unCompress (compressed) {
         return atob(atob(compressed).substr(salt.length));

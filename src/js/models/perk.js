@@ -52,7 +52,7 @@ Perk.static(/** @lends Perk */{
     /**
      * Tell if this perk has already been used
      * @param {ID} perkId - Any perk ID
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isUsed: function (perkId) {
         return this.usedId.includes(perkId);

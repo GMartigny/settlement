@@ -58,7 +58,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     },
     /**
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isRunning: function () {
         return !!this.timeout;
@@ -94,14 +94,14 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     },
     /**
      * Return elapsed time of the cooldown
-     * @returns {Number}
+     * @return {Number}
      */
     getElapsed: function () {
         return TimerManager.getElapsed(this.timeout);
     },
     /**
      * Return remaining time in the cooldown
-     * @returns {Number}
+     * @return {Number}
      */
     getRemaining: function () {
         return TimerManager.getRemaining(this.timeout);

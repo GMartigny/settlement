@@ -151,7 +151,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Change energy
      * @param {Number} amount - Amount to apply
-     * @returns {Number} Current energy
+     * @return {Number} Current energy
      */
     updateEnergy: function (amount) {
         var value = this.energy += amount;
@@ -178,7 +178,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     },
     /**
      * Test if tired
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isTired: function () {
         return this.energy.equals(0) || this.energy < 0;
@@ -186,7 +186,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Change life
      * @param {Number} amount - Amount to apply
-     * @returns {Number} Current life
+     * @return {Number} Current life
      */
     updateLife: function (amount) {
         var value = this.life + amount;
@@ -244,7 +244,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Try to obtains a perk
      * @param {ID} actionId - Action's data
-     * @returns {Boolean} true if got perk
+     * @return {Boolean} true if got perk
      */
     rollForPerk: function (actionId) {
         var gotPerk = false;
@@ -296,14 +296,14 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Check for perk
      * @param {ID} perkId - A perk id
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     hasPerk: function (perkId) {
         return this.perk && this.perk.getId() === perkId;
     },
     /**
      * Define if this one's dead
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isDead: function () {
         return this.life < 0;
@@ -323,7 +323,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     },
     /**
      * Get this data in plain object
-     * @returns {Object}
+     * @return {Object}
      */
     toJSON: function () {
         var json = {
@@ -373,7 +373,7 @@ People.static(/** @lends People */{
     /**
      * Return a promise for a random name
      * @param {Number} [amount=1] - Number of name to get
-     * @returns {Promise}
+     * @return {Promise}
      */
     randomName: function (amount) {
         return new Promise(function (resolve, reject) {

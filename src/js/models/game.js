@@ -374,12 +374,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             }
 
             // Refresh resources
-            this.resources.forEach(function (resource, id, list) {
+            this.resources.forEach(function refreshResources (resource, id, list) {
                 resource.refresh(list);
             });
 
             // Refresh people
-            this.people.forEach(function (person, id, list) {
+            this.people.forEach(function refreshPeople (person, id, list) {
                 if (person.isDead()) {
                     list.delete(id);
                     person.die();
@@ -399,15 +399,22 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     tickConsumption: function (elapse) {
         var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
         peopleConsumption.forEach(function peopleConsumptionUse (consumption) {
+            var resourceId = consumption[1];
             this.flags[consumption[2]] = 0;
             var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
-            if (consumption[1] === DataManager.ids.resources.gatherables.common.water && drought) {
+            if (resourceId === DataManager.ids.resources.gatherables.common.water && drought) {
                 consumption[0] *= drought.data.multiplier;
             }
             var amount = this.people.size + (this.flags.doggy ? 1 : 0);
-            this.consume(consumption[0] * amount * elapse, consumption[1], function setLackResource (diff) {
+            var warn = this.consume(consumption[0] * amount * elapse, resourceId, function setLackResource (diff) {
                 this.flags[consumption[2]] = diff;
             });
+            var data = DataManager.get(resourceId);
+            if (!data.initialDropRate) {
+                data.initialDropRate = data.dropRate;
+            }
+            // Decrease dropRate if not lacking
+            data.dropRate = warn ? data.initialDropRate : data.dropRate * MathsUtils.pow(0.98, elapse);
         }, this);
     },
     /**
@@ -423,37 +430,40 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * A callback to handle missing resources
      * @callback lackOfResources
      * @param {Number} missingAmount
-     * @param {Object} resource - Resource data
+     * @param {ID} resourceId - Resource Id
      */
     /**
      * Need to use a resource
      * @param {Number} amount - Amount to use
      * @param {ID} resourceId - Resource id
      * @param {lackOfResources} lack - A callback function in case of lack
+     * @return {Boolean} Has trigger a warn for lack
      */
     consume: function (amount, resourceId, lack) {
         if (amount) {
+            if (!this.resources.has(resourceId)) {
+                this.earn(0, resourceId);
+            }
             var instance = this.resources.get(resourceId);
-            if (instance) {
-                if (instance.has(amount)) {
-                    instance.update(-amount);
-                    instance.warnLack = false;
+            if (instance && instance.has(amount)) {
+                instance.update(-amount);
+                instance.warnLack = false;
+            }
+            else {
+                if (Utils.isFunction(lack)) {
+                    var diff = amount - (instance ? instance.count : 0);
+                    lack.call(this, diff, resourceId);
                 }
-                else {
-                    if (Utils.isFunction(lack)) {
-                        var diff = amount - instance.count;
-                        lack.call(this, diff, resourceId);
-                    }
 
-                    instance.set(0);
+                instance.set(0);
 
-                    // Warn for consuming more than available
-                    if (!instance.warnLack) {
-                        instance.warnLack = true;
-                        MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
-                    }
+                // Warn for consuming more than available
+                if (!instance.warnLack) {
+                    instance.warnLack = true;
+                    MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
                 }
             }
+            return instance.warnLack;
         }
     },
     /**
@@ -591,7 +601,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Tell if building is already in progress
      * @param {ID} buildingId - Any building ID
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isBuildingInProgress: function (buildingId) {
         return this.buildingsInProgress.includes(buildingId);
@@ -599,7 +609,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Tell if this building (or an upgrade) is done
      * @param {ID} buildingId - Any building ID
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isBuildingDone: function (buildingId) {
         var isDone = false;

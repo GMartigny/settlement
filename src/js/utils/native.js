@@ -71,7 +71,7 @@ Map.prototype.getValues = function getValues () {
 
 /**
  * Return all keys as an array
- * @returns {Array}
+ * @return {Array}
  */
 Map.prototype.getKeys = function getKeys () {
     var keys = [];
@@ -130,7 +130,7 @@ Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
 
 /**
  * Swap key to value in an object
- * @returns {Object}
+ * @return {Object}
  */
 Object.prototype.swap = function swap () {
     var res = {};
@@ -142,7 +142,7 @@ Object.prototype.swap = function swap () {
 
 /**
  * Return a new reference of any object
- * @returns {*}
+ * @return {*}
  */
 Object.prototype.clone = function clone () {
     var clone;

@@ -135,7 +135,7 @@ var DataManager = (function iife () {
     /**
      * Add a new object to the database
      * @param {Data} data - Any data
-     * @returns {ID}
+     * @return {ID}
      */
     function insert (data) {
         var id = btoa(data.id);
@@ -158,7 +158,7 @@ var DataManager = (function iife () {
      * Return an HTML formated string for resources
      * @param {ID} id - Any resource ID
      * @param {Number} [amount] - Optional number of resources
-     * @returns {String}
+     * @return {String}
      */
     function formatResource (id, amount) {
         return Resource.toString(db[id], amount);
@@ -1509,7 +1509,7 @@ var DataManager = (function iife () {
         /**
          * Get some data from the database
          * @param {ID} id - An id
-         * @returns {Data}
+         * @return {Data}
          */
         get: function (id) {
             if (id) {
