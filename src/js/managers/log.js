@@ -21,7 +21,7 @@ var LogManager = (function iife () {
             QUOTE: 2, // Blab without effect
             EVENT: 3 // Something happening without user action
         },
-        maxLog: 50,
+        maxLog: 30,
         /**
          * Start the manager
          * @param {HTMLElement} logWrapper - An element where to put logs
@@ -70,11 +70,14 @@ var LogManager = (function iife () {
         log: function (message, type) {
             if (message.length) {
                 type = type || 0;
-                wrapper.insertBefore(Utils.wrap("log " + logTypes[type], message), wrapper.firstChild);
+                var html = Utils.wrap("log " + logTypes[type], message);
+                html.hide();
+                wrapper.insertBefore(html, wrapper.firstChild);
                 var logs = Array.prototype.slice.call(wrapper.children);
                 if (logs.length > LogManager.maxLog) {
                     logs.last().remove();
                 }
+                html.show.defer(html);
             }
         },
         /**
