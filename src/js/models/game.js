@@ -445,7 +445,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 this.earn(0, resourceId);
             }
             var instance = this.resources.get(resourceId);
-            if (instance && instance.has(amount)) {
+            if (instance.has(amount)) {
                 instance.update(-amount);
                 instance.warnLack = false;
             }

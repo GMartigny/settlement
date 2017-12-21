@@ -351,7 +351,19 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         };
 
         // Give
-        if (Utils.isArray(data.give)) {
+        // The first gather action is fixed to ensure 1 possible crafting and a good start
+        var isFirstGather = this.getId() === DataManager.ids.actions.gather &&
+            this.repeated === 1 &&
+            this.owner.hasPerk(DataManager.ids.perks.first);
+        if (isFirstGather) {
+            var gatherables = DataManager.ids.resources.gatherables;
+            result.give = [
+                [2, gatherables.common.rock],
+                [1, gatherables.uncommon.bolts],
+                [1, gatherables.rare.medication]
+            ];
+        }
+        else if (Utils.isArray(data.give)) {
             result.give = data.give;
         }
         else if (data.giveSpan && data.giveList) {
@@ -425,7 +437,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             effect.build = Utils.an(build.name);
         }
 
-        result.give = Utils.compactResources(result.give);
         effect.give = Utils.formatArray(result.give);
 
         // Log
