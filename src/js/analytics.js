@@ -7,14 +7,17 @@
  * @param {Number} [value] - Any value
  */
 var sendEvent = (function iife () {
-    if (!IS_DEV) {
+    if (IS_DEV) {
+        return Utils.noop;
+    }
+    else {
         var scope = {};
         (function iife (scope, globalName) {
             scope.GoogleAnalyticsObject = globalName;
             scope[globalName] = scope[globalName] || function () {
                 (scope[globalName].q = scope[globalName].q || []).push(arguments);
             };
-            scope[globalName].l = +new Date();
+            scope[globalName].l = Date.now();
             var tag = document.createElement("script");
             var firstTag = document.getElementsByTagName("script")[0];
             tag.async = 1;
@@ -28,8 +31,5 @@ var sendEvent = (function iife () {
         return function sendEvent (category, label, value) {
             scope.ga("send", "event", "Game", category, label, value);
         };
-    }
-    else {
-        return Utils.noop;
     }
 })();

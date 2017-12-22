@@ -118,13 +118,13 @@ Object.prototype.flatten = function () {
  * @param {Object} [thisArg] - A context for the callback
  */
 Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
-    if (!["Object", "Array"].includes(this.constructor.name)) {
-        action.call(thisArg, this);
-    }
-    else {
+    if (["Object", "Array"].includes(this.constructor.name)) {
         this.browse(function (value) {
             value.deepBrowse(action, thisArg);
         });
+    }
+    else {
+        action.call(thisArg, this);
     }
 },
 

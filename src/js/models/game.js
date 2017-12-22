@@ -173,21 +173,19 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var msgType = MessageBus.MSG_TYPES;
 
         // We may find resources
-        MessageBus.observe(msgType.GIVE, function (given) {
+        MessageBus.observe(msgType.GIVE, function callEarnAndHandleParticles (given) {
             var initiator = null;
             if (given.initiator) {
                 initiator = given.initiator;
                 given = given.give;
             }
             if (Utils.isArray(given)) {
-                given.forEach(function (r) {
-                    game.earn.apply(game, r);
-                });
+                var particles = [];
+                var particlesFragment = document.createDocumentFragment();
+                given.forEach(function earnAndAddParticle (info) {
+                    game.earn.apply(game, info);
 
-                if (initiator) {
-                    var particles = [];
-                    var particlesFragment = document.createDocumentFragment();
-                    given.forEach(function (info) {
+                    if (initiator) {
                         var id = info[1];
                         var data = DataManager.get(id);
                         if (data.icon) {
@@ -198,14 +196,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                                 particles.push(particle);
                             }
                         }
-                    });
+                    }
+                });
+
+                if (particles.length) {
                     GameController.holder.appendChild(particlesFragment);
                     Particle.batch.defer(null, particles);
                 }
             }
         })
         // We may use resources
-        .observe(msgType.USE, function (use) {
+        .observe(msgType.USE, function callConsume (use) {
             if (Utils.isArray(use)) {
                 Utils.compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
@@ -217,9 +218,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             game.buildingsInProgress.push(buildingId);
         })
         // We may build
-        .observe(msgType.BUILD, function (buildingId) {
-            game.build(buildingId);
-        })
+        .observe(msgType.BUILD, this.build.bind(this))
+        // New people arrival
         .observe(msgType.ARRIVAL, function () {
             sendEvent("People", "arrive", game.getSettledTime());
         })
@@ -237,17 +237,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
             }
         })
-        .observe(msgType.LOOSE, function () {
+        .observe(msgType.LOOSE, function setGameOver () {
             game.flags.gameOver = true;
             game.wipeSave();
         })
 
         // Keep track of running incidents
-        .observe(msgType.INCIDENT_START, function (incident) {
+        .observe(msgType.INCIDENT_START, function addToIncidentList (incident) {
             game.incidentsList.appendChild(incident.html);
             game.incidents.push(incident);
         })
-        .observe(msgType.INCIDENT_END, function (incident) {
+        .observe(msgType.INCIDENT_END, function clearIncidentList (incident) {
             // incident remove its html itself
             game.incidents.delete(incident.getId());
             if (!incident.data.unique) {
@@ -263,7 +263,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         .observe(msgType.SAVE, this.saveGame.bind(this))
 
         // End of the game
-        .observe(msgType.WIN, function () {
+        .observe(msgType.WIN, function showWinMessage () {
             this.flags.win = true;
             sendEvent("Game", "win", game.getSettledTime());
             new Popup({ // TODO
@@ -272,7 +272,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             });
         })
 
-        .observe(msgType.KEYS.SPACE, function (direction) {
+        .observe(msgType.KEYS.SPACE, function callTogglePause (direction) {
             if (direction === "up") {
                 game.togglePause();
             }
@@ -287,12 +287,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             actions = [actions];
         }
 
-        actions.forEach(function (actionId) {
+        actions.forEach(function addToInitialActions (actionId) {
             if (!this.initialActions.includes(actionId)) {
                 this.initialActions.push(actionId);
             }
         }, this);
-        this.people.forEach(function (people) {
+        this.people.forEach(function callAddActions (people) {
             people.addAction(actions);
         });
     },
@@ -305,10 +305,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             actions = [actions];
         }
 
-        actions.forEach(function (actionId) {
+        actions.forEach(function removeFromInitialActions (actionId) {
             this.initialActions.out(actionId);
         }, this);
-        this.people.forEach(function (people) {
+        this.people.forEach(function callLockAction (people) {
             people.lockAction(actions);
         });
     },
@@ -437,9 +437,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {Number} amount - Amount to use
      * @param {ID} resourceId - Resource id
      * @param {lackOfResources} lack - A callback function in case of lack
-     * @return {Boolean} Has trigger a warn for lack
+     * @return {Boolean} Has not enough of it
      */
     consume: function (amount, resourceId, lack) {
+        var lacked = false;
         if (amount) {
             if (!this.resources.has(resourceId)) {
                 this.earn(0, resourceId);
@@ -450,6 +451,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 instance.warnLack = false;
             }
             else {
+                lacked = true;
                 if (Utils.isFunction(lack)) {
                     var diff = amount - (instance ? instance.count : 0);
                     lack.call(this, diff, resourceId);
@@ -463,8 +465,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                     MessageBus.notify(MessageBus.MSG_TYPES.RUNS_OUT, resourceId);
                 }
             }
-            return instance.warnLack;
         }
+        return lacked;
     },
     /**
      * Earn some resource
@@ -487,10 +489,11 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      */
     prepareNewcomer: function (amount) {
         var game = this;
-        People.peopleFactory(amount || 1).then(function (persons) {
-            persons.forEach(function (person) {
+        People.peopleFactory(amount || 1).then(function prepareNewPersons (persons) {
+            persons.forEach(function preparePerson (person) {
                 person.addAction(game.initialActions);
 
+                // First one start empty
                 if (!game.people.size) {
                     person.life = 0;
                     person.energy = 0;
@@ -510,7 +513,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             people = [people];
         }
 
-        people.forEach(function (person) {
+        people.forEach(function addToPeopleList (person) {
             if (this.people.size) {
                 MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
 
@@ -519,7 +522,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                     var description = LogManager.personify("attracted by the explosions a @common approach. " +
                         "@nominative accept to team up.", person);
                     MessageBus.notify(MessageBus.MSG_TYPES.LOGS.EVENT, description);
-                    TimerManager.timeout(function () {
+                    TimerManager.timeout(function otherWalkersBlab () {
                         var message = "There's other desert-walkers ready to join if there's room for them.";
                         MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, message);
                     }, GameController.tickLength * 3);
@@ -551,7 +554,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     unlockedCraftables: function () {
         var craftables = [];
 
-        DataManager.ids.resources.craftables.deepBrowse(function (id) {
+        DataManager.ids.resources.craftables.deepBrowse(function checkUnlocked (id) {
             var craft = DataManager.get(id);
             if ((!craft.ifHas || this.buildings.has(craft.ifHas)) &&
                 (!craft.condition || (Utils.isFunction(craft.condition) && craft.condition()))) {
@@ -568,11 +571,11 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     possibleCraftables: function () {
         var game = this;
 
-        return this.unlockedCraftables().filter(function (id) {
+        return this.unlockedCraftables().filter(function checkConsumption (id) {
             var craft = DataManager.get(id);
             var keep = true;
             if (Utils.isFunction(craft.consume)) {
-                craft.consume(craft).forEach(function (res) {
+                craft.consume(craft).forEach(function checkHasResources (res) {
                     keep = keep && game.hasEnough(res[1], res[0]);
                 });
             }
@@ -586,7 +589,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     possibleBuildings: function () {
         var buildings = [];
 
-        DataManager.ids.buildings.deepBrowse(function (id) {
+        DataManager.ids.buildings.deepBrowse(function checkIfUnlocked (id) {
             var building = DataManager.get(id);
             if (!this.isBuildingInProgress(id) &&
                 !this.isBuildingDone(id) &&
@@ -613,7 +616,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      */
     isBuildingDone: function (buildingId) {
         var isDone = false;
-        this.buildings.forEach(function (building) {
+        this.buildings.forEach(function checkIfDone (building) {
             if (!isDone) {
                 var doneId = building.getId();
                 var doneUpgrade = building.data.upgrade;
@@ -777,7 +780,7 @@ if (IS_DEV) {
      * Earn one of each resources and buildings
      */
     GameController.prototype.resourcesOverflow = function resourcesOverflow () {
-        DataManager.ids.resources.deepBrowse(function (id) {
+        DataManager.ids.resources.deepBrowse(function earn50 (id) {
             this.earn(50, id);
         }.bind(this));
     };
@@ -789,7 +792,7 @@ if (IS_DEV) {
         MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
     };
     GameController.prototype.wannaLoose = function wannaLoose () {
-        this.people.forEach(function (person) {
+        this.people.forEach(function lowLifeNoEnergy (person) {
             person.setLife(5);
             person.setEnergy(0);
         });

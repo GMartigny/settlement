@@ -156,8 +156,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
     updateEnergy: function (amount) {
         var value = this.energy += amount;
 
-        if (value > 100) {
-            value = 100;
+        if (value > People.MAX_BAR_VALUE) {
+            value = People.MAX_BAR_VALUE;
         }
         else if (value < 0) {
             this.updateLife(value);
@@ -191,8 +191,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
     updateLife: function (amount) {
         var value = this.life + amount;
 
-        if (value > 100) {
-            value = 100;
+        if (value > People.MAX_BAR_VALUE) {
+            value = People.MAX_BAR_VALUE;
         }
 
         this.setLife(value);
@@ -261,14 +261,14 @@ People.extends(View, "People", /** @lends People.prototype */ {
                     if (!actionsIds || actionsIds.includes(actionId)) {
                         if (!Utils.isFunction(perkData.condition) || perkData.condition(self)) {
                             var done = 0;
-                            if (!actionsIds) {
-                                done = 1 / (perkData.iteration || 0);
-                            }
-                            else {
+                            if (actionsIds) {
                                 done = actionsIds.reduce(function (sum, id) {
                                     var action = self.actions.get(id);
                                     return sum + (action ? action.repeated : 0);
                                 }, 0) / (perkData.iteration || 0);
+                            }
+                            else {
+                                done = 1 / (perkData.iteration || 0);
                             }
                             done = done < 1 ? 0 : done;
                             // perk dice roll
@@ -342,6 +342,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
 });
 
 People.static(/** @lends People */{
+    MAX_BAR_VALUE: 100,
     /**
      * Factory for people
      * @param {Number} [amount=1] - Number of people to create
@@ -383,7 +384,7 @@ People.static(/** @lends People */{
 
             fetch(url).then(function (response) {
                 if (response.ok) {
-                    return response.json().then(resolve);
+                    response.json().then(resolve);
                 }
                 else {
                     reject(new URIError("[" + response.status + "] " + url + " " + response.statusText));

@@ -44,11 +44,10 @@ Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
     },
     /**
      * Animate the bar from fill to empty
-     * @param {Number} time - Animation duration (ms)
+     * @param {Number} [time=0] - Animation duration (ms)
      */
     run: function (time) {
-        time = +time || 0;
-        this.valueBar.style.animationDuration = time + "ms";
+        this.valueBar.style.animationDuration = MathsUtils.toNumber(time, 0) + "ms";
         this.html.classList.add("ongoing");
     }
 });

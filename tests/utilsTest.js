@@ -34,9 +34,9 @@ describe("Test all general helper", function utilsDescribe () {
         var plotName = DataManager.get(plotId).name;
         var wellName = DataManager.get(wellId).name;
         var array = [[2, plotId]];
-        expect(Utils.formatArray(array)).toEqual("2 " + plotName + "s");
+        expect(Utils.formatArray(array)).toEqual("2 <b>" + plotName + "s</b>");
         array.push([1, wellId]);
-        expect(Utils.formatArray(array)).toEqual("2 " + plotName + "s and 1 " + wellName);
+        expect(Utils.formatArray(array)).toEqual("2 <b>" + plotName + "s</b> and 1 <b>" + wellName + "</b>");
 
         // TODO: test with icons
 

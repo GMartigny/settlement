@@ -3,6 +3,15 @@
 
 var MathsUtils = {
     /**
+     * Convert to a number
+     * @param {*} x - Any value to convert
+     * @param {Number} [fallback] - A fallback value if the first is NaN
+     * @return {Number}
+     */
+    toNumber: function (x, fallback) {
+        return Number(x) || fallback;
+    },
+    /**
      * Floor a number
      * @param {Number} x - Any number
      * @return {Number}
@@ -143,13 +152,13 @@ var MathsUtils = {
                     to = 1;
                 }
                 else {
-                    to = +from || 1;
+                    to = MathsUtils.toNumber(from, 1);
                 }
                 from = 0;
             }
             else {
-                from = +from || 0;
-                to = +to || 1;
+                from = MathsUtils.toNumber(from, 0);
+                to = MathsUtils.toNumber(to, 1);
             }
             return rand() * (to - from) + from;
         };

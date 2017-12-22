@@ -29,8 +29,8 @@ var GraphicManager = (function iife () {
         this.destination = {};
         this.defineSource(sourceData);
 
-        this.destination.x = MathsUtils.floor(+destData.x * Asset.ENLARGE);
-        this.destination.y = MathsUtils.floor(+destData.y * Asset.ENLARGE);
+        this.destination.x = MathsUtils.floor(destData.x * Asset.ENLARGE);
+        this.destination.y = MathsUtils.floor(destData.y * Asset.ENLARGE);
     }
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.prototype = {
@@ -83,8 +83,8 @@ var GraphicManager = (function iife () {
          * @param {Number} y - A new vertical position
          */
         setPosition: function (x, y) {
-            this.destination.x = +x;
-            this.destination.y = +y;
+            this.destination.x = MathsUtils.floor(x * Asset.ENLARGE);
+            this.destination.y = MathsUtils.floor(y * Asset.ENLARGE);
         }
     };
 

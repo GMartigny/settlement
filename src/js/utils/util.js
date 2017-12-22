@@ -36,7 +36,7 @@ var Utils = {
             return (array.slice(0, array.length - 1)).join(", ") + " " + (final || "and") + " " + array.last();
         }
         else if (array.length) {
-            return "" + array[0];
+            return String(array[0]);
         }
         else {
             return "";
@@ -153,7 +153,7 @@ var Utils = {
                     amount = amount.split("-");
                 }
                 else {
-                    amount = [+amount];
+                    amount = [amount];
                 }
             }
             return [MathsUtils.round(MathsUtils.random.apply(null, amount)), all[pick]];
@@ -176,12 +176,13 @@ var Utils = {
         }
         var res = [];
 
+        // Fixme: should be factorized with "randomize"
         if (!Utils.isArray(amount)) {
             if (Utils.isString(amount)) {
                 amount = amount.split("-");
             }
             else {
-                amount = [+amount];
+                amount = [amount];
             }
         }
         var total = MathsUtils.round(MathsUtils.random.apply(null, amount));

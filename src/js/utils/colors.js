@@ -9,7 +9,7 @@ function Color (rgb) {
     rgb = rgb.replace("#", "");
     var split = [];
     var length = rgb.length;
-    var precision = length < 6 ? 1 : 2;
+    var precision = MathsUtils.floor(length / 3);
 
     for (var i = 0; i < length; i += precision) {
         split.push(MathsUtils.toDeci(rgb.substr(i, precision)) * (precision === 1 ? 17 : 1));

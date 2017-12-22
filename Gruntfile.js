@@ -208,7 +208,7 @@ module.exports = function (grunt) {
                     result = +value !== 0 ? value : undf;
                 }
                 else {
-                    result = !!value ? value : undf;
+                    result = value ? value : undf;
                 }
                 return result;
             }

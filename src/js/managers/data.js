@@ -4,7 +4,7 @@
 /**
  * Data holder
  */
-var DataManager = (function iife () {
+var DataManager = (function iife () { // eslint-disable-line max-statements
 
     var time = {
         minute: 1 / 60,
@@ -1512,9 +1512,7 @@ var DataManager = (function iife () {
          * @return {Data}
          */
         get: function (id) {
-            if (id) {
-                return db[id];
-            }
+            return id ? db[id] : null;
         },
         bindAll: function (context) { // FIXME: not very good design
             db.browse(function (data) {

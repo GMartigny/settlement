@@ -57,11 +57,11 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
         }
     },
     /**
-     *
+     * Tell if this clickable's cooldown is running
      * @return {Boolean}
      */
     isRunning: function () {
-        return !!this.timeout;
+        return Boolean(this.timeout);
     },
     /**
      * End the cool-down animation

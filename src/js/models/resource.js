@@ -22,7 +22,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      */
     init: function (count) {
         if (count) {
-            this.update(+count);
+            this.update(count);
         }
         this.tooltip = new Tooltip(this.html, this.data);
     },
@@ -57,12 +57,10 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      */
     update: function (amount) {
         var prevAmount = this.count;
-        this.set(this.count + amount);
+        this.set(this.count + MathsUtils.toNumber(amount, 0));
 
-        if (MathsUtils.floor(prevAmount) !== MathsUtils.floor(this.count)) {
-            if (amount < 0) {
-                this.animate("less");
-            }
+        if (MathsUtils.floor(prevAmount) !== MathsUtils.floor(this.count) && amount < 0) {
+            this.animate("less");
         }
     },
     animate: function (change) {

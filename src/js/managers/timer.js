@@ -62,11 +62,8 @@ var TimerManager = (function iife () {
                 this.isRunning = true;
                 this.startTime = now;
                 this.timeout = this.setTimeout();
-                return this.time;
             }
-            else {
-                return false;
-            }
+            return !this.isRunning && this.time;
         }
     };
 

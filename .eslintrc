@@ -26,16 +26,30 @@ rules:
         - requireReturn: false # We can ignore return if void
           requireReturnDescription: false # We can ignore description sometimes
     # Best Practices
+    array-callback-return: error # Always have a return in array modifying methods
+    block-scoped-var: error
     complexity: error # Less than 20
+    consistent-return: error
     curly: error # Always
     dot-notation: warn # Better but ok
     eqeqeq: warn # Better but ok
-    func-names:
-        - warn # Better but ok
-        - as-needed
+#    func-names:
+#        - warn # Better but ok
+#        - as-needed
+    guard-for-in: error
     no-alert: error
     no-eval: error
+    no-implicit-coercion: error
+    no-magic-numbers:
+        - error
+        -
+            ignore:
+                - 0
+                - 1
+            ignoreArrayIndexes: true
+    no-multi-spaces: error
     no-multi-str: error
+    no-negated-condition: error
     no-with: error
     wrap-iife:
         - error

@@ -88,13 +88,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         }
         this.timer = TimerManager.timeout(this.end.bind(this), duration);
 
-        var rawLog;
-        if (Utils.isFunction(this.data.log)) {
-            rawLog = this.data.log(effect, this);
-        }
-        else {
-            rawLog = this.data.log || "";
-        }
+        var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
         var log = LogManager.personify(rawLog, effect);
         MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, Utils.capitalize(log));
     },

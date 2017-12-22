@@ -150,13 +150,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Player click on action
      * @param {ID} [optionId] - The chosen option's id
-     * @return {Boolean} Is launched
      */
     click: function (optionId) {
         if (!this.owner.busy && !this.locked) {
 
             if (this.parentAction) {
-                return this.parentAction.click(this.getId());
+                this.parentAction.click(this.getId());
             }
             else if (optionId || !this.options) {
                 // Merge data from this and selected option
@@ -182,11 +181,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 sendEvent("Action", "start", this.data.name);
 
                 MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
-                return true;
             }
-        }
-        else {
-            return false;
         }
     },
     /**
@@ -226,11 +221,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     mergeWithOption: function (optionId) {
         var merge = {};
         var data = this.data;
-        var option = {};
-
-        if (optionId) {
-            option = DataManager.get(optionId);
-        }
+        var option = optionId ? DataManager.get(optionId) : {};
 
         var build = {};
         var buildId = option.build || data.build;
@@ -301,25 +292,21 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             });
         }
 
-        // Unlock
+        // Unlock for all
         if (result.unlock.forAll.length) {
             // add to all
             MessageBus.notify(MessageBus.MSG_TYPES.UNLOCK, result.unlock.forAll);
         }
-        if (result.unlock.forOne.length) {
-            // add to owner
-            this.owner.addAction(result.unlock.forOne);
-        }
+        // add to owner
+        this.owner.addAction(result.unlock.forOne);
 
-        // Lock
+        // Lock for all
         if (result.lock.forAll.length) {
             // lock to all
             MessageBus.notify(MessageBus.MSG_TYPES.LOCK, result.lock.forAll);
         }
-        if (result.lock.forOne.length) {
-            // lock to owner
-            this.owner.lockAction(result.lock.forOne);
-        }
+        // lock to owner
+        this.owner.lockAction(result.lock.forOne);
 
         // Build
         if (result.build) {
@@ -333,7 +320,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Resolve all function of this action
      * @param {ActionEffect} effect - An editable object carrying effect for log
-     * @param {Data} data - Data of action + option
+     * @param {ActionData} data - Data of action + option
      * @return {{give: Array, unlock: {forAll: Array, forOne: Array}, lock: {forAll: Array, forOne: Array}}}
      */
     resolveAction: function (effect, data) {
@@ -440,8 +427,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         effect.give = Utils.formatArray(result.give);
 
         // Log
-        var logData = data.log || "";
-        var rawLog = Utils.isFunction(logData) ? logData(effect, this) : logData;
+        var rawLog = Utils.isFunction(data.log) ? data.log(effect, this) : data.log || "";
         result.log = LogManager.personify(rawLog, effect);
 
         return result;
