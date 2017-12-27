@@ -7,17 +7,15 @@
  */
 function Color (rgb) {
     rgb = rgb.replace("#", "");
-    var split = [];
-    var length = rgb.length;
-    var precision = MathsUtils.floor(length / 3);
+    var RGBSplit = 3;
+    var precision = MathsUtils.floor(rgb.length / RGBSplit);
 
-    for (var i = 0; i < length; i += precision) {
-        split.push(MathsUtils.toDeci(rgb.substr(i, precision)) * (precision === 1 ? 17 : 1));
-    }
-
-    this.r = split[0];
-    this.g = split[1];
-    this.b = split[2];
+    var radix = MathsUtils.RADIX.HEXA;
+    var growingRatio = (radix + 1) / ((1 / (radix - 1)) * (MathsUtils.pow(radix, precision) - 1)); // "C" => "CC", "CCC" => "CC"
+    var i = 0;
+    this.r = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i++) * precision, precision)) * growingRatio);
+    this.g = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i++) * precision, precision)) * growingRatio);
+    this.b = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i) * precision, precision)) * growingRatio);
     this.a = 1;
 }
 Color.prototype = {

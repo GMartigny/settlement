@@ -212,9 +212,8 @@ var Utils = {
      */
     randomStr: function (length) {
         length = length || 6;
-        var alphaDecimal = 36;
         return (new Array(length)).fill("-").join("").replace(/-/g, function () {
-            return MathsUtils.floor(MathsUtils.random(alphaDecimal)).toString(alphaDecimal);
+            return MathsUtils.floor(MathsUtils.random(MathsUtils.RADIX.ALPHA)).toString(MathsUtils.RADIX.ALPHA);
         });
     },
 

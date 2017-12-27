@@ -2,6 +2,12 @@
 /* exported MathsUtils */
 
 var MathsUtils = {
+    RADIX: {
+        BINARY: 2,
+        DECIMAL: 10,
+        HEXA: 16,
+        ALPHA: 36
+    },
     /**
      * Convert to a number
      * @param {*} x - Any value to convert
@@ -170,7 +176,7 @@ var MathsUtils = {
      * @return {String}
      */
     toHexa: function (number) {
-        return MathsUtils.round(number).toString(16).toUpperCase();
+        return MathsUtils.round(number).toString(MathsUtils.RADIX.HEXA).toUpperCase();
     },
 
     /**
@@ -179,6 +185,6 @@ var MathsUtils = {
      * @return {Number}
      */
     toDeci: function (hexa) {
-        return parseInt(hexa, 16);
+        return parseInt(hexa, MathsUtils.RADIX.HEXA);
     }
 };

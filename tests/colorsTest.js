@@ -22,12 +22,24 @@ describe("Test all color helpers", function colorsUtilsDescribe () {
 
     describe("Test the Color object", function colorDescribe () {
 
-        xit("fade", function () {
-            // covered by colorsFade
+        it("fade", function () {
+
+            var color = new Color("#0AF");
+            expect(color.fade(0.5).toString()).toEqual("rgba(0, 170, 255, 0.5)");
+            expect(color.fade(0).toString()).toEqual("rgba(0, 170, 255, 0)");
+
+            expect(color.fade(1).toString()).toEqual("#00AAFF");
+
         });
 
-        xit("grey", function () {
-            // covered by colorsGrey
+        it("grey", function () {
+
+            var color = new Color("#0AF");
+            expect(color.grey().toString()).toEqual("#8E8E8E");
+
+            color = new Color("#E5421F");
+            expect(color.grey().toString()).toEqual("#6D6D6D");
+
         });
 
         it("toHexa", function () {
@@ -36,7 +48,7 @@ describe("Test all color helpers", function colorsUtilsDescribe () {
             expect(color.toHexa()).toEqual("#00AAFF");
 
             color = new Color("#E5421F");
-            expect(color.toHexa()).toEqual("#E5421F");
+            expect(color.fade(0.3).toHexa()).toEqual("#E5421F");
 
         });
 
@@ -46,7 +58,7 @@ describe("Test all color helpers", function colorsUtilsDescribe () {
             expect(color.toRGB()).toEqual("rgb(0, 170, 255)");
 
             color = new Color("#E5421F");
-            expect(color.toRGB()).toEqual("rgb(229, 66, 31)");
+            expect(color.fade(0.3).toRGB()).toEqual("rgb(229, 66, 31)");
 
         });
 
@@ -56,13 +68,15 @@ describe("Test all color helpers", function colorsUtilsDescribe () {
             expect(color.toRGBA()).toEqual("rgba(0, 170, 255, 1)");
 
             color = new Color("#E5421F");
-            color.fade(0.3);
-            expect(color.toRGBA()).toEqual("rgba(229, 66, 31, 0.3)");
+            expect(color.fade(0.3).toRGBA()).toEqual("rgba(229, 66, 31, 0.3)");
 
         });
 
-        xit("toString", function () {
-            // covered by colorsFade and colorsGrey
+        it("toString", function () {
+
+            var color = new Color("#0AF");
+            expect("color " + color).toEqual("color #00AAFF"); // Magic coercion
+
         });
 
     });
