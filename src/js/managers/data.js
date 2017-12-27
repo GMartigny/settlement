@@ -6,13 +6,16 @@
  */
 var DataManager = (function iife () { // eslint-disable-line max-statements
 
+    /* eslint-disable no-magic-numbers */
+
+    var hoursPerDay = 24;
     var time = {
         minute: 1 / 60,
         hour: 1,
         day: 24,
-        week: 7 * 24,
-        month: 30 * 24,
-        year: 365 * 24
+        week: 7 * hoursPerDay,
+        month: 30 * hoursPerDay,
+        year: 365 * hoursPerDay
     };
 
     var directions = [
@@ -633,6 +636,17 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         log: "@people.name comes back with @give.",
         order: 1
     });
+    ids.buildings.special.firePit = insert({
+        id: "fp1",
+        name: "fire pit",
+        asset: "fire"
+    });
+    ids.buildings.special.firePit2 = insert({
+        id: "fp2",
+        name: "fire pit",
+        upgrade: ids.buildings.special.firePit,
+        asset: "fire2"
+    });
     ids.buildings.special.forum = insert({
         id: "fr0",
         name: "forum",
@@ -644,8 +658,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         give: [
             [1, ids.resources.room]
         ],
-        asset: "forum",
-        order: 1
+        build: ids.buildings.special.firePit,
+        asset: "forum"
     });
     ids.actions.settle = insert({
         id: "stl",

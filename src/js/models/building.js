@@ -26,5 +26,8 @@ Building.extends(Model, "Building", /** @lends Building.prototype */ {
         if (Utils.isFunction(this.data.effect)) {
             this.data.effect(this, this.data);
         }
+        if (this.data.build) {
+            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, this.data.build);
+        }
     }
 });

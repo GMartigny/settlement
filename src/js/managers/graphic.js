@@ -23,7 +23,7 @@ var GraphicManager = (function iife () {
         }
         this.animationState = 0;
         this.animationSteps = destData.steps || 1;
-        this.animationSpeed = (destData.speed || 0) / 60;
+        this.animationSpeed = (destData.speed || 0) / Asset.FPS;
 
         this.source = {};
         this.destination = {};
@@ -33,6 +33,7 @@ var GraphicManager = (function iife () {
         this.destination.y = MathsUtils.floor(destData.y * Asset.ENLARGE);
     }
     Asset.ENLARGE = 4; // 4 times bigger !!§!
+    Asset.FPS = 60;
     Asset.prototype = {
         /**
          * Define the source image of this asset
@@ -63,11 +64,11 @@ var GraphicManager = (function iife () {
                 posX, posY, this.destination.width, this.destination.height);
         },
         /**
-         * Return asset depth
+         * Return asset depth (lowest point to draw)
          * @return {Number}
          */
         getDepth: function () {
-            return this.destination.y;
+            return this.destination.y + this.destination.height;
         },
         /**
          * Compare with another asset to sort by depth
@@ -75,7 +76,7 @@ var GraphicManager = (function iife () {
          * @return {Number}
          */
         compare: function (other) {
-            return (other.destination.y + other.destination.height) - (this.destination.y + this.destination.height);
+            return this.getDepth() - other.getDepth();
         },
         /**
          * Define a new position to draw this asset
@@ -100,7 +101,9 @@ var GraphicManager = (function iife () {
             _imageData = data.assets;
             _buildingsPosition = data.positions;
 
-            var layer = CanvasUtils.prepareCanvas(800, 300);
+            var width = 800;
+            var height = 300;
+            var layer = CanvasUtils.prepareCanvas(width, height);
             _buildingsLayer = layer.ctx;
             _buildingsLayer.imageSmoothingEnabled = 0;
             layer.cnv.classList.add("layer", "buildings");

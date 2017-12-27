@@ -66,7 +66,7 @@ describe("Test functions added to Map prototype", function mapDescribe () {
         expect(returnedKey).toBeDefined();
         expect(map.get(returnedKey)).toEqual(value);
 
-        askedKey = DataManager.ids.buildings.special.forum;
+        askedKey = DataManager.ids.buildings.special.wreckage;
         value = new Building(askedKey);
         returnedKey = map.push(value); // value with id prop
         expect(returnedKey).toEqual(askedKey);
