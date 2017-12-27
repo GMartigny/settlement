@@ -414,7 +414,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 data.initialDropRate = data.dropRate;
             }
             // Decrease dropRate if not lacking
-            data.dropRate = warn ? data.initialDropRate : data.dropRate * MathsUtils.pow(0.98, elapse);
+            var dropRateDecrease = 0.98;
+            data.dropRate = warn ? data.initialDropRate : data.dropRate * MathsUtils.pow(dropRateDecrease, elapse);
         }, this);
     },
     /**
@@ -529,11 +530,19 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             }
 
-            this.people.push(person);
-            this.peopleList.appendChild(person.html);
+            this.addPeople(person);
 
             person.show.defer(person);
         }, this);
+    },
+    addPeople: function (person) {
+        this.people.push(person);
+        this.peopleList.appendChild(person.html);
+
+        var peopleSize = this.people.size;
+        this.people.forEach(function (each) {
+            each.html.style.zIndex = String(peopleSize--);
+        });
     },
     /**
      * Build something
@@ -757,8 +766,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             });
 
-            game.people.push(person);
-            game.peopleList.appendChild(person.html);
+            game.addPeople(person);
             person.show();
         });
         Perk.usedId = data.upk;

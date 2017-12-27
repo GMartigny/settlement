@@ -27,8 +27,6 @@ function People (name, gender) {
 
     this.super();
 }
-People.counter = 500;
-People.LST_ID = "peopleList";
 People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Initialise object
@@ -53,11 +51,11 @@ People.extends(View, "People", /** @lends People.prototype */ {
      */
     toHTML: function () {
         var html = this._toHTML();
-        html.style.zIndex = People.counter--;
 
         this.nameNode = Utils.wrap("name", Utils.capitalize(this.name), html);
 
-        this.lifeBar = new Bar("life", "#f52158", 25);
+        var lifeBarWarningThreshold = 25;
+        this.lifeBar = new Bar("life", "#f52158", lifeBarWarningThreshold);
         html.appendChild(this.lifeBar.html);
 
         this.energyBar = new Bar("energy", "#19f5ba");
@@ -82,10 +80,12 @@ People.extends(View, "People", /** @lends People.prototype */ {
         if (flags.settled) {
             this.stats.age += elapse;
             this.stats.idle += elapse;
-            this.updateEnergy(-elapse * (this.energyDrain + flags.starving * 30)); // getting tired
+            var lackingDrainRatio = 30;
+            var energyLose = this.energyDrain + flags.starving * lackingDrainRatio;
+            this.updateEnergy(-elapse * energyLose); // getting tired
             var lifeLose = 0;
             if (flags.thirsty) { // drying
-                lifeLose += flags.thirsty * 30;
+                lifeLose += flags.thirsty * lackingDrainRatio;
             }
             // If an acid-rain is running and busy outside
             if (flags.incidents.includes(DataManager.ids.incidents.medium.acidRain)
@@ -313,13 +313,13 @@ People.extends(View, "People", /** @lends People.prototype */ {
      */
     die: function () {
         MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
-        this.hide();
 
         this.actions.forEach(function (action) {
             action.cancel();
             action.tooltip.remove();
         });
-        TimerManager.timeout(this.remove.bind(this), 400);
+
+        this.hide(this.remove);
     },
     /**
      * Get this data in plain object
@@ -341,7 +341,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
     }
 });
 
-People.static(/** @lends People */{
+People.static( /** @lends People */ {
+    LST_ID: "peopleList",
     MAX_BAR_VALUE: 100,
     /**
      * Factory for people

@@ -484,7 +484,8 @@ Action.static(/** @lends Action */{
      */
     timeAndEnergyFallback: function (data) {
         if (Utils.isUndefined(data.energy) && !Utils.isUndefined(data.time)) {
-            data.energy = data.time * 5;
+            var defaultEnergyDrain = 5;
+            data.energy = data.time * defaultEnergyDrain;
         }
         data.time = data.time || 0;
     }

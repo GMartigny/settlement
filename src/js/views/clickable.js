@@ -82,7 +82,9 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      */
     toggle: function (enable) {
         this.html.classList.toggle("disabled", !enable);
-        this.html.tabIndex = enable ? 0 : -1;
+        var tabIndexAccessible = 0;
+        var tabIndexDisabled = -1;
+        this.html.tabIndex = enable ? tabIndexAccessible : tabIndexDisabled;
     },
     /**
      * Change the clickable text

@@ -6,6 +6,7 @@
 var MessageBus = (function iife () {
     "use strict";
 
+    var keyCodeOffset = 1000;
     var _observers = [];
 
     var api = /** @lends MessageBus */ {
@@ -35,8 +36,8 @@ var MessageBus = (function iife () {
          * @return {MessageBus} Itself
          */
         notify: function (type, message, silent) {
-            var typeDesc = this.SWAP_MSG_TYPE[type];
-            if (!silent) {
+            if (!silent && IS_DEV) {
+                var typeDesc = this.SWAP_MSG_TYPE[type];
                 Utils.log("Message ", typeDesc || type, message);
             }
             if (_observers[type]) {
@@ -69,35 +70,39 @@ var MessageBus = (function iife () {
             LOOSE: 90, // Game over
             WIN: 95, // Congratulation
             KEYS: {
-                TAB: 1009,
-                SPACE: 1032,
-                ENTER: 1013,
-                ESCAPE: 1027,
-                UP: 1038,
-                RIGHT: 1039,
-                DOWN: 1040,
-                LEFT: 1037,
-                CTRL: 1017,
-                SHIFT: 1016,
-                BACK: 1008,
-                ONE: 1049,
-                TWO: 1050,
-                THREE: 1051,
-                FOUR: 1052,
-                FIVE: 1053,
-                SIX: 1054,
-                SEVEN: 1055,
-                EIGHT: 1056,
-                NINE: 1057,
-                ZERO: 1048,
-                F5: 1116,
-                F8: 1119,
-                F12: 1123
+                BACK: 8,
+                TAB: 9,
+                ENTER: 13,
+                ESCAPE: 27,
+                SPACE: 32,
+                UP: 38,
+                RIGHT: 39,
+                DOWN: 40,
+                LEFT: 37,
+                CTRL: 17,
+                SHIFT: 16,
+                ONE: 49,
+                TWO: 50,
+                THREE: 51,
+                FOUR: 52,
+                FIVE: 53,
+                SIX: 54,
+                SEVEN: 55,
+                EIGHT: 56,
+                NINE: 57,
+                ZERO: 48,
+                F5: 116,
+                F8: 119,
+                F12: 123
             }
         }
     };
 
-    var letThroughtKeys = [
+    api.MSG_TYPES.KEYS.browse(function (value, key, list) {
+        list[key] = value + keyCodeOffset;
+    });
+
+    var letThroughKeys = [
         api.MSG_TYPES.KEYS.F5,
         api.MSG_TYPES.KEYS.F12,
         api.MSG_TYPES.KEYS.TAB,
@@ -106,8 +111,8 @@ var MessageBus = (function iife () {
     ];
 
     window.addEventListener("keydown", function keyDownListener (event) {
-        var code = 1000 + event.keyCode;
-        if (!letThroughtKeys.includes(code)) {
+        var code = keyCodeOffset + event.keyCode;
+        if (!letThroughKeys.includes(code)) {
             event.preventDefault();
             event.stopPropagation();
         }
@@ -118,7 +123,7 @@ var MessageBus = (function iife () {
         event.preventDefault();
         event.stopPropagation();
 
-        var code = 1000 + event.keyCode;
+        var code = keyCodeOffset + event.keyCode;
         if (code === api.MSG_TYPES.KEYS.ENTER) {
             event.target.dispatchEvent(new Event("click"));
         }
@@ -126,7 +131,9 @@ var MessageBus = (function iife () {
         api.notify(code, "up");
     }, true);
 
-    api.SWAP_MSG_TYPE = api.MSG_TYPES.swap();
+    if (IS_DEV) {
+        api.SWAP_MSG_TYPE = api.MSG_TYPES.swap();
+    }
 
     return api;
 })();

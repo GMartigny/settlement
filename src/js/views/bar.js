@@ -28,7 +28,8 @@ Bar.extends(View, "Bar", /** @lends Bar.prototype */ {
         return html;
     },
     setColor: function (color) {
-        this.html.style.backgroundColor = ColorsUtils.fade(color, 0.2);
+        var backgroundOpacity = 0.2;
+        this.html.style.backgroundColor = ColorsUtils.fade(color, backgroundOpacity);
         this.valueBar.style.backgroundColor = color;
     },
     /**

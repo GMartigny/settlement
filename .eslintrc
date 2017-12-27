@@ -25,42 +25,51 @@ rules:
         - error
         - requireReturn: false # We can ignore return if void
           requireReturnDescription: false # We can ignore description sometimes
+
     # Best Practices
     array-callback-return: error # Always have a return in array modifying methods
-    block-scoped-var: error
+    block-scoped-var: error # Use var inside its block
     complexity: error # Less than 20
-    consistent-return: error
+    consistent-return: error # All "return" have same type
     curly: error # Always
     dot-notation: warn # Better but ok
     eqeqeq: warn # Better but ok
 #    func-names:
 #        - warn # Better but ok
 #        - as-needed
-    guard-for-in: error
+    guard-for-in: error # "for in" operator need a hasOwnProperty check
     no-alert: error
     no-eval: error
     no-implicit-coercion: error
+    no-labels: error
     no-magic-numbers:
-        - error
+        - warn
         -
             ignore:
                 - 0
                 - 1
+                - 2
             ignoreArrayIndexes: true
     no-multi-spaces: error
-    no-multi-str: error
-    no-negated-condition: error
+    no-multi-str: error # Multi line string
+    no-self-compare: error # 5 == 5
+    no-sequences: error # Use of "," operator
+    no-throw-literal: error # throw "error";
+    no-useless-call: error
+    no-useless-concat: warn # "Hello " + "world"
     no-with: error
     wrap-iife:
         - error
         - inside # (function ())()
+
     # Variables
     no-undef: off # Too many global
+
     # Stylistic Issues
     brace-style:
         - error
         - stroustrup # Brace on same line, else/catch statement on new line
-    camelcase: error # Use camelcase
+    camelcase: error # Use camelCase
     comma-spacing: error # before: false, after: true
     comma-style: error # Coma on end of a line
     eol-last: error # Empty line on end of file
@@ -84,6 +93,7 @@ rules:
     new-cap: error # Class should have capital letter
     no-continue: error
     no-nested-ternary: error
+    no-negated-condition: error
     no-trailing-spaces: error
     object-property-newline: error
     quotes: error # Only double quotes

@@ -126,7 +126,7 @@ Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
     else {
         action.call(thisArg, this);
     }
-},
+};
 
 /**
  * Swap key to value in an object

@@ -125,12 +125,15 @@ module.exports = function (grunt) {
             },
             jsonCopy: {
                 files: sourceDir.json,
-                tasks: ["uglifyJSON"]
+                tasks: ["jsonify"]
             }
         },
 
         eslint: {
-            target: sourceDir.js
+            target: sourceDir.js,
+            options: {
+                quiet: true
+            }
         },
         lesslint: {
             src: sourceDir.css,

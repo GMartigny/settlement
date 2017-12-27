@@ -48,8 +48,9 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      */
     _setPosition: function (x, y) {
         var wrapperSize = Tooltip.getWrapperSize();
-        var left = MathsUtils.constrain(x + 10, 0, wrapperSize.width - this.width);
-        var top = MathsUtils.constrain(y + 10, 0, wrapperSize.height - this.height);
+        var mouseOffset = 10;
+        var left = MathsUtils.constrain(x + mouseOffset, 0, wrapperSize.width - this.width);
+        var top = MathsUtils.constrain(y + mouseOffset, 0, wrapperSize.height - this.height);
         this.html.style.left = left + "px";
         this.html.style.top = top + "px";
     },

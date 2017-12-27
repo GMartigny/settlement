@@ -28,16 +28,41 @@ View.extends(null, "View", /** @lends View.prototype */ {
     },
     /**
      * Show the widget
+     * @param {Function} [afterShow] - Callback to call after show transition's done
+     * (Won't work if html has no transition)
      */
-    show: function () {
+    show: function (afterShow) {
+        if (afterShow) {
+            var self = this;
+            var wrapperAfterShow = function () {
+                afterShow.call(self);
+                self.html.removeEventListener("transitionend", wrapperAfterShow);
+            };
+            this.html.addEventListener("transitionend", wrapperAfterShow);
+        }
+
         this.html.show();
     },
     /**
      * Hide the widget
+     * @param {Function} [afterHide] - Callback to call after hide transition's done
+     * (Won't work if html has no transition)
      */
-    hide: function () {
+    hide: function (afterHide) {
+        if (afterHide) {
+            var self = this;
+            var wrapperAfterHide = function () {
+                afterHide.call(self);
+                self.html.removeEventListener("transitionend", wrapperAfterHide);
+            };
+            this.html.addEventListener("transitionend", wrapperAfterHide);
+        }
+
         this.html.hide();
     },
+    /**
+     * Remove the view from the DOM
+     */
     remove: function () {
         this.html.remove();
     }
