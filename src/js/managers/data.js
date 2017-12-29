@@ -754,7 +754,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             [8, ids.resources.gatherables.common.rock],
             [2, ids.resources.gatherables.uncommon.oil]
         ],
-        asset: "furnace",
+        asset: "",
         order: 15,
         log: "A simple furnace that can smelt small things like " +
             formatResource(ids.resources.gatherables.uncommon.sand) + " or " +
@@ -840,7 +840,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         lock: [
             ids.actions.drawFromRiver
         ],
-        asset: "well",
+        asset: "",
         order: 13,
         log: "Drawing " + formatResource(ids.resources.gatherables.common.water) +
             " from the ground should allow to further polish " + formatResource(ids.resources.gatherables.common.rock) +
@@ -978,7 +978,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             [10, ids.resources.craftables.basic.tool],
             [15, ids.resources.craftables.complex.brick]
         ],
-        asset: "workshop",
+        asset: "",
         order: 35,
         log: "Good organisation enable to put together new work."
     });
@@ -1054,7 +1054,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         effect: function () {
             DataManager.get(ids.people).dropRate = 1;
         },
-        asset: "radio",
+        asset: "",
         order: 37,
         log: "<i class='quote'>Message received. We thought no one survive the crash. " +
             "Glad the cube is still preserved. " +
@@ -1080,7 +1080,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             ids.actions.drawFromRiver,
             ids.actions.drawFromWell
         ],
-        asset: "pump",
+        asset: "",
         order: 36,
         log: "A big upgrade to the well ! Now there's a continuous flow of " +
             formatResource(ids.resources.gatherables.common.water) + " coming up."
@@ -1100,7 +1100,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         unlockForAll: [
             ids.actions.exchange
         ],
-        asset: "trading",
+        asset: "",
         order: 38,
         log: "Arranging some space allow to trade with merchant caravan passing by."
     });
@@ -1120,7 +1120,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         unlockForAll: [
             ids.actions.launch
         ],
-        asset: "module",
+        asset: "",
         order: 40,
         log: ""
     });

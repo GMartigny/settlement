@@ -553,6 +553,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         if (!this.buildings.has(id)) {
             var building = new Building(id);
             this.buildings.push(building);
+            if (building.data.upgrade) {
+                this.buildings.delete(building.data.upgrade);
+            }
             sendEvent("Building", "built", building.data.name);
         }
     },
@@ -799,6 +802,9 @@ if (IS_DEV) {
         var pick = this.possibleBuildings().random();
         MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
     };
+    /**
+     * Put everyone in a almost dead state
+     */
     GameController.prototype.wannaLoose = function wannaLoose () {
         this.people.forEach(function lowLifeNoEnergy (person) {
             person.setLife(5);
