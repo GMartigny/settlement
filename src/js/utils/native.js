@@ -176,6 +176,15 @@ HTMLElement.prototype.hide = function hide () {
 };
 
 /**
+ * Return the computed value for a css property
+ * @param {String} style - Valid CSS property name
+ * @return {String}
+ */
+HTMLElement.prototype.getStyle = function getStyle (style) {
+    return window.getComputedStyle(this).getPropertyValue(style);
+};
+
+/**
  * Make this class extends a parent class. The parent constructor can be called with .super() and overridden parent values can be accessed with a leading "_".
  * @param {Function} parent - A parent to draw prototype from
  * @param {String} name - The constructor's name

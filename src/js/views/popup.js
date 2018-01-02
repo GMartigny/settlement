@@ -26,9 +26,8 @@ function Popup (data, CSSClasses) {
 
     this.super(CSSClasses);
 
-    this.show();
+    this.show.defer(this);
 }
-Popup.holder = document.body;
 Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
     /**
      * Return HTML for display
@@ -40,44 +39,55 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
         Utils.wrap("title", Utils.capitalize(this.data.name), html);
         Utils.wrap("description", this.data.desc, html);
 
-        var self = this;
-
         var onYes = (this.data.yes && this.data.yes.action) || Utils.noop;
         var yesText = (this.data.yes && this.data.yes.name) || (Utils.isString(this.data.yes) && this.data.yes) || "Ok";
-        var yesButton = new Clickable("yes", yesText, function () {
-            self.remove();
-            onYes();
-        });
+        var yesButton = new Clickable("yes", yesText, this.hide.bind(this, onYes));
         html.appendChild(yesButton.html);
 
         if (this.data.no) {
             var onNo = this.data.no.action || Utils.noop;
             var noText = this.data.no.name || (Utils.isString(this.data.no) && this.data.no) || "Cancel";
-            var noButton = new Clickable("no", noText, function () {
-                self.remove();
-                onNo();
-            });
+            var noButton = new Clickable("no", noText, this.hide.bind(this, onNo));
             html.appendChild(noButton.html);
         }
+
+        html.hide();
 
         return html;
     },
     /**
      * Display the popup
+     * @param {Function} [afterShow] - Callback to call after show transition's done
      */
-    show: function () {
-        Popup.holder.classList.add("backdrop");
-        Popup.holder.appendChild(this.html);
+    show: function (afterShow) {
+        Popup.OPENED = true;
+        Popup.HOLDER.classList.add("backdrop");
+        Popup.HOLDER.appendChild(this.html);
 
-        this.html.style.top = MathsUtils.floor((Popup.holder.offsetHeight - this.html.offsetHeight) / 2) + "px";
-        this.html.style.transform = "scale3d(1, 1, 1)";
-        this.html.style.opacity = "1";
+        this.html.style.top = MathsUtils.floor((Popup.HOLDER.offsetHeight - this.html.offsetHeight) / 2) + "px";
+
+        this._show(afterShow);
+    },
+    /**
+     * Hide the popup
+     * @param {Function} [afterHide] - Callback to call after hide transition's done
+     */
+    hide: function (afterHide) {
+        Popup.OPENED = false;
+        this.remove();
+
+        this._hide(afterHide);
     },
     /**
      * Remove popup from DOM
      */
     remove: function () {
         this._remove();
-        Popup.holder.classList.remove("backdrop");
+        Popup.HOLDER.classList.remove("backdrop");
     }
+});
+
+Popup.static({
+    HOLDER: document.body,
+    OPENED: false
 });

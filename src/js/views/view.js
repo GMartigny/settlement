@@ -29,7 +29,6 @@ View.extends(null, "View", /** @lends View.prototype */ {
     /**
      * Show the widget
      * @param {Function} [afterShow] - Callback to call after show transition's done
-     * (Won't work if html has no transition)
      */
     show: function (afterShow) {
         if (afterShow) {
@@ -38,7 +37,12 @@ View.extends(null, "View", /** @lends View.prototype */ {
                 afterShow.call(self);
                 self.html.removeEventListener("transitionend", wrapperAfterShow);
             };
-            this.html.addEventListener("transitionend", wrapperAfterShow);
+            if (this.html.getStyle("transition")) {
+                this.html.addEventListener("transitionend", wrapperAfterShow);
+            }
+            else {
+                wrapperAfterShow.defer();
+            }
         }
 
         this.html.show();
@@ -46,7 +50,6 @@ View.extends(null, "View", /** @lends View.prototype */ {
     /**
      * Hide the widget
      * @param {Function} [afterHide] - Callback to call after hide transition's done
-     * (Won't work if html has no transition)
      */
     hide: function (afterHide) {
         if (afterHide) {
@@ -55,7 +58,12 @@ View.extends(null, "View", /** @lends View.prototype */ {
                 afterHide.call(self);
                 self.html.removeEventListener("transitionend", wrapperAfterHide);
             };
-            this.html.addEventListener("transitionend", wrapperAfterHide);
+            if (this.html.getStyle("transition")) {
+                this.html.addEventListener("transitionend", wrapperAfterHide);
+            }
+            else {
+                wrapperAfterHide.defer();
+            }
         }
 
         this.html.hide();

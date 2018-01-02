@@ -120,7 +120,13 @@ var GraphicManager = (function iife () {
                     }
                     _buildingsList.push(building.id, asset);
                 }
-            }.bind(this));
+            })
+            .observe(MessageBus.MSG_TYPES.UNBUILD, function (id) {
+                var building = DataManager.get(id);
+                if (building && _buildingsList.has(id)) {
+                    _buildingsList.delete(id);
+                }
+            });
 
             // start loopdy loop
             this.render();

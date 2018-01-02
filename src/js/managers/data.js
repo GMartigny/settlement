@@ -81,6 +81,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
      * @prop {Array<ID>} [lock] - Return an array of locked action for all people
      * @prop {Array<ID>} [upgrade] - Return a building ID to upgrade
      * @prop {String} asset - Id of the graphical asset
+     * @prop {Boolean} [shadow=false] - Building not accessible by player
      */
     /**
      * @typedef {Object} IncidentData
@@ -231,7 +232,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             [1.2 / time.day, ids.resources.gatherables.common.water, "thirsty"],
             [1 / time.day, ids.resources.gatherables.common.food, "starving"]
         ],
-        dropRate: 0.02
+        dropRate: 0.01
     });
 
     /** GATHERABLES UNCOMMON **/
@@ -318,31 +319,30 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.buildings.special.wreckage = insert({
         id: "wrk",
         name: "wreckage",
-        desc: "Remainings of space-ships.",
+        desc: "Remainings of a car.",
         asset: "wreckage",
         order: 0
     });
 
     /***** ACTIONS *****/
 
-    ids.actions.launch = insert({ // TODO
+    ids.actions.launch = insert({
         id: "lnc",
-        name: "launch",
-        desc: "Finally set off this module to get out of that damn wasteland.",
-        time: 12,
-        energy: 30,
+        name: "start engine",
+        desc: "Finally start the engine of the new vehicle.",
+        time: 3,
         isOut: 1,
         unique: true,
         consume: [
             [10, ids.resources.gatherables.uncommon.oil]
         ],
         effect: function () {
-            MessageBus.notify(MessageBus.MSG_TYPES.WIN, this.getSettledTime());
+            MessageBus.notify(MessageBus.MSG_TYPES.WIN);
         },
         log: function () {
             var duration = this.getSurvivalDuration();
             return "After " + duration + ", it's finally possible to leave this damned crash-site.<br/>" +
-                "It means having to leave everyone behind. But, promise is made to come back as soon as possible.";
+                "Everyone shove itself into the car and dream of the better life waiting at the end of the road.";
         },
         order: 15
     });
@@ -406,13 +406,9 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             action.owner.updateLife(lifeChange);
         },
         log: function (effect) {
-            if (effect.wasBad) {
-                return "After feeling not so well, @people.name realise taking these pills" +
-                    "took a hit on his health.";
-            }
-            else {
-                return "This time, it actually improve @people.name's health.";
-            }
+            return effect.wasBad ?
+                "After feeling not so well, @people.name realise taking these pills took a hit on his health." :
+                "This time, it actually improve @people.name's health.";
         },
         order: 6
     });
@@ -620,12 +616,12 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
                     this.knownLocations.push(location);
                 }
                 effect.location = Utils.an(DataManager.get(location).name);
-                log = "Heading @direction, @people.name spots @location";
+                log = "Heading to the @direction, @people.name spots @location";
             }
             else {
-                log = "@people.name found nothing special towards @direction.";
+                log = "@people.name found nothing special towards the @direction.";
             }
-            effect.direction = directions.random();
+            effect.direction = Utils.capitalize(directions.random());
             return log;
         },
         order: 10
@@ -648,13 +644,15 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.buildings.special.firePit = insert({
         id: "fp1",
         name: "fire pit",
-        asset: "fire"
+        asset: "fire",
+        shadow: true
     });
     ids.buildings.special.firePit2 = insert({
         id: "fp2",
         name: "fire pit",
         upgrade: ids.buildings.special.firePit,
-        asset: "fire2"
+        asset: "fire2",
+        shadow: true
     });
     ids.buildings.special.forum = insert({
         id: "fr0",
@@ -683,7 +681,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             ids.actions.gather
         ],
         build: ids.buildings.special.forum,
-        log: "@people.name installs @build inside a ship-wreck with @give to sleep in.",
+        log: "Since the global war, the environment is rotten with radiations. " +
+            "It won't be easy to survive in the middle of these wastelands, but there's no other choice now.",
         order: 0,
         unique: true
     });
@@ -696,7 +695,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         effect: function () {
             TimerManager.timeout(function () {
                 LogManager.log("I'll need a shelter.", MessageBus.MSG_TYPES.LOGS.QUOTE);
-            }, GameController.tickLength / 2);
+            }, GameController.TICK_LENGTH / 2);
         },
         give: [
             [8, ids.resources.gatherables.common.water],
@@ -706,8 +705,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         unlock: [
             ids.actions.settle
         ],
-        log: "After some thinking, @people.name remembers the attack. " +
-            "@people.nominative grabs @give laying around.",
+        log: "After some reflexion, @people.name remembers the crash. " +
+            "@people.nominative grabs @give from @people.possessive car trunk.",
         order: 0,
         unique: true
     });
@@ -820,7 +819,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         id: "phr",
         name: "pharmacy",
         desc: quote("Maybe we should avoid letting " +
-            formatResource(ids.resources.gatherables.rare.medication) + " rot in plain sunlight !"),
+            formatResource(ids.resources.gatherables.rare.medication) + "s rot in plain sunlight !"),
         time: 6,
         consume: [
             [5, ids.resources.gatherables.rare.medication],
@@ -935,7 +934,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "That's a little rough, but it's actually a functioning circuit board.",
         icon: "electronic-circuit-board",
         consume: [
-            [1, ids.resources.gatherables.common.scrap],
+            [2, ids.resources.gatherables.common.scrap],
             [2, ids.resources.craftables.basic.component],
             [3, ids.resources.gatherables.rare.electronic]
         ],
@@ -1053,7 +1052,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.buildings.big.radio = insert({
         id: "rdo",
         name: "radio-station",
-        desc: "Putting together a radio could allow to call for help.",
+        desc: "Putting together a radio could allow to contact other people around the camp.",
         time: 6,
         ifHas: ids.buildings.big.workshop,
         consume: [
@@ -1065,9 +1064,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         },
         asset: "",
         order: 37,
-        log: quote("Message received. We thought no one survive the crash. " +
-            "Glad the cube is still preserved. " +
-            "Unfortunately we can't risk being located, bring it to sent coordinate. Over.")
+        log: "Having a way to make contact should attract more people to the camp, either they want to join or trade."
     });
     ids.buildings.big.pump = insert({
         id: "pmp",
@@ -1113,16 +1110,16 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         order: 38,
         log: "Arranging some space allow to trade with merchant caravan passing by."
     });
-    ids.buildings.big.module = insert({ // TODO
+    ids.buildings.big.module = insert({
         id: "mdl",
-        name: "module",
-        desc: "With it, it's possible to finally deliver the cube to security.",
+        name: "vehicle",
+        desc: "This should be enough to hit the road and head towards a better place.",
         time: time.week,
         energy: 100,
-        ifHas: ids.buildings.big.radio,
+        ifHas: ids.buildings.big.workshop,
         consume: [
             [15, ids.resources.gatherables.uncommon.oil],
-            [3, ids.resources.craftables.complex.furniture],
+            [5, ids.resources.craftables.complex.furniture],
             [1, ids.resources.craftables.advanced.computer],
             [2, ids.resources.craftables.advanced.engine]
         ],
@@ -1131,7 +1128,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ],
         asset: "",
         order: 40,
-        log: ""
+        log: "It don't looks so well, but sure thing it should runs good."
     });
 
     /** NEAR LOCATIONS **/
@@ -1170,7 +1167,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             ids.resources.gatherables.rare.medication,
             ids.resources.craftables.basic.glass
         ],
-        log: "Quite easy to loot, but full of dangers too. Hopefully, @people.name return safely and got @give.",
+        log: "Quite easy to loot, @people.name returns with @give.",
         dropRate: 80
     });
 
@@ -1222,14 +1219,14 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     });
     ids.locations.epic.spaceship = insert({
         id: "swr",
-        name: "spaceship wreck",
-        desc: "This wreckage seems to be in a fairly good shape and allow to find useful parts inside.",
+        name: "old wreckage",
+        desc: "This rusty vehicle remains was in good enough shape in order to allow to find useful parts inside.",
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.tool,
             ids.resources.craftables.complex.furniture
         ],
-        log: "What a chance to find a wreckage with not melted stuff inside. It was possible to get @give.",
+        log: "Tearing apart this wreckage allow to salvage @give.",
         dropRate: 5
     });
 
@@ -1281,7 +1278,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Someone point out to a silhouette in the distance. " +
             "What seams to be a very old woman is coming toward the camp.<br/>" +
             "As she get closer, she's visibly pointing her finger in a menacing manner " +
-            "and mumble incomprehensible chatter.",
+            "and mumble incomprehensible chatter. Her skin looks really badly burnt by radiation.",
         yes: "Listen to her",
         no: "Fend her away",
         onStart: function () {
@@ -1325,7 +1322,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     });
     ids.incidents.medium.beggar = insert({
         id: "bgr",
-        name: "Strange beggar",
+        name: "strange beggar",
         desc: "A lone traveler has a deal to propose: " +
             "Invest " + formatResource(ids.resources.special.quartz, 3) + " now and " +
             quote("for sure") + ", he'll return with more worth of goods.",
@@ -1401,6 +1398,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         log: "With caution, he accept this offering. " +
             "He then proceed to hide in the forum's shadow and quickly falls asleep."
     });
+    // Some one come and don't talk english
 
     /** HARD INCIDENTS **/
 
@@ -1431,11 +1429,27 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     });
     ids.incidents.hard.attack = insert({
         id: "atk",
-        name: "",
-        desc: "While exploring the surroundings, a bandits camp was found a few hours of walk away. ",
+        name: "attack on bandits",
+        desc: "While exploring the surroundings, a bandits camp was found a few hours of walk away.<br/>" +
+            "Setting a surprise attack can lead to loot all their belongings.<br/>" +
+            "They seams to be quite well fortified though.",
+        condition: function () {
+            var noBusy = true;
+            // ensure no-one is busy
+            this.people.forEach(function (person) {
+                noBusy = noBusy && Boolean(person.busy);
+            });
+            return noBusy;
+        },
         unique: true,
-        yes: "",
-        no: "",
+        time: 10,
+        yes: "Let's do this",
+        no: "Leave them be",
+        onStart: function () {
+            this.people.forEach(function (person) {
+                person.setBusy(ids.incidents.hard.attack);
+            });
+        },
         giveList: [
             ids.resources.gatherables,
             ids.resources.craftables.basic,
@@ -1446,16 +1460,19 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             this.people.forEach(function (person) {
                 var healthLose = MathsUtils.random(10, 20);
                 person.updateLife(healthLose);
+                person.setBusy();
             });
         },
-        dropRate: 30,
-        log: ""
+        dropRate: 200,
+        log: "They put up quite a fight and everyone got hurt in the process. At least @give were stolen."
     });
     // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
+    // raiders can come avenge
 
     /***** PERKS *****/
 
+    // TODO: Add slight effect to perks
     ids.perks.first = insert({
         id: "fso",
         name: "first-one",

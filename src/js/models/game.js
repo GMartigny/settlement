@@ -11,7 +11,7 @@
  */
 function GameController (holder, assets) {
     var now = Utils.getNow();
-    console.log("Loaded in " + now + "ms");
+    Utils.log("Loaded in " + now + "ms");
     console.log("Starting " + VERSION);
 
     this.assets = assets;
@@ -25,27 +25,36 @@ function GameController (holder, assets) {
     this.buildingsInProgress = [];
 
     this.flags = {
-        ready: false, // The game is ready
         paused: false, // The game is paused
         win: false, // The game has been won
         gameOver: false, // the game is lost
         settled: 0, // For how long settled
-        popup: false, // A popup is shown
         incidents: [] // Incidents that can't be rerun (unique or in progress)
     };
     this.lastTick = now;
 
     GameController.holder = holder;
     this.super(null, assets);
-    console.log("Started in " + (Utils.getNow() - now) + "ms");
+    Utils.log("Started in " + (Utils.getNow() - now) + "ms");
 }
 
 GameController.static(/** @lends GameController */{
     /**
      * Convert from in game hour to ms
      * @type {Number}
+     * @const
      */
-    tickLength: 2000,
+    TICK_LENGTH: 2000,
+    /**
+     * Time between refresh in ms
+     * @type {Number}
+     * @const
+     */
+    REFRESH_RATE: 200,
+    /**
+     * HTML element wrapping the game
+     * @type {HTMLElement}
+     */
     holder: null
 });
 
@@ -80,8 +89,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 yes: {
                     name: "Restart anew",
                     action: function () {
-                        game.wipeSave();
-                        location.reload();
+                        game.wipeSave(true);
                     }
                 },
                 no: "Cancel"
@@ -236,17 +244,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
             // The last hope fade away
             var isGameOver = game.people.size <= 0;
-            var message = isGameOver ? "The last @common standing passed away. The last hope fade away in silence." :
+            var message = isGameOver ? "The last @common standing passed away. The last hope fades out in silence." :
                 "@name just died, @possessive body is dragged outside and buried.";
             LogManager.log(LogManager.personify(message, person), LogManager.LOG_TYPES.WARN);
 
             if (isGameOver) {
-                MessageBus.notify(msgType.LOOSE, game.getSettledTime());
+                MessageBus.notify(msgType.LOOSE);
             }
         })
         .observe(msgType.LOOSE, function observesGameOver () {
             game.flags.gameOver = true;
-            game.wipeSave();
+            sendEvent("Game", "loose", game.getSettledTime());
         })
 
         // Keep track of running incidents
@@ -270,12 +278,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         // End of the game
         .observe(msgType.WIN, function observesGameWin () {
-            this.flags.win = true;
+            game.flags.win = true;
             sendEvent("Game", "win", game.getSettledTime());
-            new Popup({ // TODO
-                name: "You win !!",
-                desc: ""
-            });
         })
 
         .observe(msgType.KEYS.SPACE, function observesSpaceStroke (direction) {
@@ -323,7 +327,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @return {Number}
      */
     getSettledTime: function () {
-        return MathsUtils.floor(this.flags.settled ? this.flags.settled / GameController.tickLength : 0);
+        return MathsUtils.floor(this.flags.settled ? this.flags.settled / GameController.TICK_LENGTH : 0);
     },
     /**
      * Return a well formatted play duration
@@ -351,18 +355,49 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Loop function called every game tick
      */
     refresh: function () {
-        var elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.tickLength);
-        this.lastTick += elapse * GameController.tickLength;
+        var elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.TICK_LENGTH);
+        this.lastTick += elapse * GameController.TICK_LENGTH;
 
-        if (this.flags.paused || this.flags.gameOver) {
-            elapse = 0;
+        TimerManager.timeout(this.refresh.bind(this), GameController.REFRESH_RATE);
+
+        if (this.flags.win) {
+            if (!Popup.OPENED && this.people.size) {
+                var game = this;
+                new Popup({
+                    name: "The road ahead",
+                    desc: "From the rumors, much of the east coast have not been destroy by bombs. " +
+                        "Some survivors have set new community from scratch.<br/>" +
+                        "From what can be heard, those groups accept anyone willing to live peacefully. " +
+                        "Let's find them !",
+                    yes: {
+                        name: "Let the journey begin ...",
+                        action: function () {
+                            game.people.forEach(function (person, id, list) {
+                                person.hide();
+                                list.delete(id);
+                            });
+                            MessageBus.notify(MessageBus.MSG_TYPES.UNBUILD, DataManager.ids.buildings.big.module);
+                            game.saveGame();
+                        }
+                    }
+                });
+            }
         }
-
-        TimerManager.timeout(this.refresh.bind(this), GameController.tickLength / 10);
-
-        if (elapse > 0) {
+        else if (this.flags.gameOver) {
+            if (!Popup.OPENED) {
+                new Popup({
+                    name: "Lost",
+                    desc: "",
+                    yes: {
+                        name: "Try again",
+                        action: this.wipeSave.bind(this, true)
+                    }
+                });
+            }
+        }
+        else if (!this.flags.paused) {
             if (this.flags.settled) {
-                this.flags.settled += elapse * GameController.tickLength;
+                this.flags.settled += elapse * GameController.TICK_LENGTH;
 
                 // People consume resources to survive
                 this.tickConsumption(elapse);
@@ -374,7 +409,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
 
                 // Random incident can happen
-                if (!this.flags.popup && MathsUtils.random() < Incident.DROP_RATE) {
+                if (!Popup.OPENED && MathsUtils.random() < Incident.DROP_RATE) {
                     this.startIncident(this.getRandomIncident());
                 }
             }
@@ -512,7 +547,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         });
     },
     /**
-     * Add someone to the camp
+     * A new person arrive
      * @param {Array<People>|People} people - A people or an array of people instance
      */
     arrive: function (people) {
@@ -526,13 +561,13 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
                 // The first newcomer
                 if (this.people.size === 1) {
-                    var description = LogManager.personify("attracted by the explosions a @common approach. " +
+                    var description = LogManager.personify("attracted by the crash a @common approach. " +
                         "@nominative accept to team up.", person);
                     LogManager.log(description, MessageBus.MSG_TYPES.LOGS.EVENT);
                     TimerManager.timeout(function otherWalkersBlab () {
-                        var message = "There's other desert-walkers ready to join if there's room for them.";
-                        LogManager.log(message, MessageBus.MSG_TYPES.LOGS.EVENT);
-                    }, GameController.tickLength * 3);
+                        var message = "There's other wanderers ready to join if there's room for them.";
+                        LogManager.log(message, MessageBus.MSG_TYPES.LOGS.QUOTE);
+                    }, GameController.TICK_LENGTH * 3);
                 }
             }
 
@@ -541,6 +576,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             person.show.defer(person);
         }, this);
     },
+    /**
+     * Add a person to the camp
+     * @param {People} person - New person to add
+     */
     addPeople: function (person) {
         this.people.push(person);
         this.peopleList.appendChild(person.html);
@@ -609,7 +648,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         DataManager.ids.buildings.deepBrowse(function checkIfUnlocked (id) {
             var building = DataManager.get(id);
-            if (!this.isBuildingInProgress(id) &&
+            if (!building.shadow &&
+                !this.isBuildingInProgress(id) &&
                 !this.isBuildingDone(id) &&
                 (!building.upgrade || this.buildings.has(building.upgrade)) &&
                 (!building.ifHas || this.isBuildingDone(building.ifHas))) {
@@ -743,8 +783,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 yes: {
                     name: "Restart anew",
                     action: function () {
-                        game.wipeSave();
-                        location.reload();
+                        game.wipeSave(true);
                     }
                 }
             }, "wipeIt");
@@ -790,10 +829,14 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     },
     /**
      * Clear the save
+     * @param {Boolean} [withReload=false] - Trigger a page reload too
      */
-    wipeSave: function () {
+    wipeSave: function (withReload) {
         sendEvent("Game", "wipe");
         SaveManager.clear();
+        if (withReload) {
+            location.reload();
+        }
     }
 });
 if (IS_DEV) {

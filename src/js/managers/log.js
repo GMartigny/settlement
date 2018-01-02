@@ -56,11 +56,6 @@ var LogManager = (function iife () {
             .observe(MessageBus.MSG_TYPES.GAIN_PERK, function (people) {
                 var message = people.name + " is now known as the \"" + Utils.capitalize(people.perk.data.name) + "\".";
                 self.log(message, self.LOG_TYPES.EVENT);
-            })
-
-            .observe(MessageBus.MSG_TYPES.WIN, function (survivalDuration) {
-                var message = "It took " + Utils.formatTime(survivalDuration) + " to escape.";
-                self.log(message, self.LOG_TYPES.EVENT);
             });
         },
         /**

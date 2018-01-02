@@ -186,7 +186,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
                 this.energyDrain = data.energy / duration;
 
-                this.start(duration * GameController.tickLength);
+                this.start(duration * GameController.TICK_LENGTH);
             }
         }
     },

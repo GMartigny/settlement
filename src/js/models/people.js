@@ -88,8 +88,9 @@ People.extends(View, "People", /** @lends People.prototype */ {
                 lifeLose += flags.thirsty * lackingDrainRatio;
             }
             // If an acid-rain is running and busy outside
+            var busyWith = DataManager.get(this.busy);
             if (flags.incidents.includes(DataManager.ids.incidents.medium.acidRain)
-                && this.busy && DataManager.get(this.busy).isOut) {
+                && busyWith && busyWith.isOut) {
                 lifeLose += DataManager.get(DataManager.ids.incidents.medium.acidRain).lifeLose;
             }
             this.updateLife(-elapse * lifeLose);

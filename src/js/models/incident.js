@@ -89,7 +89,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
                     duration += MathsUtils.random(-this.data.deltaTime, this.data.deltaTime);
                 }
 
-                duration *= GameController.tickLength;
+                duration *= GameController.TICK_LENGTH;
             }
 
             this.progressBar.run(duration);
