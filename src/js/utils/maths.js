@@ -145,8 +145,13 @@ var MathsUtils = {
 
     /**
      * Return a random number between marks
-     * @param {Number} [from=0]
-     * @param {Number} [to=1]
+     * @type {Function}
+     * @param {Number} [from=0] - Lowest point for the random range, default to 0.
+     * @param {Number} [to=1] - Highest point for the random range, default to 1.
+     * @example
+     * MathsUtils.random(5, 10); // Random float between 5 and 10
+     * MathsUtils.random(10); // Random float between 0 and 10
+     * MathsUtils.random(); // Random float between 0 and 1
      * @return {Number}
      */
     random: (function iife () {

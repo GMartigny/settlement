@@ -30,8 +30,9 @@ var LogManager = (function iife () {
             wrapper = logWrapper;
 
             // Log informations
-            MessageBus.observe(self.LOG_TYPES.values(), function (message, type) {
-                self.log(message, type);
+
+            MessageBus.observe(MessageBus.MSG_TYPES.ACTION_END, function (log) {
+                self.log(log);
             })
 
             .observe(MessageBus.MSG_TYPES.ARRIVAL, function (person) {
@@ -65,11 +66,11 @@ var LogManager = (function iife () {
         /**
          * Add some log
          * @param {String} message - Any HTML valid message
-         * @param {Number} type - A log type in LogManager.LOG_TYPES
+         * @param {Number} [type=LogManager.LOG_TYPES.INFO] - A log type in LogManager.LOG_TYPES
          */
         log: function (message, type) {
             if (message.length) {
-                type = type || 0;
+                type = type || self.LOG_TYPES.INFO;
                 var html = Utils.wrap("log " + logTypes[type], message);
                 html.hide();
                 wrapper.insertBefore(html, wrapper.firstChild);

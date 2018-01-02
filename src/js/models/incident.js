@@ -62,8 +62,16 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             incident: this.data
         };
 
+        if (Utils.isArray(this.data.consume)) {
+            effect.consume = this.data.consume;
+        }
+
         if (Utils.isFunction(this.data.onStart)) {
             this.data.onStart(this, effect);
+        }
+
+        if (Utils.isArray(effect.consume)) {
+            MessageBus.notify(MessageBus.MSG_TYPES.USE, effect.consume);
         }
 
         var duration = 0;
@@ -89,8 +97,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         this.timer = TimerManager.timeout(this.end.bind(this), duration);
 
         var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
-        var log = LogManager.personify(rawLog, effect);
-        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.EVENT, Utils.capitalize(log));
+        LogManager.log(LogManager.personify(rawLog, effect), effect.logType);
     },
     /**
      * Start the incident (open popup)
@@ -117,8 +124,32 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         this.timer = null;
         MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_END, this);
 
+        var effect = {
+            incident: this.data
+        };
+
+        if (Utils.isArray(this.data.give)) {
+            effect.give = this.data.give;
+        }
+        else if (this.data.giveList && this.data.giveSpan) {
+            effect.give = Utils.randomizeMultiple(this.data.giveList, this.data.giveSpan);
+        }
+
         if (Utils.isFunction(this.data.onEnd)) {
-            this.data.onEnd(this);
+            this.data.onEnd(this, effect);
+        }
+
+        if (Utils.isArray(effect.give)) {
+            MessageBus.notify(MessageBus.MSG_TYPES.GIVE, {
+                initiator: this.nameNode,
+                give: effect.give
+            });
+            effect.give = Utils.formatArray(effect.give);
+        }
+
+        if (effect.log) {
+            var log = LogManager.personify(effect.log, effect);
+            LogManager.log(log, LogManager.LOG_TYPES.EVENT);
         }
 
         this.remove();

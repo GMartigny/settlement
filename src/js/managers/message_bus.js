@@ -50,6 +50,7 @@ var MessageBus = (function iife () {
         MSG_TYPES: {
             LOGS: LogManager.LOG_TYPES,
             CLICK: 10, // Click an action
+            ACTION_END: 12, // Action cool-down ends
             REFRESH: 20, // The game has refreshed
             GIVE: 30, // Give some resources
             FIND_LOCATION: 31, // Find a new location
@@ -66,7 +67,6 @@ var MessageBus = (function iife () {
             UNBUILD: 61, // Remove a building
             INCIDENT_START: 70, // An incident start
             INCIDENT_END: 72, // An incident end
-            SAVE: 80, // Game saved
             LOOSE: 90, // Game over
             WIN: 95, // Congratulation
             KEYS: {

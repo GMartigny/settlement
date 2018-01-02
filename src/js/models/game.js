@@ -58,9 +58,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var html = this._toHTML();
         html.hide();
 
-        var topPart = Utils.wrap("topPart", null, html);
-
         this.resourcesList = Utils.wrap(Resource.LST_ID, null, html);
+
+        var topPart = Utils.wrap("topPart", null, html);
 
         this.peopleList = Utils.wrap(People.LST_ID, null, topPart);
 
@@ -146,7 +146,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         }
 
         // early access warning
-        if (!IS_DEV && IS_BETA && localStorage.getItem("ea-warn")) {
+        if (!IS_DEV && IS_BETA && localStorage.getItem("known")) {
             new Popup({
                 name: "Early access [" + VERSION + "]",
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
@@ -156,7 +156,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 yes: {
                     name: "Got it !",
                     action: function () {
-                        localStorage.setItem("ea-warn", "1");
+                        localStorage.setItem("known", "1");
                     }
                 }
             });
@@ -172,8 +172,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var game = this;
         var msgType = MessageBus.MSG_TYPES;
 
+        MessageBus.observe(msgType.CLICK, function observesActionClick (actionData) {
+            game.saveGame();
+            sendEvent("Action", "start", actionData.name);
+        })
+        .observe(msgType.ACTION_END, function observesActionEnd () {
+            game.saveGame();
+        })
         // We may find resources
-        MessageBus.observe(msgType.GIVE, function callEarnAndHandleParticles (given) {
+        .observe(msgType.GIVE, function observesResourcesGive (given) {
             var initiator = null;
             if (given.initiator) {
                 initiator = given.initiator;
@@ -206,7 +213,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             }
         })
         // We may use resources
-        .observe(msgType.USE, function callConsume (use) {
+        .observe(msgType.USE, function observesResourcesUse (use) {
             if (Utils.isArray(use)) {
                 Utils.compactResources(use).forEach(function (resource) {
                     game.consume.apply(game, resource);
@@ -214,17 +221,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             }
         })
         // Keep track of building in progress
-        .observe(msgType.START_BUILD, function (buildingId) {
+        .observe(msgType.START_BUILD, function observesBuildingStart (buildingId) {
             game.buildingsInProgress.push(buildingId);
         })
         // We may build
         .observe(msgType.BUILD, this.build.bind(this))
         // New people arrival
-        .observe(msgType.ARRIVAL, function () {
+        .observe(msgType.ARRIVAL, function observesPeopleArrival () {
             sendEvent("People", "arrive", game.getSettledTime());
         })
         // And we may die :'(
-        .observe(msgType.LOOSE_SOMEONE, function (person) {
+        .observe(msgType.LOOSE_SOMEONE, function observesPeopleLose (person) {
             sendEvent("People", "die", person.stats.age);
 
             // The last hope fade away
@@ -237,17 +244,18 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 MessageBus.notify(msgType.LOOSE, game.getSettledTime());
             }
         })
-        .observe(msgType.LOOSE, function setGameOver () {
+        .observe(msgType.LOOSE, function observesGameOver () {
             game.flags.gameOver = true;
             game.wipeSave();
         })
 
         // Keep track of running incidents
-        .observe(msgType.INCIDENT_START, function addToIncidentList (incident) {
+        .observe(msgType.INCIDENT_START, function observesIncidentStart (incident) {
             game.incidentsList.appendChild(incident.html);
             game.incidents.push(incident);
+            game.saveGame();
         })
-        .observe(msgType.INCIDENT_END, function clearIncidentList (incident) {
+        .observe(msgType.INCIDENT_END, function observesIncidentEnd (incident) {
             // incident remove its html itself
             game.incidents.delete(incident.getId());
             if (!incident.data.unique) {
@@ -260,10 +268,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         .observe(msgType.LOCK, this.removeFromInitialActions.bind(this))
         .observe(msgType.UNLOCK, this.addToInitialActions.bind(this))
 
-        .observe(msgType.SAVE, this.saveGame.bind(this))
-
         // End of the game
-        .observe(msgType.WIN, function showWinMessage () {
+        .observe(msgType.WIN, function observesGameWin () {
             this.flags.win = true;
             sendEvent("Game", "win", game.getSettledTime());
             new Popup({ // TODO
@@ -272,7 +278,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             });
         })
 
-        .observe(msgType.KEYS.SPACE, function callTogglePause (direction) {
+        .observe(msgType.KEYS.SPACE, function observesSpaceStroke (direction) {
             if (direction === "up") {
                 game.togglePause();
             }
@@ -389,7 +395,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             }, this);
 
-            MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
+            this.saveGame();
         }
     },
     /**
@@ -522,10 +528,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 if (this.people.size === 1) {
                     var description = LogManager.personify("attracted by the explosions a @common approach. " +
                         "@nominative accept to team up.", person);
-                    MessageBus.notify(MessageBus.MSG_TYPES.LOGS.EVENT, description);
+                    LogManager.log(description, MessageBus.MSG_TYPES.LOGS.EVENT);
                     TimerManager.timeout(function otherWalkersBlab () {
                         var message = "There's other desert-walkers ready to join if there's room for them.";
-                        MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, message);
+                        LogManager.log(message, MessageBus.MSG_TYPES.LOGS.EVENT);
                     }, GameController.tickLength * 3);
                 }
             }
@@ -697,6 +703,10 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             SaveManager.persist(this);
         }
     },
+    /**
+     * Turn the game state into a json, shouldn't be called directly
+     * @return {Object} Game's state
+     */
     toJSON: function () {
         var json = {
             flg: this.flags,

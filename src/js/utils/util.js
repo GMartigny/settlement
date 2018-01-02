@@ -165,7 +165,7 @@ var Utils = {
 
     /**
      * Return a random amount of random items
-     * @param {Object<ID>} list - A potentially nested object
+     * @param {Object<ID>|Array<ID>} list - A potentially nested object or array
      * @param {String|Array|Number} amount - Interval for random "-" separated or array
      * @see randomize
      * @return {Array}

@@ -167,6 +167,15 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         return Resource.toString(db[id], amount);
     }
 
+    /**
+     * Surround a string with quote
+     * @param {String} str - Any string
+     * @return {String}
+     */
+    function quote (str) {
+        return "<i class='quote'>" + str + "</i>";
+    }
+
     /* eslint-disable valid-jsdoc */
 
     ids.option = "opt";
@@ -200,7 +209,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.resources.gatherables.common.rock = insert({
         id: "rck",
         name: "rock",
-        desc: "<i class='quote'>There's rocks everywhere ! Why would you bring this back ?</i>",
+        desc: quote("There's rocks everywhere ! Why would you bring this back ?"),
         icon: "rock",
         dropRate: 100,
         order: 30
@@ -681,12 +690,12 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.actions.look = insert({
         id: "lok",
         name: "look around",
-        desc: "<i class='quote'>What am I doing here ?</i>",
+        desc: quote("What am I doing here ?"),
         time: 1,
         energy: 0,
         effect: function () {
             TimerManager.timeout(function () {
-                MessageBus.notify(MessageBus.MSG_TYPES.LOGS.QUOTE, "I'll need a shelter.");
+                LogManager.log("I'll need a shelter.", MessageBus.MSG_TYPES.LOGS.QUOTE);
             }, GameController.tickLength / 2);
         },
         give: [
@@ -810,8 +819,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.buildings.small.pharmacy = insert({
         id: "phr",
         name: "pharmacy",
-        desc: "<i class='quote'>Maybe we should avoid letting " +
-            formatResource(ids.resources.gatherables.rare.medication) + " rot in plain sunlight !</i>",
+        desc: quote("Maybe we should avoid letting " +
+            formatResource(ids.resources.gatherables.rare.medication) + " rot in plain sunlight !"),
         time: 6,
         consume: [
             [5, ids.resources.gatherables.rare.medication],
@@ -1056,9 +1065,9 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         },
         asset: "",
         order: 37,
-        log: "<i class='quote'>Message received. We thought no one survive the crash. " +
+        log: quote("Message received. We thought no one survive the crash. " +
             "Glad the cube is still preserved. " +
-            "Unfortunately we can't risk being located, bring it to sent coordinate. Over.</i>"
+            "Unfortunately we can't risk being located, bring it to sent coordinate. Over.")
     });
     ids.buildings.big.pump = insert({
         id: "pmp",
@@ -1279,9 +1288,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             new Popup({
                 name: "Fortune teller",
                 desc: "After being calmly sit down, try to get what she's trying to say.<br/>" +
-                    "<i class='quote'>Long path ahead, full of danger ... may do it ... " +
-                    "but at what cost ?</i><br/>" +
-                    "<i class='quote'>If mercy is shown, success will follow !</i>",
+                    quote("Long path ahead, full of danger ... may do it ... but at what cost ?") + "<br/>" +
+                    quote("If mercy is shown, success will follow !"),
                 yes: "Humm ... ok."
             }, "incident");
         },
@@ -1318,36 +1326,35 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.incidents.medium.beggar = insert({
         id: "bgr",
         name: "Strange beggar",
-        desc: "A lone traveler come with a deal: " +
-            "give him " + formatResource(ids.resources.special.quartz, 2) + " now and " +
-            "<i class='quote'>for sure</i>, he'll return with more worth of goods.",
+        desc: "A lone traveler has a deal to propose: " +
+            "Invest " + formatResource(ids.resources.special.quartz, 3) + " now and " +
+            quote("for sure") + ", he'll return with more worth of goods.",
         condition: function () {
             return this.resources.has(ids.resources.special.quartz) &&
-                this.resources.get(ids.resources.special.quartz).has(3);
+                this.resources.get(ids.resources.special.quartz).has(4);
         },
         yes: "Acquiesce",
         no: "No way",
-        onStart: function () {
-            MessageBus.notify(MessageBus.MSG_TYPES.USE, [
-                [2, ids.resources.special.quartz]
-            ]);
-        },
-        onEnd: function () {
+        consume: [
+            [2, ids.resources.special.quartz]
+        ],
+        giveList: [
+            ids.resources.gatherables,
+            ids.resources.craftables.basic
+        ],
+        giveSpan: [7, 8],
+        onEnd: function (incident, effect) {
             if (MathsUtils.random() < 0.2) {
-                LogManager.log("Looks like the beggar is not coming back this time.", LogManager.LOG_TYPES.EVENT);
+                effect.give = null;
+                effect.log = "Looks like the beggar is not coming back this time.";
             }
             else {
-                var give = Utils.randomizeMultiple([ids.resources.gatherables, ids.resources.craftables.basic], 5);
-                var log = LogManager.personify("as promised, the beggar came back. He gratefully give back @give.", {
-                    give: Utils.formatArray(give)
-                });
-                LogManager.log(log, LogManager.LOG_TYPES.EVENT);
-                MessageBus.notify(MessageBus.MSG_TYPES.GIVE, give);
+                effect.log = "As promised, the beggar came back. He gratefully give back @give.";
             }
         },
         time: 8 * time.day,
         dropRate: 20,
-        log: ""
+        log: "Trusting a random stranger might just cost you some resources, but who knows ..."
     });
     ids.incidents.medium.fever = insert({
         id: "fvr",
@@ -1422,7 +1429,28 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         dropRate: 30,
         log: "The camp hold well for @duration in this harsh environment. Amazing !"
     });
-    // launch attack on another camp: just loose health for some resource (loss)
+    ids.incidents.hard.attack = insert({
+        id: "atk",
+        name: "",
+        desc: "While exploring the surroundings, a bandits camp was found a few hours of walk away. ",
+        unique: true,
+        yes: "",
+        no: "",
+        giveList: [
+            ids.resources.gatherables,
+            ids.resources.craftables.basic,
+            ids.resources.craftables.complex
+        ],
+        giveSpan: [8, 10],
+        onEnd: function () {
+            this.people.forEach(function (person) {
+                var healthLose = MathsUtils.random(10, 20);
+                person.updateLife(healthLose);
+            });
+        },
+        dropRate: 30,
+        log: ""
+    });
     // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
 

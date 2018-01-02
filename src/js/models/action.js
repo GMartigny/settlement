@@ -3,7 +3,7 @@
 
 /**
  * @typedef {Object} ActionEffect
- * @prop {String} name - Action's name
+ * @prop {String} action - Action's data
  * @prop {People} people - Action's owner
  * @prop {String} [give] - Resources given by the action
  * @prop {String} [build] - Name of the build building (prefix with "a" or "an")
@@ -51,10 +51,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.optionsWrapper.hide();
 
             html.addEventListener("mouseover", this.showOptions.bind(this));
-            html.addEventListener("mouseout", this.hideOption.bind(this));
+            html.addEventListener("mouseout", this.hideOptions.bind(this));
 
             /**
-             * For keyboard control (but with downside as is)
+             * For keyboard control, need to be refined
              * html.addEventListener("focusin", this.showOptions.bind(this));
              * html.addEventListener("focusout", this.hideOption.bind(this));
              */
@@ -69,13 +69,19 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         return html;
     },
+    /**
+     * Display the options list
+     */
     showOptions: function () {
         this.optionsWrapper.show();
         var position = this.html.getBoundingClientRect();
         this.optionsWrapper.style.top = (position.top + position.height) + "px";
         this.optionsWrapper.style.left = position.left + "px";
     },
-    hideOption: function () {
+    /**
+     * Hide the options list
+     */
+    hideOptions: function () {
         this.optionsWrapper.hide();
         this.optionsWrapper.style.left = "";
     },
@@ -158,9 +164,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.parentAction.click(this.getId());
             }
             else if (optionId || !this.options) {
+                MessageBus.notify(MessageBus.MSG_TYPES.CLICK, this.data);
+
                 // Merge data from this and selected option
                 this.chosenOptionId = optionId;
                 var data = this.mergeWithOption(optionId);
+
                 // Use resources
                 if (Utils.isArray(data.consume)) {
                     MessageBus.notify(MessageBus.MSG_TYPES.USE, data.consume);
@@ -178,9 +187,6 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
                 this.energyDrain = data.energy / duration;
 
                 this.start(duration * GameController.tickLength);
-                sendEvent("Action", "start", this.data.name);
-
-                MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
             }
         }
     },
@@ -269,7 +275,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         this.html.classList.remove(Action.RUNNING_CLASS);
 
         var effect = {
-            name: this.data.name,
+            action: this.data,
             people: this.owner
         };
         var data = this.mergeWithOption(this.chosenOptionId);
@@ -313,9 +319,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             MessageBus.notify(MessageBus.MSG_TYPES.BUILD, result.build);
         }
 
-        MessageBus.notify(effect.logType || MessageBus.MSG_TYPES.LOGS.INFO, result.log);
-
-        MessageBus.notify(MessageBus.MSG_TYPES.SAVE, null, true);
+        MessageBus.notify(MessageBus.MSG_TYPES.ACTION_END, result.log);
     },
     /**
      * Resolve all function of this action
