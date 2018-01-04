@@ -185,6 +185,9 @@ module.exports = function (grunt) {
             main: {
                 files: {
                     [destDir.json]: sourceDir.json
+                },
+                options: {
+                    compress: true
                 }
             }
         }
@@ -197,40 +200,48 @@ module.exports = function (grunt) {
         });
 
         function compress (key, value) {
-            if (typeof this === "object" && !this.length) {
-                var undf = undefined;
-                var result;
+            var result;
 
-                if (Array.isArray(value)) {
-                    result = value.length > 0 ? value : undf;
-                }
-                else if (typeof value === "object") {
-                    result = value && Object.keys(value).length > 0 ? value : undf;
-                }
-                else if (Number.isInteger(+value)) {
-                    result = +value !== 0 ? value : undf;
+            // String that can be coerced safely to number ("1", "1.5", "1e10", "0xA") and in a smaller form
+            if (typeof value === "string") {
+                var toNumber = Number(value);
+                if (!Number.isNaN(toNumber) && toNumber.toString().length < value.length + 2) {
+                    result = toNumber;
                 }
                 else {
-                    result = value ? value : undf;
+                    result = value;
                 }
-                return result;
             }
-            else {
-                return value;
+            // All other value but falsy and empty array
+            else if (Boolean(value) && !(Array.isArray(value) && !value.length)) {
+                result = value;
             }
+
+            return result;
         }
 
-        var origin = "./";
+        function format (size) {
+            return `\u001b[32m${size} kB\u001b[39m`;
+        }
 
         this.files.forEach(function (target) {
-            var dest = target.dest;
+            var destFolder = target.dest;
 
             target.src.forEach(function (filePath) {
                 var name = filePath.substr(filePath.lastIndexOf("/") + 1);
-                var json = grunt.file.readJSON(origin + filePath);
-                var src = JSON.stringify(json, (options.compress && compress), options.indent);
-                grunt.file.write(dest + name, src);
-                grunt.log.ok("Successfully wrote " + name);
+                var srcContent = grunt.file.read(filePath);
+                try {
+                    var json = JSON.parse(srcContent);
+                    var sizeBefore = srcContent.length;
+                    var result = JSON.stringify(json, (options.compress && compress), options.indent);
+                    var sizeAfter = result.length;
+                    var dest = destFolder + name;
+                    grunt.file.write(dest, result);
+                    grunt.log.ok(`Successfully wrote ${dest} ${format(sizeBefore)} → ${format(sizeAfter)}`);
+                }
+                catch (e) {
+                    grunt.log.warn(`The file ${filePath} is not a valid JSON.`);
+                }
             });
         });
     });
