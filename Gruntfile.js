@@ -185,9 +185,6 @@ module.exports = function (grunt) {
             main: {
                 files: {
                     [destDir.json]: sourceDir.json
-                },
-                options: {
-                    compress: true
                 }
             }
         }
@@ -195,30 +192,8 @@ module.exports = function (grunt) {
 
     grunt.registerMultiTask("jsonify", "Minify and copy json to dist folder", function () {
         var options = this.options({
-            indent: 0,
-            compress: false
+            indent: 0
         });
-
-        function compress (key, value) {
-            var result;
-
-            // String that can be coerced safely to number ("1", "1.5", "1e10", "0xA") and in a smaller form
-            if (typeof value === "string") {
-                var toNumber = Number(value);
-                if (!Number.isNaN(toNumber) && toNumber.toString().length < value.length + 2) {
-                    result = toNumber;
-                }
-                else {
-                    result = value;
-                }
-            }
-            // All other value but falsy and empty array
-            else if (Boolean(value) && !(Array.isArray(value) && !value.length)) {
-                result = value;
-            }
-
-            return result;
-        }
 
         function format (size) {
             return `\u001b[32m${size} kB\u001b[39m`;
@@ -233,7 +208,7 @@ module.exports = function (grunt) {
                 try {
                     var json = JSON.parse(srcContent);
                     var sizeBefore = srcContent.length;
-                    var result = JSON.stringify(json, (options.compress && compress), options.indent);
+                    var result = JSON.stringify(json, null, options.indent);
                     var sizeAfter = result.length;
                     var dest = destFolder + name;
                     grunt.file.write(dest, result);
