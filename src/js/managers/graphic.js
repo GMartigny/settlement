@@ -27,7 +27,14 @@ var GraphicManager = (function iife () {
 
         this.source = {};
         this.destination = {};
-        this.defineSource(sourceData);
+        this.source = {
+            x: MathsUtils.toNumber(sourceData.x),
+            y: MathsUtils.toNumber(sourceData.y),
+            width: MathsUtils.floor(sourceData.width / this.animationSteps),
+            height: sourceData.height
+        };
+        this.destination.width = this.source.width * Asset.ENLARGE;
+        this.destination.height = this.source.height * Asset.ENLARGE;
 
         this.destination.x = MathsUtils.floor(destData.x * Asset.ENLARGE);
         this.destination.y = MathsUtils.floor(destData.y * Asset.ENLARGE);
@@ -35,20 +42,6 @@ var GraphicManager = (function iife () {
     Asset.ENLARGE = 4; // 4 times bigger !!§!
     Asset.FPS = 60;
     Asset.prototype = {
-        /**
-         * Define the source image of this asset
-         * @param {Object} sourceData - Position and size of the asset in the source image
-         */
-        defineSource: function (sourceData) {
-            this.source = {
-                x: sourceData.x,
-                y: sourceData.y,
-                width: MathsUtils.floor(sourceData.width / this.animationSteps),
-                height: sourceData.height
-            };
-            this.destination.width = this.source.width * Asset.ENLARGE;
-            this.destination.height = this.source.height * Asset.ENLARGE;
-        },
         /**
          * Draw this asset into a context
          * @param {HTMLImageElement} image - A combined image

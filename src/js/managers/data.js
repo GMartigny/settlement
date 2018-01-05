@@ -1038,7 +1038,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.resources.craftables.advanced.computer = insert({
         id: "cmt",
         name: "computer",
-        desc: "Well, Internet is down since 2136 but it can still be useful.",
+        desc: "Well, Internet is down since 2024 but it can still be useful.",
         icon: "computer",
         ifHas: ids.buildings.big.workshop,
         consume: [
@@ -1310,7 +1310,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     ids.incidents.medium.acidRain = insert({
         id: "acr",
         name: "acid rain",
-        desc: "A big dark cloud is coming from the north, " +
+        desc: "A big dark cloud is coming from the North, " +
             "which means that it's going to rain acid droplet, like stingers from the sky.<br/>" +
             "Going out now will be dangerous.",
         time: time.day,
@@ -1434,20 +1434,23 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             "Setting a surprise attack can lead to loot all their belongings.<br/>" +
             "They seams to be quite well fortified though.",
         condition: function () {
-            var noBusy = true;
-            // ensure no-one is busy
+            var allNotBusy = true;
+            // ensure someone's not busy
             this.people.forEach(function (person) {
-                noBusy = noBusy && Boolean(person.busy);
+                allNotBusy = allNotBusy && !person.busy;
             });
-            return noBusy;
+            return allNotBusy;
         },
         unique: true,
-        time: 10,
+        time: 6,
         yes: "Let's do this",
         no: "Leave them be",
         onStart: function () {
+            var energyDrain = 6;
             this.people.forEach(function (person) {
-                person.setBusy(ids.incidents.hard.attack);
+                if (!person.busy) {
+                    person.setBusy(ids.incidents.hard.attack, energyDrain);
+                }
             });
         },
         giveList: [
@@ -1455,7 +1458,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             ids.resources.craftables.basic,
             ids.resources.craftables.complex
         ],
-        giveSpan: [8, 10],
+        giveSpan: [8, 11],
         onEnd: function () {
             this.people.forEach(function (person) {
                 var healthLose = MathsUtils.random(10, 20);
@@ -1468,7 +1471,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     });
     // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
-    // raiders can come avenge
+    // raiders can come for revenge after "attack on bandits"
 
     /***** PERKS *****/
 

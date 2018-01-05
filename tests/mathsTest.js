@@ -1,5 +1,17 @@
 describe("Test all math helper", function mathsUtilsDescribe () {
 
+    it("toNumber", function mathsUtilsToNumber () {
+
+        expect(MathsUtils.toNumber("1")).toBe(1);
+        expect(MathsUtils.toNumber("1.5")).toBe(1.5);
+        expect(MathsUtils.toNumber("1e5")).toBe(100000);
+        expect(MathsUtils.toNumber("0xFF")).toBe(255);
+
+        expect(MathsUtils.toNumber("a")).toBe(0);
+        expect(MathsUtils.toNumber("a", 5)).toBe(5);
+
+    });
+
     it("floor", function mathsUtilsFloor () {
 
         expect(MathsUtils.floor(5.4)).toBe(5);
@@ -126,7 +138,7 @@ describe("Test all math helper", function mathsUtilsDescribe () {
         expect(without.min).toBeGreaterThan(0);
         expect(without.max).toBeLessThan(1);
 
-        var withNull = runRandom(null);
+        var withNull = runRandom(0);
         expect(withNull.min).toBeGreaterThan(0);
         expect(withNull.max).toBeLessThan(1);
 

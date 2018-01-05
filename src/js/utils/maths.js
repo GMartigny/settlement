@@ -11,11 +11,11 @@ var MathsUtils = {
     /**
      * Convert to a number
      * @param {*} x - Any value to convert
-     * @param {Number} [fallback] - A fallback value if the first is NaN
+     * @param {Number} [fallback=0] - A fallback value if the first is NaN
      * @return {Number}
      */
     toNumber: function (x, fallback) {
-        return Number(x) || fallback;
+        return Number(x) || fallback || 0;
     },
     /**
      * Floor a number
@@ -159,7 +159,7 @@ var MathsUtils = {
 
         return function random (from, to) {
             if (Utils.isUndefined(to)) {
-                if (Utils.isUndefined(from)) {
+                if (!from || Utils.isUndefined(from)) {
                     to = 1;
                 }
                 else {
@@ -168,7 +168,7 @@ var MathsUtils = {
                 from = 0;
             }
             else {
-                from = MathsUtils.toNumber(from, 0);
+                from = MathsUtils.toNumber(from);
                 to = MathsUtils.toNumber(to, 1);
             }
             return rand() * (to - from) + from;
