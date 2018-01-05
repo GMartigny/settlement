@@ -77,10 +77,10 @@ var LogManager = (function iife () {
             }
         },
         /**
-         * Replace generic key with data from an object
+         * Replace generic key with data from an object and capitalize
          * @param {String} string - A string to use
          * @param {Object} data - Data to put into the string
-         * @example personify("@people.name is waiting", {people: {name: "Someone"}});
+         * @example personify("@people.name is waiting", {people: {name: "someone"}}); // => "Someone is waiting"
          * @return {String}
          */
         personify: function (string, data) {

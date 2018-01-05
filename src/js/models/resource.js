@@ -128,7 +128,7 @@ Resource.static(/** @lends Resource */{
         if (data.icon) {
             str += Resource.iconAsString(data.icon) + " ";
         }
-        str += "<b>" + Utils.pluralize(data.name, count) + "</b>";
+        str += Utils.pluralize(data.name, count).bold();
         return str;
     },
     /**

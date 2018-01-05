@@ -110,7 +110,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             ];
             var credits = "<ul>";
             creditsData.forEach(function (hero) {
-                credits += "<li>" + hero.task + ": <a href='" + hero.url + "'>" + hero.name + "</a></li>";
+                credits += "<li>" + hero.task + ": " + hero.name.anchor(hero.url) + "</li>";
             });
             credits += "</ul>";
             new Popup({
@@ -778,15 +778,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             new Popup({
                 name: "New version",
                 desc: "Since the last time you played, a new version of the game has been released.<br/>" +
-                    "You may want to restart to experience all the cool new features. ;)<br/>",
-                no: "Continue last save",
-                yes: {
-                    name: "Restart anew",
-                    action: function () {
-                        game.wipeSave(true);
-                    }
-                }
-            }, "wipeIt");
+                    "You may want to restart to experience all the cool new features. ;)<br/>" +
+                    "<a href='https://github.com/GMartigny/settlement#changelog'>Changelog</a>"
+            });
         }
 
         MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);

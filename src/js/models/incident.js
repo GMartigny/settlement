@@ -85,8 +85,8 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             else {
                 duration = this.data.time;
 
-                if (this.data.deltaTime) {
-                    duration += MathsUtils.random(-this.data.deltaTime, this.data.deltaTime);
+                if (this.data.timeDelta) {
+                    duration += MathsUtils.random(-this.data.timeDelta, this.data.timeDelta);
                 }
 
                 duration *= GameController.TICK_LENGTH;
