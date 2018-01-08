@@ -1388,17 +1388,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         unique: true,
         yes: "Give him some water and food",
         no: "Ignore him",
-        onStart: function () {
-            MessageBus.notify(MessageBus.MSG_TYPES.USE, [
-                [3, ids.resources.gatherables.common.water],
-                [3, ids.resources.gatherables.common.food]
-            ]);
-            this.flags.doggy = true;
-        },
+        consume: [
+            [3, ids.resources.gatherables.common.water],
+            [3, ids.resources.gatherables.common.food]
+        ],
         log: "With caution, he accept this offering. " +
             "He then proceed to hide in the forum's shadow and quickly falls asleep."
     });
-    // Some one come and don't talk english
 
     /** HARD INCIDENTS **/
 
@@ -1431,7 +1427,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         id: "atk",
         name: "attack on bandits",
         desc: "While exploring the surroundings, a bandits camp was found a few hours of walk away.<br/>" +
-            "Setting a surprise attack can lead to loot all their belongings.<br/>" +
+            "Setting a surprise attack can lead to loot their belongings.<br/>" +
             "They seams to be quite well fortified though.",
         condition: function () {
             var allNotBusy = true;
@@ -1443,6 +1439,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         },
         unique: true,
         time: 6,
+        timeDelta: 1,
+        color: "#7a848c",
         yes: "Let's do this",
         no: "Leave them be",
         onStart: function () {
@@ -1469,6 +1467,11 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         dropRate: 200,
         log: "They put up quite a fight and everyone got hurt in the process. At least @give were stolen."
     });
+
+    // Ideas :
+
+    // Incident conditioned by if the player accept or not the dog
+    // Someone come and don't talk english
     // conversation between people (no impact) TODO: find a good way to manage blab
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
     // raiders can come for revenge after "attack on bandits"

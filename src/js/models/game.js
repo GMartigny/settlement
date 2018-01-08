@@ -88,9 +88,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 desc: "Completely wipe the saved game. Careful, this is irreversible.",
                 yes: {
                     name: "Restart anew",
-                    action: function () {
-                        game.wipeSave(true);
-                    }
+                    action: game.wipeSave.bind(game, true)
                 },
                 no: "Cancel"
             }, "wipeIt");
@@ -110,7 +108,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             ];
             var credits = "<ul>";
             creditsData.forEach(function (hero) {
-                credits += "<li>" + hero.task + ": " + hero.name.anchor(hero.url) + "</li>";
+                credits += "<li>" + hero.task + ": " + hero.name.link(hero.url) + "</li>";
             });
             credits += "</ul>";
             new Popup({
@@ -446,7 +444,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             if (resourceId === DataManager.ids.resources.gatherables.common.water && drought) {
                 consumption[0] *= drought.data.multiplier;
             }
-            var amount = this.people.size + (this.flags.doggy ? 1 : 0);
+            var amount = this.people.size + (this.flags.incidents.includes(DataManager.ids.incidents.medium.strayDog));
             var warn = this.consume(consumption[0] * amount * elapse, resourceId, function setLackResource (diff) {
                 this.flags[consumption[2]] = diff;
             });
