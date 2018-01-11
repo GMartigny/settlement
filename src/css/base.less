@@ -50,11 +50,12 @@ body {
         left: 0;
         right: 0;
         margin: 0 auto;
-        width: 60px;
-        height: 60px;
+        @size: 60px;
+        width: @size;
+        height: @size;
         border: 2px solid #FFF;
         border-radius: 50%;
-        top: ~'calc(50% - 30px)';
+        top: ~'calc(50% -' @size / 2 ~')';
         z-index: -1;
 
         animation: pulse ease-in infinite 1s;

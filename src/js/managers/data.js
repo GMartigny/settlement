@@ -220,7 +220,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "scrap metal",
         desc: "An old rusty piece of metal.",
         icon: "metal-scraps",
-        dropRate: 75,
+        dropRate: 60,
         order: 40
     });
 
@@ -229,10 +229,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "people",
         desc: "The workforce and the bane of the camp.",
         needs: [
-            [1.2 / time.day, ids.resources.gatherables.common.water, "thirsty"],
+            [1 / time.day, ids.resources.gatherables.common.water, "thirsty"],
             [1 / time.day, ids.resources.gatherables.common.food, "starving"]
         ],
-        dropRate: 0.01
+        dropRate: 0.001
     });
 
     /** GATHERABLES UNCOMMON **/
@@ -242,7 +242,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "nuts and bolts",
         desc: "Little metal nuts and bolts to fasten anything in place.",
         icon: "nuts-and-bolts",
-        dropRate: 70,
+        dropRate: 65,
         order: 50
     });
     ids.resources.gatherables.uncommon.sand = insert({
@@ -250,7 +250,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "sand",
         desc: "Just pure fine sand.",
         icon: "sand-pile",
-        dropRate: 40,
+        dropRate: 50,
         order: 55
     });
     ids.resources.gatherables.uncommon.oil = insert({
@@ -258,7 +258,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "fuel",
         desc: "About a liter of gas-oil.",
         icon: "jerrycan",
-        dropRate: 10,
+        dropRate: 20,
         order: 60
     });
 
@@ -433,7 +433,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
         time: 4,
         consume: [
-            [2, ids.resources.gatherables.common.water]
+            [1, ids.resources.gatherables.common.water]
         ],
         giveSpan: [1.5, 2],
         giveList: [
@@ -448,9 +448,9 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
         time: 6,
         consume: [
-            [3, ids.resources.gatherables.common.water]
+            [2, ids.resources.gatherables.common.water]
         ],
-        giveSpan: [3, 4],
+        giveSpan: [4, 5],
         giveList: [
             ids.resources.gatherables.common.food
         ],
@@ -543,7 +543,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         options: function () {
             return this.knownLocations;
         },
-        giveSpan: [7, 10],
+        giveSpan: [8, 10],
         giveList: [
             ids.resources.special.quartz
         ],
@@ -1287,7 +1287,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
                 desc: "After being calmly sit down, try to get what she's trying to say.<br/>" +
                     quote("Long path ahead, full of danger ... may do it ... but at what cost ?") + "<br/>" +
                     quote("If mercy is shown, success will follow !"),
-                yes: "Humm ... ok."
+                yes: "Humm ... ok"
             }, "incident");
         },
         unique: true,
@@ -1403,6 +1403,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "drought",
         desc: "The climate is so hot, everyone needs more " +
             formatResource(ids.resources.gatherables.common.water) + ".",
+        condition: function () {
+            return this.hasEnough(ids.resources.gatherables.common.water, 5) &&
+                this.isBuildingDone(ids.buildings.small.well);
+        },
         time: 3 * time.day,
         timeDelta: 10,
         color: "#f73a18",

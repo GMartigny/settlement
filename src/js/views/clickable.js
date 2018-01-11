@@ -20,7 +20,6 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
     /**
      * Return HTML for display
      * @return {HTMLElement}
-     * @override
      */
     toHTML: function () {
         var html = this._toHTML();
@@ -34,7 +33,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Start a cool-down animation
      * @param {Number} duration - Total duration of the animation
      * @param {Number} consumed - Already consumed time in the animation
-     * @param {Function} action - 
+     * @param {Function} action - Function to call when reach timeout
      */
     startCoolDown: function (duration, consumed, action) {
         var self = this;

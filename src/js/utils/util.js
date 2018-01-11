@@ -211,7 +211,8 @@ var Utils = {
      * @return {String}
      */
     randomStr: function (length) {
-        length = length || 6;
+        var defaultStringLength = 6;
+        length = length || defaultStringLength;
         return (new Array(length)).fill("-").join("").replace(/-/g, function () {
             return MathsUtils.floor(MathsUtils.random(MathsUtils.RADIX.ALPHA)).toString(MathsUtils.RADIX.ALPHA);
         });

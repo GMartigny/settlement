@@ -79,25 +79,27 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, this);
             this.show();
 
-            if (forceTime) {
-                duration = forceTime;
-            }
-            else {
-                duration = this.data.time;
-
-                if (this.data.timeDelta) {
-                    duration += MathsUtils.random(-this.data.timeDelta, this.data.timeDelta);
-                }
-
-                duration *= GameController.TICK_LENGTH;
-            }
+            duration = forceTime || this.defineDuration();
 
             this.progressBar.run(duration);
         }
         this.timer = TimerManager.timeout(this.end.bind(this), duration);
 
         var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
-        LogManager.log(LogManager.personify(rawLog, effect), effect.logType);
+        LogManager.log(LogManager.personify(rawLog, effect));
+    },
+    /**
+     * Determine the duration of the incident
+     * @return {Number}
+     */
+    defineDuration: function () {
+        var duration = this.data.time;
+
+        if (this.data.timeDelta) {
+            duration += MathsUtils.random(-this.data.timeDelta, this.data.timeDelta);
+        }
+
+        return duration * GameController.TICK_LENGTH;
     },
     /**
      * Start the incident (open popup)

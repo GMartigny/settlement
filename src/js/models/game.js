@@ -356,7 +356,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.TICK_LENGTH);
         this.lastTick += elapse * GameController.TICK_LENGTH;
 
-        TimerManager.timeout(this.refresh.bind(this), GameController.REFRESH_RATE);
+        requestAnimationFrame(this.refresh.bind(this));
 
         if (this.flags.win) {
             if (!Popup.OPENED && this.people.size) {
@@ -428,7 +428,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             }, this);
 
-            this.saveGame();
+            if (elapse) {
+                this.saveGame();
+            }
         }
     },
     /**
@@ -701,16 +703,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     getRandomIncident: function () {
         var list = [],
             elapsedWeek = this.getSettledTime() / DataManager.time.week;
-        // TODO : find a better solution ?
-        if (elapsedWeek > 1) {
-            list.push.apply(list, DataManager.ids.incidents.easy);
-            if (elapsedWeek > 2) {
-                list.push.apply(list, DataManager.ids.incidents.medium);
-                if (elapsedWeek > 5) {
-                    list.push.apply(list, DataManager.ids.incidents.hard);
-                }
+        ({
+            1: DataManager.ids.incidents.easy,
+            2: DataManager.ids.incidents.medium,
+            5: DataManager.ids.incidents.hard
+        }).browse(function (value, key) {
+            if (elapsedWeek > key) {
+                list.insert(value);
             }
-        }
+        });
         // filter incidents already running or with unmatched conditions
         list = list.filter(function filterIncident (incidentId) {
             var incidentData = DataManager.get(incidentId);
@@ -746,6 +747,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @return {Object} Game's state
      */
     toJSON: function () {
+        // TODO: can be greatly optimize to save space on storage
         var json = {
             flg: this.flags,
             res: this.resources.getValues(),
@@ -773,6 +775,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var loadedVersion = data.vrn && data.vrn.substr(0, data.vrn.lastIndexOf("."));
         var currentVersion = VERSION.substr(0, VERSION.lastIndexOf("."));
         if (loadedVersion !== currentVersion) {
+            // TODO: display a differential changelog
             new Popup({
                 name: "New version",
                 desc: "Since the last time you played, a new version of the game has been released.<br/>" +
@@ -836,8 +839,9 @@ if (IS_DEV) {
      * Earn one of each resources and buildings
      */
     GameController.prototype.resourcesOverflow = function resourcesOverflow () {
+        var amount = 50;
         DataManager.ids.resources.deepBrowse(function earn50 (id) {
-            this.earn(50, id);
+            this.earn(amount, id);
         }.bind(this));
     };
     /**
@@ -851,9 +855,11 @@ if (IS_DEV) {
      * Put everyone in a almost dead state
      */
     GameController.prototype.wannaLoose = function wannaLoose () {
+        var lifeLeft = 5;
+        var energyLEft = 0;
         this.people.forEach(function lowLifeNoEnergy (person) {
-            person.setLife(5);
-            person.setEnergy(0);
+            person.setLife(lifeLeft);
+            person.setEnergy(energyLEft);
         });
     };
 }

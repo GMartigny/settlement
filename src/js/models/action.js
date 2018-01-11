@@ -407,10 +407,10 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         if (Utils.isArray(data.lock)) {
             // Unique actions have to lock for everyone
             if (this.data.unique) {
-                result.lock.forAll = data.lock;
+                result.lock.forAll.insert(data.lock);
             }
             else {
-                result.lock.forOne = data.lock;
+                result.lock.forOne.insert(data.lock);
             }
         }
         if (Utils.isArray(data.lockForAll)) {
@@ -423,9 +423,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // Build
         if (data.build) {
-            var build = DataManager.get(data.build);
             result.build = data.build;
-            effect.build = Utils.an(build.name);
+            effect.build = Utils.an(DataManager.get(data.build).name);
         }
 
         effect.give = Utils.formatArray(result.give);

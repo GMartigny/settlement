@@ -355,8 +355,9 @@ People.static( /** @lends People */ {
         // We don't want to spam the webservice when in dev
         if (IS_DEV) {
             var res = [];
+            var botNameLength = 3;
             for (var i = 0; i < amount; ++i) {
-                var code = "Bot-" + Utils.randomStr(3).toUpperCase();
+                var code = "Bot-" + Utils.randomStr(botNameLength).toUpperCase();
                 res.push(new People(code));
             }
             return Promise.resolve(res);
