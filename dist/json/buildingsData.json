@@ -1,1 +1,1 @@
-{"forum":{"x":73,"y":27,"steps":7,"speed":8},"forum1":{"x":73,"y":27,"steps":7,"speed":8},"plot":{"x":20,"y":32,"steps":12,"speed":8},"wreckage":{"x":55,"y":11,"steps":6,"speed":8},"forum2":{"x":73,"y":27,"steps":7,"speed":8},"pharmacy":{"x":113,"y":38}}
+{"fire":{"x":110,"y":43,"steps":7,"speed":8},"forum":{"x":78,"y":29},"forum1":{"x":78,"y":29},"forum2":{"x":78,"y":29},"pharmacy":{"x":88,"y":43},"plot":{"x":21,"y":32,"steps":12,"speed":5},"wreckage":{"x":58,"y":12,"steps":6,"speed":8},"fire2":{"x":105,"y":43,"steps":7,"speed":8}}
