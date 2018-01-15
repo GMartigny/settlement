@@ -455,7 +455,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 data.initialDropRate = data.dropRate;
             }
             // Decrease dropRate if not lacking
-            var dropRateDecrease = 0.98;
+            var dropRateDecrease = 0.99;
             data.dropRate = warn ? data.initialDropRate : data.dropRate * MathsUtils.pow(dropRateDecrease, elapse);
         }, this);
     },

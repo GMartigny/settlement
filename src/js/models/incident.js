@@ -31,10 +31,10 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             action: this.run.bind(this)
         };
         var no = this.data.no;
-        this.data.no = {
+        this.data.no = no ? {
             name: no,
             action: this.end.bind(this)
-        };
+        } : null;
     },
     /**
      * Return HTML for display
@@ -57,21 +57,26 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * @param {Number} [forceTime=false] - Force a time to the incident
      */
     run: function (forceTime) {
-        // Effect
-        var effect = {
-            incident: this.data
-        };
+        if (!forceTime) {
+            // Effect
+            var effect = {
+                incident: this.data
+            };
 
-        if (Utils.isArray(this.data.consume)) {
-            effect.consume = this.data.consume;
-        }
+            if (Utils.isArray(this.data.consume)) {
+                effect.consume = this.data.consume;
+            }
 
-        if (Utils.isFunction(this.data.onStart)) {
-            this.data.onStart(this, effect);
-        }
+            if (Utils.isFunction(this.data.onStart)) {
+                this.data.onStart(this, effect);
+            }
 
-        if (Utils.isArray(effect.consume)) {
-            MessageBus.notify(MessageBus.MSG_TYPES.USE, effect.consume);
+            if (Utils.isArray(effect.consume)) {
+                MessageBus.notify(MessageBus.MSG_TYPES.USE, effect.consume);
+            }
+
+            var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
+            LogManager.log(LogManager.personify(rawLog, effect), LogManager.LOG_TYPES.EVENT);
         }
 
         var duration = 0;
@@ -84,9 +89,6 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
             this.progressBar.run(duration);
         }
         this.timer = TimerManager.timeout(this.end.bind(this), duration);
-
-        var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
-        LogManager.log(LogManager.personify(rawLog, effect));
     },
     /**
      * Determine the duration of the incident
