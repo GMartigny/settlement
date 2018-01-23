@@ -83,12 +83,10 @@
     function switchDisplay (id) {
         if (!id) {
             var force = document.getElementById("all").checked;
-            for (var name in data) {
-                if (data.hasOwnProperty(name)) {
-                    document.getElementById(name + "-chk").checked = force;
-                    switchDisplay(name);
-                }
-            }
+            forAllData(function (d, name) {
+                document.getElementById(name + "-chk").checked = force;
+                switchDisplay(name);
+            });
         }
         else {
             var checked = document.getElementById(id + "-chk").checked;
@@ -117,29 +115,25 @@
     function dataToString () {
         var outputed = {};
         var saved = {};
-        var d;
-        for (var id in data) {
-            if (data.hasOwnProperty(id)) {
-                d = data[id];
-                saved[id] = {
+        forAllData(function (d, id) {
+            saved[id] = {
+                x: d.x,
+                y: d.y,
+                disabled: d.disabled,
+                steps: d.steps,
+                speed: d.speed
+            };
+            if (!d.disabled) {
+                outputed[id] = {
                     x: d.x,
-                    y: d.y,
-                    disabled: d.disabled,
-                    steps: d.steps,
-                    speed: d.speed
+                    y: d.y
                 };
-                if (!d.disabled) {
-                    outputed[id] = {
-                        x: d.x,
-                        y: d.y
-                    };
-                    if (data[id].steps !== 1) {
-                        outputed[id].steps = d.steps;
-                        outputed[id].speed = d.speed;
-                    }
+                if (data[id].steps !== 1) {
+                    outputed[id].steps = d.steps;
+                    outputed[id].speed = d.speed;
                 }
             }
-        }
+        });
         output.textContent = JSON.stringify(outputed, null, 4);
         localStorage.save = JSON.stringify(saved);
     }
@@ -154,8 +148,19 @@
 
     // Change of scale
     scaler.addEventListener("change", function () {
-        scale = this.value;
+        scale = +this.value;
         localStorage.scale = scale;
+
+        forAllData(function (d) {
+            d.width = d.oWidth * scale;
+            d.height = d.oHeight * scale;
+
+            d.node.style.backgroundSize = d.width + "px";
+            d.node.style.width = Math.round(d.width / d.steps) + "px";
+            d.node.style.height = d.height + "px";
+
+            moveTo(d.node, d.x, d.y, d.oHeight);
+        });
     });
     // Move mouse
     planner.addEventListener("mousemove", function (e) {
@@ -188,6 +193,8 @@
                     disabled: false,
                     steps: 1,
                     speed: 8,
+                    oWidth: asset.width,
+                    oHeight: asset.height,
                     width: asset.width * scale,
                     height: asset.height * scale,
                     iteration: 0,
@@ -205,7 +212,7 @@
                 var img = document.createElement("div");
                 img.style.backgroundImage = "url(../../" + asset.source_image + ")";
                 img.style.backgroundSize = d.width + "px";
-                img.style.width = (d.width / d.steps) + "px";
+                img.style.width = Math.round(d.width / d.steps) + "px";
                 img.style.height = d.height + "px";
 
                 img.id = name;
@@ -224,19 +231,24 @@
     function animate () {
         requestAnimationFrame(animate);
         var d;
+        forAllData(function (d) {
+            var prev = d.iteration <<0;
+            if (d.steps > 1) {
+                d.iteration = (d.iteration + (d.speed / 60)) % d.steps;
+            }
+            else {
+                d.iteration = 0;
+            }
+            if ((d.iteration <<0) !== prev) {
+                d.node.style.backgroundPosition = -((d.width / d.steps) * (d.iteration<<0)) + "px 0";
+            }
+        });
+    }
+
+    function forAllData (fn) {
         for (var id in data) {
             if (data.hasOwnProperty(id)) {
-                d = data[id];
-                var prev = d.iteration <<0;
-                if (d.steps > 1) {
-                    d.iteration = (d.iteration + (d.speed / 60)) % d.steps;
-                }
-                else {
-                    d.iteration = 0;
-                }
-                if ((d.iteration <<0) !== prev) {
-                    d.node.style.backgroundPosition = -((d.width / d.steps) * (d.iteration<<0)) + "px 0";
-                }
+                fn(data[id], id, data);
             }
         }
     }
