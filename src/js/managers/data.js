@@ -1292,7 +1292,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         },
         unique: true,
         dropRate: 70,
-        log: "Listening to the fate that await can give chills. Does knowing the future is really helpful ?"
+        log: "She then proceed on her lonely journey. " +
+            "Listening to the fate that await can give chills. Does knowing the future is really helpful ?"
     });
     ids.incidents.easy.sandstorm = insert({
         id: "ssm",

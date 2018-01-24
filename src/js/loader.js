@@ -13,20 +13,25 @@
 function starter (globalScope) {
     var container = document.body;
     container.classList.add("loading");
-    console.groupCollapsed("Loading");
+    if (IS_DEV) {
+        console.groupCollapsed("Loading");
+    }
 
     var loadStart = Utils.getNow();
     // Preload
+    var distUrl = "dist/";
     Utils.loadAsync({
         Dosis: "https://fonts.gstatic.com/s/dosis/v7/xIAtSaglM8LZOYdGmG1JqQ.woff",
-        icons: "dist/img/icons.png",
-        assets: "dist/img/assets.png",
-        assetsData: "dist/json/assets.json",
-        buildingsData: "dist/json/buildingsData.json"
+        icons: distUrl + "img/icons.png",
+        assets: distUrl + "img/assets.png",
+        assetsData: distUrl + "json/assets.json",
+        buildingsData: distUrl + "json/buildingsData.json"
     }, function loadedFile (percent, name) {
         Utils.log(name + " : " + percent.toFixed(1) + "% - " + (Utils.getNow() - loadStart) + "ms");
     }).then(function allLoaded (media) {
-        console.groupEnd();
+        if (IS_DEV) {
+            console.groupEnd();
+        }
         container.classList.remove("loading");
         document.head.appendChild(media.Dosis);
         container.innerHTML = "";
