@@ -97,13 +97,13 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         var creditsClickable = new Clickable("credits", "Credits", function openCreditsPopup () {
             var creditsData = [
                 {
-                    task: "Design and code",
+                    task: "Code",
                     name: "Guillaume Martigny",
                     url: "https://www.guillaume-martigny.fr/#en"
                 }, {
                     task: "Graphics",
-                    name: "if you want your name here, send me an email",
-                    url: "mailto:https://www.guillaume-martigny.fr"
+                    name: "Olivier Michas",
+                    url: "https://twitter.com/OliverMichas"
                 }
             ];
             var credits = "<ul>";

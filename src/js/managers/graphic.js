@@ -102,6 +102,13 @@ var GraphicManager = (function iife () {
             layer.cnv.classList.add("layer", "buildings");
             wrapper.appendChild(layer.cnv);
 
+            if (IS_DEV) {
+                var tools = new Clickable("debug", "Edit", function () {
+                    location.href += "tools/buildingsPlanner/";
+                });
+                wrapper.appendChild(tools.html);
+            }
+
             // watch for new buildings
             _buildingsList = new Map();
             MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (id) {

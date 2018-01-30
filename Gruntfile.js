@@ -38,6 +38,7 @@ module.exports = function (grunt) {
     var IS_BETA = VERSION.includes("v0.");
 
     grunt.initConfig({
+        // IMAGES
         sprite: {
             icons: {
                 src: sourceDir.img.icons,
@@ -51,6 +52,7 @@ module.exports = function (grunt) {
             }
         },
 
+        // STYLES
         less: {
             dev: {
                 options: {
@@ -69,6 +71,7 @@ module.exports = function (grunt) {
             }
         },
 
+        // SCRIPTS
         uglify: {
             dev: {
                 options: {
@@ -106,6 +109,23 @@ module.exports = function (grunt) {
             }
         },
 
+        // DATA
+        jsonify: {
+            main: {
+                files: {
+                    [destDir.json]: sourceDir.json
+                }
+            }
+        },
+
+        // RUN
+        connect: {
+            dev: {
+                options: {
+                    open: true
+                }
+            }
+        },
         watch: {
             iconsCSS: {
                 files: sourceDir.img.icons,
@@ -129,6 +149,7 @@ module.exports = function (grunt) {
             }
         },
 
+        // LINTING
         eslint: {
             target: sourceDir.js,
             options: {
@@ -144,6 +165,7 @@ module.exports = function (grunt) {
             }
         },
 
+        // VERSION
         bump: {
             options: {
                 pushTo: "origin",
@@ -159,6 +181,7 @@ module.exports = function (grunt) {
             }
         },
 
+        // TESTS
         jasmine: {
             options: {
                 specs: "tests/**/*Test.js",
@@ -178,14 +201,6 @@ module.exports = function (grunt) {
             },
             built: {
                 src: destDir.js
-            }
-        },
-        
-        jsonify: {
-            main: {
-                files: {
-                    [destDir.json]: sourceDir.json
-                }
             }
         }
     });
@@ -235,7 +250,7 @@ module.exports = function (grunt) {
     grunt.registerTask("build:prod", ["images", "uglify:prod", "jsonify:main", "less:prod"]);
     grunt.registerTask("build", ["build:dev"]); // (default)
 
-    grunt.registerTask("default", ["build", "watch"]);
+    grunt.registerTask("default", ["build", "connect", "watch"]);
 
     grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
 

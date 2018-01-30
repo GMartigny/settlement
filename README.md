@@ -66,8 +66,6 @@ All help is welcomed in this project. I'll try to answer every request, so feel 
 
 You can go check [the wiki to learn about ways to contribute](https://github.com/GMartigny/settlement/wiki).
 
-Also, I'm looking for a talented pixel-artist for all the game's visuals. Hit me up !
-
 ***
 
 `Started the 8th of July 2016`
