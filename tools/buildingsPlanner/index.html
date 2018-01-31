@@ -35,8 +35,23 @@
             float: left;
             box-sizing: border-box;
         }
-        #imgList .frameCount, #imgList .animationSpeed {
+        #imgList {
+            list-style: none;
+            padding: 0 1em;
+        }
+        #imgList li {
+            margin: .5em 0;
+        }
+        #imgList span {
+            margin-left: 1em;
+            padding: .2em .5em;
+            border: 1px solid #BBB;
+        }
+        #imgList input {
             width: 40px;
+            text-align: right;
+            border: none;
+            background: #DDD;
         }
     </style>
 </head>
@@ -95,19 +110,21 @@
             dataToString();
         }
     }
-    function changeStepCount (id, value) {
+    function change (id, field, value) {
         if (id) {
             value = +value;
-            var img = document.getElementById(id);
-            img.style.width = (data[id].width / value) + "px";
-            data[id].steps = value;
-            dataToString();
-        }
-    }
-    function changeAnimationSpeed (id, value) {
-        if (id) {
-            value = +value;
-            data[id].speed = value;
+            var d = data[id];
+            d[field] = value;
+
+            switch (field) {
+                case "index":
+                    d.node.style.zIndex = (d.index * 10000) + (d.y * scale) + d.height;
+                    break;
+                case "steps":
+                    d.node.style.width = (data[id].width / value) + "px";
+                    break;
+            }
+
             dataToString();
         }
     }
@@ -121,16 +138,20 @@
                 y: d.y,
                 disabled: d.disabled,
                 steps: d.steps,
-                speed: d.speed
+                speed: d.speed,
+                index: d.index
             };
             if (!d.disabled) {
                 outputed[id] = {
                     x: d.x,
                     y: d.y
                 };
-                if (data[id].steps !== 1) {
+                if (d.steps !== 1) {
                     outputed[id].steps = d.steps;
                     outputed[id].speed = d.speed;
+                }
+                if (d.index !== 1) {
+                    outputed[id].index = d.index;
                 }
             }
         });
@@ -138,12 +159,13 @@
         localStorage.save = JSON.stringify(saved);
     }
     // Move an image
-    function moveTo (img, x, y, height) {
-        data[img.id].x = x;
-        data[img.id].y = y;
+    function moveTo (img, x, y) {
+        var d = data[img.id];
+        d.x = x;
+        d.y = y;
         img.style.left = x * scale + "px";
         img.style.top = y * scale + "px";
-        img.style.zIndex = y + height;
+        img.style.zIndex = (d.index * 10000) + (y * scale) + d.height;
     }
 
     // Change of scale
@@ -159,7 +181,7 @@
             d.node.style.width = Math.round(d.width / d.steps) + "px";
             d.node.style.height = d.height + "px";
 
-            moveTo(d.node, d.x, d.y, d.oHeight);
+            moveTo(d.node, d.x, d.y);
         });
     });
     // Move mouse
@@ -168,7 +190,7 @@
             var d = data[dragged];
             var x = Math.floor((e.clientX - d.startX) / scale);
             var y = Math.floor((e.clientY - d.startY) / scale);
-            moveTo(d.node, x, y, d.height / scale);
+            moveTo(d.node, x, y);
             dataToString();
         }
     });
@@ -190,9 +212,10 @@
                 var d = Object.assign({
                     x: 0,
                     y: 0,
-                    disabled: false,
+                    disabled: true,
                     steps: 1,
                     speed: 8,
+                    index: 1,
                     oWidth: asset.width,
                     oHeight: asset.height,
                     width: asset.width * scale,
@@ -205,8 +228,13 @@
                 html += `<li>
                     <input type="checkbox" ${!d.disabled && "checked"} id="${name}-chk" onclick="switchDisplay('${name}')"/>
                     <label for="${name}-chk">${name}</label>
-                    <input type="number" class="frameCount" value="${d.steps}" onchange="changeStepCount('${name}', this.value)" min="1" title="Animation's frame count"/>
-                    <input type="number" class="animationSpeed" value="${d.speed}" onchange="changeAnimationSpeed('${name}', this.value)" min="0" title="Animation's speed (fps)"/>
+                    <span>
+                        <input type="number" value="${d.steps}" onchange="change('${name}', 'steps', this.value)" min="1" title="Animation's frame count"/> frames at
+                        <input type="number" value="${d.speed}" onchange="change('${name}', 'speed', this.value)" min="0" title="Animation's speed (fps)"/> fps
+                    </span>
+                    <span>
+                        index <input type="number" value="${d.index}" onchange="change('${name}', 'index', this.value)" min="1" title="">
+                    </span>
                 </li>`;
 
                 var img = document.createElement("div");
@@ -218,7 +246,7 @@
                 img.id = name;
                 img.classList.toggle("disabled", d.disabled);
                 data[name].node = img;
-                moveTo(img, d.x, d.y, asset.height);
+                moveTo(img, d.x, d.y);
                 draggable(img);
                 planner.appendChild(img);
             }
@@ -230,7 +258,6 @@
 
     function animate () {
         requestAnimationFrame(animate);
-        var d;
         forAllData(function (d) {
             var prev = d.iteration <<0;
             if (d.steps > 1) {

@@ -33,13 +33,15 @@ var GraphicManager = (function iife () {
             width: MathsUtils.floor(sourceData.width / this.animationSteps),
             height: sourceData.height
         };
-        this.destination.width = this.source.width * Asset.ENLARGE;
-        this.destination.height = this.source.height * Asset.ENLARGE;
+        this.destination.width = this.source.width * Asset.SCALE;
+        this.destination.height = this.source.height * Asset.SCALE;
 
-        this.destination.x = MathsUtils.floor(destData.x * Asset.ENLARGE);
-        this.destination.y = MathsUtils.floor(destData.y * Asset.ENLARGE);
+        this.destination.x = MathsUtils.floor(destData.x * Asset.SCALE);
+        this.destination.y = MathsUtils.floor(destData.y * Asset.SCALE);
+
+        this.zIndex = (destData.index || 1) * 1e4 + this.destination.y + this.destination.height;
     }
-    Asset.ENLARGE = 4; // 4 times bigger !!§!
+    Asset.SCALE = 4; // 4 times bigger !!§!
     Asset.FPS = 60;
     Asset.prototype = {
         /**
@@ -55,30 +57,6 @@ var GraphicManager = (function iife () {
             layer.drawImage(image,
                 this.source.x + animationShift, this.source.y, this.source.width, this.source.height,
                 posX, posY, this.destination.width, this.destination.height);
-        },
-        /**
-         * Return asset depth (lowest point to draw)
-         * @return {Number}
-         */
-        getDepth: function () {
-            return this.destination.y + this.destination.height;
-        },
-        /**
-         * Compare with another asset to sort by depth
-         * @param {Asset} other - Another asset
-         * @return {Number}
-         */
-        compare: function (other) {
-            return this.getDepth() - other.getDepth();
-        },
-        /**
-         * Define a new position to draw this asset
-         * @param {Number} x - A new horizontal position
-         * @param {Number} y - A new vertical position
-         */
-        setPosition: function (x, y) {
-            this.destination.x = MathsUtils.floor(x * Asset.ENLARGE);
-            this.destination.y = MathsUtils.floor(y * Asset.ENLARGE);
         }
     };
 
@@ -139,10 +117,15 @@ var GraphicManager = (function iife () {
 
             if (_buildingsList.size) {
                 _buildingsLayer.clear();
-                // TODO : optimize to not sort each loop
-                _buildingsList.getValues().sort(function (a, b) {
-                    return a.compare(b);
-                }).forEach(function (asset) {
+                var ordered = [];
+                _buildingsList.forEach(function (asset) {
+                    var index = asset.zIndex;
+                    while (ordered[index]) {
+                        index++;
+                    }
+                    ordered[index] = asset;
+                });
+                ordered.forEach(function (asset) {
                     asset.render(_combinedImage, _buildingsLayer);
                 });
             }
