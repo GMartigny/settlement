@@ -47,7 +47,7 @@
             padding: .2em .5em;
             border: 1px solid #BBB;
         }
-        #imgList input {
+        #imgList input[type=number] {
             width: 40px;
             text-align: right;
             border: none;
@@ -64,8 +64,9 @@
 <input type="checkbox" id="all" checked onclick="switchDisplay()"><label for="all">All</label>
 <div id="wrapper">
     <ul id="imgList"></ul>
-    <textarea id="output" title="ouput"></textarea>
+    <textarea id="output" title="To copy into buildingsData.json" spellcheck="false"></textarea>
 </div>
+<button onclick="localStorage.clear();location.reload()" title="Will clear all local save data !">Clear</button>
 <script>
     var planner = document.getElementById("planner");
     var imgList = document.getElementById("imgList");
@@ -74,9 +75,6 @@
     var scale = scaler.value;
     var data = {};
 
-    if (localStorage.save) {
-        data = JSON.parse(localStorage.save);
-    }
     if (localStorage.scale) {
         scale = +localStorage.scale;
         scaler.value = scale;
@@ -112,7 +110,7 @@
     }
     function change (id, field, value) {
         if (id) {
-            value = +value;
+            value = Math.max(+value, 0);
             var d = data[id];
             d[field] = value;
 
@@ -200,11 +198,12 @@
     });
 
     // Fetch all assets
-    fetch("../../src/json/assets.json").then(function (response) {
-        if (response.ok) {
-            return response.json();
-        }
-    }).then(function (assetsData) {
+    Promise.all([fetch("../../src/json/assets.json"), fetch("../../src/json/buildingsData.json")]).then(function (results) {
+        return Promise.all(results.filter(r => r.ok).map(r => r.json()));
+    }).then(function (jsons) {
+        var storageData = JSON.parse(localStorage.save || "{}");
+        var assetsData = jsons[0];
+        var positionData = jsons[1];
         var html = "";
         for (var name in assetsData) {
             if (assetsData.hasOwnProperty(name)) {
@@ -214,7 +213,7 @@
                     y: 0,
                     disabled: true,
                     steps: 1,
-                    speed: 8,
+                    speed: 0,
                     index: 1,
                     oWidth: asset.width,
                     oHeight: asset.height,
@@ -222,7 +221,7 @@
                     height: asset.height * scale,
                     iteration: 0,
                     node: null
-                }, data[name]);
+                }, positionData[name], storageData[name]);
                 data[name] = d;
 
                 html += `<li>
