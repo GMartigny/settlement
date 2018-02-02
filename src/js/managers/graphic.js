@@ -19,7 +19,7 @@ var GraphicManager = (function iife () {
      */
     function Asset (sourceData, destData) {
         if (!destData) {
-            throw new TypeError("Can't draw asset without destination");
+            throw new TypeError("Can't draw asset " + sourceData.source_image + " without destination");
         }
         this.animationState = 0;
         this.animationSteps = destData.steps || 1;
