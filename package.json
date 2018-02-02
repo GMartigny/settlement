@@ -11,6 +11,7 @@
   "bugs": "https://github.com/GMartigny/settlement/issues",
   "license": "MIT",
   "devDependencies": {
+    "audiosprite": "^0.7.0",
     "es6-shim": "^0.35.3",
     "es7-shim": "^6.0.0",
     "grunt": "^1.0.1",

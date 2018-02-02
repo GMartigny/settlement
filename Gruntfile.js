@@ -11,28 +11,34 @@ module.exports = function (grunt) {
         sprite: "grunt-spritesmith",
         "bump-only": "grunt-bump",
         "bump-commit": "grunt-bump"
+    })({
+        customTasksDir: "tasks/"
     });
 
+    var srcBase = "src/";
     var sourceDir = {
-        js: ["src/js/utils/utils.js", "src/js/utils/**/*.js",
-            "src/js/views/view.js", "src/js/models/model.js",
-            "src/js/models/resource.js",
-            "src/js/**/*.js"], // Load in order
-        json: ["src/json/**/*.json"],
-        css: ["src/css/**/*.less"],
+        js: [srcBase + "js/utils/utils.js", srcBase + "js/utils/**/*.js",
+            srcBase + "js/views/view.js", srcBase + "js/models/model.js",
+            srcBase + "js/models/resource.js",
+            srcBase + "js/**/*.js"], // Load in order
+        json: [srcBase + "json/**/*.json"],
+        css: [srcBase + "css/**/*.less"],
         img: {
-            icons: ["src/img/icons/**/*.png"],
-            assets: ["src/img/assets/**/*.png"]
-        }
+            icons: [srcBase + "img/icons/**/*.png"],
+            assets: [srcBase + "img/assets/**/*.png"]
+        },
+        audio: [srcBase + "audio/**/*.wav"]
     };
+    var destBase = "dist/";
     var destDir = {
-        js: "dist/js/script.js",
-        json: "dist/json/",
-        css: "dist/css/style.css",
+        js: destBase + "js/script.js",
+        json: destBase + "json/",
+        css: destBase + "css/style.css",
         img: {
-            icons: "dist/img/icons.png",
-            assets: "dist/img/assets.png"
-        }
+            icons: destBase + "img/icons.png",
+            assets: destBase + "img/assets.png"
+        },
+        audio: destBase + "audio/sprite"
     };
     var VERSION = "v" + grunt.file.readJSON('package.json').version;
     var IS_BETA = VERSION.includes("v0.");
@@ -114,6 +120,19 @@ module.exports = function (grunt) {
             main: {
                 files: {
                     [destDir.json]: sourceDir.json
+                }
+            }
+        },
+
+        // AUDIO
+        audiosprite: {
+            main: {
+                files: {
+                    [destDir.audio]: sourceDir.audio
+                },
+                options: {
+                    export: "ogg",
+                    gap: 0
                 }
             }
         },
@@ -205,37 +224,6 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerMultiTask("jsonify", "Minify and copy json to dist folder", function () {
-        var options = this.options({
-            indent: 0
-        });
-
-        function format (size) {
-            return `\u001b[32m${size} kB\u001b[39m`;
-        }
-
-        this.files.forEach(function (target) {
-            var destFolder = target.dest;
-
-            target.src.forEach(function (filePath) {
-                var name = filePath.substr(filePath.lastIndexOf("/") + 1);
-                var srcContent = grunt.file.read(filePath);
-                try {
-                    var json = JSON.parse(srcContent);
-                    var sizeBefore = srcContent.length;
-                    var result = JSON.stringify(json, null, options.indent);
-                    var sizeAfter = result.length;
-                    var dest = destFolder + name;
-                    grunt.file.write(dest, result);
-                    grunt.log.ok(`Successfully wrote ${dest} ${format(sizeBefore)} → ${format(sizeAfter)}`);
-                }
-                catch (e) {
-                    grunt.log.warn(`The file ${filePath} is not a valid JSON.`);
-                }
-            });
-        });
-    });
-
     // JS linting
     grunt.registerTask("check", ["eslint", "lesslint"]);
 
@@ -243,14 +231,15 @@ module.exports = function (grunt) {
     grunt.registerTask("icons", ["sprite:icons"]);
     grunt.registerTask("assets", ["sprite:assets"]);
     grunt.registerTask("images", ["icons", "assets"]);
-    grunt.registerTask("js", ["uglify:dev", "jsonify:main"]);
+    grunt.registerTask("js", ["uglify:dev", "jsonify"]);
     grunt.registerTask("css", ["less:dev"]);
+    grunt.registerTask("audio", ["audiosprite"]);
 
-    grunt.registerTask("build:dev", ["images", "js", "css"]);
-    grunt.registerTask("build:prod", ["images", "uglify:prod", "jsonify:main", "less:prod"]);
-    grunt.registerTask("build", ["build:dev"]); // (default)
+    grunt.registerTask("build:dev", ["images", "audio", "js", "css"]);
+    grunt.registerTask("build:prod", ["images", "audio", "uglify:prod", "jsonify", "less:prod"]);
+    grunt.registerTask("build", ["build:dev"]);
 
-    grunt.registerTask("default", ["build", "connect", "watch"]);
+    grunt.registerTask("default", ["build", "connect", "watch"]); // (default)
 
     grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
 
