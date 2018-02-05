@@ -132,7 +132,8 @@ module.exports = function (grunt) {
                 },
                 options: {
                     export: "ogg",
-                    gap: 0
+                    gap: 0,
+                    json: srcBase + "json/audiosprite.json"
                 }
             }
         },

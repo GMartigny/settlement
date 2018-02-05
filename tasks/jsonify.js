@@ -21,7 +21,7 @@ module.exports = function (grunt) {
                     var sizeAfter = result.length;
                     var dest = destFolder + name;
                     grunt.file.write(dest, result);
-                    grunt.log.ok(`Successfully wrote ${dest} ${maxmin(sizeBefore, sizeAfter)}`);
+                    grunt.log.oklns(`Successfully wrote ${dest} ${maxmin(sizeBefore, sizeAfter)}`);
                 }
                 catch (e) {
                     grunt.log.warn(`The file ${filePath} is not a valid JSON.`);

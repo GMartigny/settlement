@@ -7,3 +7,4 @@ dist
 *.log
 /tests/report/
 /src/json/assets.json
+/src/json/audiosprite.json
