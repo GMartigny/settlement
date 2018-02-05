@@ -3,6 +3,7 @@
   "version": "0.5.2",
   "description": "A web survival game.",
   "author": "Guillaume Martigny <guillaume.martigny@gmail.com> (https://www.guillaume-martigny.fr)",
+  "contributors": ["Oliver Michas"],
   "homepage": "https://gmartigny.github.io/settlement",
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "jit-grunt": "^0.10.0"
   },
   "scripts": {
-    "test": "grunt check"
+    "check": "grunt check",
+    "test": "grunt test"
   }
 }

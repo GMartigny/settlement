@@ -232,17 +232,18 @@ module.exports = function (grunt) {
     grunt.registerTask("icons", ["sprite:icons"]);
     grunt.registerTask("assets", ["sprite:assets"]);
     grunt.registerTask("images", ["icons", "assets"]);
-    grunt.registerTask("js", ["uglify:dev", "jsonify"]);
+    grunt.registerTask("js", ["uglify:dev"]);
+    grunt.registerTask("json", ["jsonify"]);
     grunt.registerTask("css", ["less:dev"]);
     grunt.registerTask("audio", ["audiosprite"]);
 
-    grunt.registerTask("build:dev", ["images", "audio", "js", "css"]);
+    grunt.registerTask("build:dev", ["images", "audio", "js", "json", "css"]);
     grunt.registerTask("build:prod", ["images", "audio", "uglify:prod", "jsonify", "less:prod"]);
     grunt.registerTask("build", ["build:dev"]);
 
     grunt.registerTask("default", ["build", "connect", "watch"]); // (default)
 
-    grunt.registerTask("pushtoprod", ["build:prod", "gh-pages", "build"]);
+    grunt.registerTask("pushtoprod", ["build:prod", "gh-pages"]);
 
     grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
