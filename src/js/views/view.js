@@ -11,6 +11,7 @@ function View (CSSClass) {
     if (CSSClass) {
         this.html.classList.add.apply(this.html.classList, CSSClass.split(" "));
     }
+    this.isShow = true;
     this.init.apply(this, Array.prototype.slice.call(arguments, 1));
 }
 
@@ -31,7 +32,7 @@ View.extends(null, "View", /** @lends View.prototype */ {
      * @param {Function} [afterShow] - Callback to call after show transition's done
      */
     show: function (afterShow) {
-        if (afterShow) {
+        if (Utils.isFunction(afterShow)) {
             var self = this;
             var wrapperAfterShow = function () {
                 afterShow.call(self);
@@ -46,13 +47,14 @@ View.extends(null, "View", /** @lends View.prototype */ {
         }
 
         this.html.show();
+        this.isShow = true;
     },
     /**
      * Hide the widget
      * @param {Function} [afterHide] - Callback to call after hide transition's done
      */
     hide: function (afterHide) {
-        if (afterHide) {
+        if (Utils.isFunction(afterHide)) {
             var self = this;
             var wrapperAfterHide = function () {
                 afterHide.call(self);
@@ -67,6 +69,7 @@ View.extends(null, "View", /** @lends View.prototype */ {
         }
 
         this.html.hide();
+        this.isShow = false;
     },
     /**
      * Remove the view from the DOM

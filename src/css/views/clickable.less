@@ -3,11 +3,11 @@
 .Clickable {
     display: inline-block;
     cursor: pointer;
-    box-shadow: 0 1px 3px @shadowColor;
     padding: .5em .7em;
     margin-right: .7em;
     margin-bottom: .2em;
-    background-color: #FFF;
+    background-color: @terminalBack;
+    .colorClickable(@terminalGreen);
 
     transition: linear .1s;
     transition-property: transform, box-shadow;
@@ -15,13 +15,7 @@
     // Focus
     &:not(.disabled):not(.cooldown):not(.dropdown) {
         &:hover {
-            transform: translate3d(0, -2px, 0);
-            box-shadow: 0 3px 7px @shadowColor;
-        }
-    }
-    &.dropdown.cooldown + .options .Clickable {
-        &:hover {
-            box-shadow: 0 1px 3px @shadowColor;
+            text-decoration: underline;
         }
     }
 
@@ -40,7 +34,7 @@
 
     &.disabled {
         text-decoration: line-through;
-        color: #666;
+        opacity: .8;
     }
 
     &.cooldown {

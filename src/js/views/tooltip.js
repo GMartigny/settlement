@@ -32,11 +32,12 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
         this.refresh(new Map(), data);
 
         // Measure the box
-        this._mouseOver(); //  add to DOM
+        GameController.holder.appendChild(this.html);
         var htmlMeasures = this.html.getBoundingClientRect();
         this.width = htmlMeasures.width;
         this.height = htmlMeasures.height;
-        this._mouseOut(); // Clear from DOM
+        this.hide();
+        this.html.remove();
 
         this._addEvents();
     },
@@ -60,13 +61,15 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      */
     _mouseOver: function () {
         GameController.holder.appendChild(this.html);
+        this.show.defer(this);
     },
     /**
      * Handle mouse out events
      * @private
      */
     _mouseOut: function () {
-        this.remove();
+        this.hide();
+        this.html.remove.defer(this.html);
     },
     /**
      * Handle mouse move events
@@ -83,9 +86,9 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
     _addEvents: function () {
         this.container.classList.add("tooltiped");
 
-        this.container.addEventListener("mouseover", this._mouseOver.bind(this));
+        this.container.addEventListener("mouseenter", this._mouseOver.bind(this));
         this.container.addEventListener("mousemove", this._mouseMove.bind(this));
-        this.container.addEventListener("mouseout", this._mouseOut.bind(this));
+        this.container.addEventListener("mouseleave", this._mouseOut.bind(this));
     },
     /**
      * Remove all events listener
@@ -94,9 +97,9 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
     _removeEvents: function () {
         this.container.classList.remove("tooltiped");
 
-        this.container.removeEventListener("mouseover", this._mouseOver);
+        this.container.removeEventListener("mouseenter", this._mouseOver);
         this.container.removeEventListener("mousemove", this._mouseMove);
-        this.container.removeEventListener("mouseout", this._mouseOut);
+        this.container.removeEventListener("mouseleave", this._mouseOut);
     },
     /**
      * Update tooltip content
@@ -104,17 +107,18 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      */
     toHTML: function () {
         var html = this._toHTML();
+        var wrapper = Utils.wrap("wrapper", null, html);
 
-        this.nodes.name = Utils.wrap("title", null, html);
+        this.nodes.name = Utils.wrap("title", null, wrapper);
 
         // Description
-        this.nodes.desc = Utils.wrap("description", null, html);
+        this.nodes.desc = Utils.wrap("description", null, wrapper);
 
         // Time
-        this.nodes.time = Utils.wrap("time", null, html);
+        this.nodes.time = Utils.wrap("time", null, wrapper);
 
         // Consume
-        this.nodes.resourcesContainer = Utils.wrap("consumption", null, html);
+        this.nodes.resourcesContainer = Utils.wrap("consumption", null, wrapper);
 
         return html;
     },
@@ -124,45 +128,47 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
     refresh: function (resources, data) {
-        this.nodes.name.textContent = Utils.capitalize(data.name);
-        if (data.desc) {
-            this.nodes.desc.innerHTML = data.desc;
-        }
-        else {
-            this.nodes.desc.remove();
-        }
+        if (this.isShow) {
+            this.nodes.name.textContent = Utils.capitalize(data.name);
+            if (data.desc) {
+                this.nodes.desc.html = data.desc;
+            }
+            else {
+                this.nodes.desc.remove();
+            }
 
-        if (data.time) {
-            this.nodes.time.textContent = Utils.formatTime(data.time);
-        }
-        else {
-            this.nodes.time.remove();
-        }
+            if (data.time) {
+                this.nodes.time.textContent = Utils.formatTime(data.time);
+            }
+            else {
+                this.nodes.time.remove();
+            }
 
-        if (Utils.isArray(data.consume)) {
-            data.consume.forEach(function (resource) {
-                var id = resource[1];
-                var resourceNodes = this.resourcesMapper[id];
-                if (!resourceNodes) {
-                    var data = DataManager.get(id);
-                    var wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
-                    wrapperNode.style.order = data.order;
-                    var counterNode = Utils.wrap("counter", null, wrapperNode);
-                    Utils.wrap(null, Resource.toString(data, resource[0]), wrapperNode);
-                    resourceNodes = {
-                        node: wrapperNode,
-                        counter: counterNode
-                    };
-                    this.resourcesMapper[id] = resourceNodes;
-                }
-                var count = (resources.has(id) || 0) && resources.get(id).get();
-                var notEnough = count < resource[0];
-                resourceNodes.counter.textContent = notEnough ? count + "/" : "";
-                resourceNodes.node.classList.toggle("not-enough", notEnough);
-            }, this);
-        }
-        else {
-            this.nodes.resourcesContainer.remove();
+            if (Utils.isArray(data.consume)) {
+                data.consume.forEach(function (resource) {
+                    var id = resource[1];
+                    var resourceNodes = this.resourcesMapper[id];
+                    if (!resourceNodes) {
+                        var data = DataManager.get(id);
+                        var wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
+                        wrapperNode.style.order = data.order;
+                        var counterNode = Utils.wrap("counter", null, wrapperNode);
+                        Utils.wrap(null, Resource.toString(data, resource[0]), wrapperNode);
+                        resourceNodes = {
+                            node: wrapperNode,
+                            counter: counterNode
+                        };
+                        this.resourcesMapper[id] = resourceNodes;
+                    }
+                    var count = (resources.has(id) || 0) && resources.get(id).get();
+                    var notEnough = count < resource[0];
+                    resourceNodes.counter.textContent = notEnough ? count + "/" : "";
+                    resourceNodes.node.classList.toggle("not-enough", notEnough);
+                }, this);
+            }
+            else {
+                this.nodes.resourcesContainer.remove();
+            }
         }
     }
 });

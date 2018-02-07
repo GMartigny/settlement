@@ -16,6 +16,14 @@
 @mainBackgroundColor: #333;
 @shadowColor: rgba(0, 0, 0, .5);
 
+@terminalGreen: #33FFB2;
+@terminalBack: fade(@mainBackgroundColor, 70%);
+
+.colorClickable (@color) {
+    color: @color;
+    box-shadow: 0 0 1em fade(@color, 50%);
+}
+
 @optionsZIndex: 10;
 @tooltipZIndex: 700;
 @particleZIndex: 800;

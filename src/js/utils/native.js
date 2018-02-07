@@ -146,7 +146,7 @@ Object.prototype.swap = function swap () {
  */
 Object.prototype.clone = function clone () {
     var clone;
-    if ([Boolean, Number, String].includes(this.constructor)) {
+    if ([Boolean, Number, String, Function].includes(this.constructor)) {
         clone = this;
     }
     else if (this instanceof Array) {
@@ -174,6 +174,22 @@ HTMLElement.prototype.show = function show () {
 HTMLElement.prototype.hide = function hide () {
     this.setAttribute("aria-hidden", "true");
 };
+
+/**
+ * Set innerHTML using cache
+ */
+Object.defineProperty(HTMLElement.prototype, "html", {
+    cache: "",
+    get: function () {
+        return this.innerHTML;
+    },
+    set: function (html) {
+        if (html !== this.cache) {
+            this.innerHTML = html;
+            this.cache = html;
+        }
+    }
+});
 
 /**
  * Return the computed value for a css property

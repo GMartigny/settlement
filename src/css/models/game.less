@@ -42,5 +42,6 @@
 }
 
 .Popup.wipeIt .yes {
-    background-color: #f6d9d9;
+    @terminalRed: darken(spin(@terminalGreen, 200), 20);
+    .colorClickable(@terminalRed);
 }

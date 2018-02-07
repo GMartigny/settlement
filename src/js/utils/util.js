@@ -16,7 +16,7 @@ var Utils = {
             html.className = CSSClasses;
         }
         if (innerHTML) {
-            html.innerHTML = innerHTML;
+            html.html = innerHTML;
         }
         if (holder) {
             holder.appendChild(html);
@@ -379,7 +379,7 @@ var Utils = {
                 case "ttf":
                     promise = promise.then(function () {
                         var style = document.createElement("style");
-                        style.innerHTML = "@font-face {\n" +
+                        style.html = "@font-face {\n" +
                             "    font-family: " + key + ";\n" +
                             "    src: url(" + url + ") format('" + format + "');\n" +
                             "}";

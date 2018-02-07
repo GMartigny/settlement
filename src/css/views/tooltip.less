@@ -2,32 +2,78 @@
 
 .Tooltip {
 
-    @background: #333;
-
     position: absolute;
     top: -500px;
     left: -300px;
-    background: @background;
     width: 300px;
     max-height: 500px;
-    color: #FFF;
-    padding: 10px;
-    border: 2px outset #CCC;
+    padding: 2px;
+    color: @terminalGreen;
+    background: @terminalBack;
     box-shadow: 4px 4px 10px rgba(0, 0, 0, .5);
     z-index: @tooltipZIndex;
+
+    transform-origin: 0 center;
+
+    @slideTime: .15s;
+    animation: slideOpen linear @slideTime 1;
+    .wrapper {
+        border: 2px solid;
+        padding: 10px;
+
+        opacity: 0;
+        @flicker: 3;
+        animation: flicker linear .06s @slideTime @flicker*2-1 alternate forwards;
+    }
+
+    &@{hidden} {
+        visibility: hidden;
+        animation: none;
+        .wrapper {
+            animation: none;
+        }
+    }
+
+    @keyframes slideOpen {
+        0% {
+            transform: scale3d(0, 1, 1);
+        }
+        to {
+            transform: scale3d(1, 1, 1);
+        }
+    }
+    @keyframes flicker {
+        @fade: .4;
+        0% {
+            opacity: @fade;
+            border-color: fade(@terminalGreen, @fade * 100%);
+        }
+        20%{
+            opacity: @fade;
+            border-color: fade(@terminalGreen, @fade * 100%);
+        }
+        to {
+            opacity: 1;
+            border-color: @terminalGreen;
+        }
+    }
 
     .title {
         font-weight: bold;
     }
 
     .description {
-        color: #F5F5F5;
+        opacity: .8;
         font-style: italic;
         font-size: 12px;
+
+        .quote {
+            color: #D6D6D6;
+        }
     }
 
     .time {
-        float: right;
+        text-align: right;
     }
 
     .consumption {

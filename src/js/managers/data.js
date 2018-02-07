@@ -1115,7 +1115,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "vehicle",
         desc: "This should be enough to hit the road and head towards a better place.",
         time: time.week,
-        energy: 100,
+        energy: 90,
         ifHas: ids.buildings.big.workshop,
         consume: [
             [15, ids.resources.gatherables.uncommon.oil],
@@ -1128,7 +1128,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ],
         asset: "",
         order: 40,
-        log: "It don't looks so well, but sure thing it should runs good."
+        log: "It don't looks so good, but sure thing it should runs well enough."
     });
 
     /** NEAR LOCATIONS **/

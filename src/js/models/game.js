@@ -127,7 +127,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     init: function (media) {
         DataManager.bindAll(this);
 
-        GameController.holder.innerHTML = "";
+        GameController.holder.html = "";
         GameController.holder.appendChild(this.html);
 
         // Start managers
