@@ -136,6 +136,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             positions: media.buildingsData
         });
         LogManager.start(this.logsList);
+        SoundManager.load("dist/audio/sprite.ogg");
 
         this.registerObservers();
 
