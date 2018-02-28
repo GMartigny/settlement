@@ -124,20 +124,6 @@ module.exports = function (grunt) {
             }
         },
 
-        // AUDIO
-        audiosprite: {
-            main: {
-                files: {
-                    [destDir.audio]: sourceDir.audio
-                },
-                options: {
-                    export: "ogg",
-                    gap: 0,
-                    json: srcBase + "json/audiosprite.json"
-                }
-            }
-        },
-
         // RUN
         connect: {
             dev: {
@@ -235,10 +221,9 @@ module.exports = function (grunt) {
     grunt.registerTask("js", ["uglify:dev"]);
     grunt.registerTask("json", ["jsonify"]);
     grunt.registerTask("css", ["less:dev"]);
-    grunt.registerTask("audio", ["audiosprite"]);
 
-    grunt.registerTask("build:dev", ["images", "audio", "js", "json", "css"]);
-    grunt.registerTask("build:prod", ["images", "audio", "uglify:prod", "jsonify", "less:prod"]);
+    grunt.registerTask("build:dev", ["images", "js", "json", "css"]);
+    grunt.registerTask("build:prod", ["images", "uglify:prod", "jsonify", "less:prod"]);
     grunt.registerTask("build", ["build:dev"]);
 
     grunt.registerTask("default", ["build", "connect", "watch"]); // (default)

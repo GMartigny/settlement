@@ -3,7 +3,9 @@
   "version": "0.5.2",
   "description": "A web survival game.",
   "author": "Guillaume Martigny <guillaume.martigny@gmail.com> (https://www.guillaume-martigny.fr)",
-  "contributors": ["Oliver Michas"],
+  "contributors": [
+    "Oliver Michas"
+  ],
   "homepage": "https://gmartigny.github.io/settlement",
   "repository": {
     "type": "git",
@@ -12,7 +14,6 @@
   "bugs": "https://github.com/GMartigny/settlement/issues",
   "license": "MIT",
   "devDependencies": {
-    "audiosprite": "^0.7.0",
     "es6-shim": "^0.35.3",
     "es7-shim": "^6.0.0",
     "grunt": "^1.0.1",
