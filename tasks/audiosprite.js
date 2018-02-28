@@ -14,24 +14,26 @@ module.exports = function (grunt) {
 
         this.files.forEach(function (target) {
 
-            var taskOptions = Object.assign({
-                output: target.dest
-            }, options);
+            if (target.src.length) {
+                var taskOptions = Object.assign({
+                    output: target.dest
+                }, options);
 
-            promise = promise.then(function () {
-                return new Promise(function (resolve, reject) {
-                    audiosprite(target.src, taskOptions, function (err, json) {
-                        if (err) {
-                            reject(err);
-                        }
+                promise = promise.then(function () {
+                    return new Promise(function (resolve, reject) {
+                        audiosprite(target.src, taskOptions, function (err, json) {
+                            if (err) {
+                                reject(err);
+                            }
 
-                        Object.assign(data, json.spritemap);
-                        grunt.log.oklns("Audiosprite " + target.dest + " created.");
+                            Object.assign(data, json.spritemap);
+                            grunt.log.oklns("Audiosprite " + target.dest + " created.");
 
-                        resolve();
+                            resolve();
+                        });
                     });
                 });
-            });
+            }
         });
 
         promise.then(function () {

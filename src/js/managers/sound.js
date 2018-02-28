@@ -23,5 +23,4 @@ var SoundManager = (function () {
         loop: function (spriteName) {
         }
     };
-
 })();
