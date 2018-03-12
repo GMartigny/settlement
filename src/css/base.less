@@ -9,6 +9,12 @@
     height: 100%;
 }
 
+.full (@size: 100%) {
+    position: absolute;
+    width: @size;
+    height: @size;
+}
+
 @resourceListHeight: (16 + 5) * 2px;
 @firstPartHeight: ~'calc(60% -' @resourceListHeight/2 ~')';
 @secondPartHeight: ~'calc(40% -' @resourceListHeight/2 ~')';
@@ -46,21 +52,18 @@ body {
 
 // Game container
 @{container} {
-    width: 100%;
-    height: 100%;
+    .full();
     font-size: 16px;
     background-color: @mainBackgroundColor;
     font-family: Dosis, sans-serif;
 
     &.loading:before {
         content: "";
-        position: absolute;
+        @size: 60px;
+        .full(@size);
         left: 0;
         right: 0;
         margin: 0 auto;
-        @size: 60px;
-        width: @size;
-        height: @size;
         border: 2px solid #FFF;
         border-radius: 50%;
         top: ~'calc(50% -' @size / 2 ~')';
