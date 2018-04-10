@@ -10,9 +10,10 @@ module.exports = function (grunt) {
     require("jit-grunt")(grunt, {
         sprite: "grunt-spritesmith",
         "bump-only": "grunt-bump",
-        "bump-commit": "grunt-bump"
+        "bump-commit": "grunt-bump",
+        uglify: "grunt-contrib-uglify-es",
     })({
-        customTasksDir: "tasks/"
+        customTasksDir: "tasks/",
     });
 
     var srcBase = "src/";

@@ -14,6 +14,7 @@
   "bugs": "https://github.com/GMartigny/settlement/issues",
   "license": "MIT",
   "devDependencies": {
+    "@gmartigny/eslint-config": "^1.1.2",
     "es6-shim": "^0.35.3",
     "es7-shim": "^6.0.0",
     "grunt": "^1.0.1",
@@ -21,7 +22,7 @@
     "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-jasmine": "^1.1.0",
     "grunt-contrib-less": "^1.4.0",
-    "grunt-contrib-uglify": "^3.0.1",
+    "grunt-contrib-uglify-es": "^3.3.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-eslint": "^20.0.0",
     "grunt-gh-pages": "^2.0.0",
