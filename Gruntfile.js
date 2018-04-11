@@ -144,15 +144,15 @@ module.exports = function (grunt) {
             },
             less2css: {
                 files: sourceDir.css,
-                tasks: ["css"]
+                tasks: ["css:dev"]
             },
             jsbuild: {
                 files: sourceDir.js,
-                tasks: ["js"]
+                tasks: ["js:dev"]
             },
             jsonCopy: {
                 files: sourceDir.json,
-                tasks: ["jsonify"]
+                tasks: ["json"]
             }
         },
 
@@ -206,7 +206,7 @@ module.exports = function (grunt) {
             src: {
                 src: sourceDir.js
             },
-            built: {
+            dist: {
                 src: destDir.js
             }
         }
@@ -219,12 +219,14 @@ module.exports = function (grunt) {
     grunt.registerTask("icons", ["sprite:icons"]);
     grunt.registerTask("assets", ["sprite:assets"]);
     grunt.registerTask("images", ["icons", "assets"]);
-    grunt.registerTask("js", ["uglify:dev"]);
+    grunt.registerTask("js:dev", ["uglify:dev"]);
+    grunt.registerTask("js:prod", ["uglify:prod"]);
     grunt.registerTask("json", ["jsonify"]);
-    grunt.registerTask("css", ["less:dev"]);
+    grunt.registerTask("css:dev", ["less:dev"]);
+    grunt.registerTask("css:prod", ["less:prod"]);
 
-    grunt.registerTask("build:dev", ["images", "js", "json", "css"]);
-    grunt.registerTask("build:prod", ["images", "uglify:prod", "jsonify", "less:prod"]);
+    grunt.registerTask("build:dev", ["images", "js:dev", "json", "css:dev"]);
+    grunt.registerTask("build:prod", ["images", "js:prod", "json", "css:prod"]);
     grunt.registerTask("build", ["build:dev"]);
 
     grunt.registerTask("default", ["build", "connect", "watch"]); // (default)
@@ -234,6 +236,7 @@ module.exports = function (grunt) {
     grunt.registerTask("patch", ["bump:patch", "pushtoprod"]);
     grunt.registerTask("release", ["bump:minor", "pushtoprod"]);
 
-    grunt.registerTask("test", ["jasmine:src"]);
-    grunt.registerTask("test:built", ["uglify:dev", "jasmine:built"]);
+    grunt.registerTask("test:src", ["jasmine:src"]);
+    grunt.registerTask("test:built", ["js:dev", "jasmine:dist"]);
+    grunt.registerTask("test", ["test:build"]);
 };
