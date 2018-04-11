@@ -1,5 +1,3 @@
-"use strict";
-
 Number.prototype.equals = function equals (number) {
     return Utils.isNumber(number) && MathsUtils.diff(this, number) <= Number.EPSILON;
 };
@@ -26,7 +24,7 @@ Array.prototype.random = function random () {
  * @return {Number} The array length
  */
 Array.prototype.out = function out (item) {
-    var index = this.indexOf(item);
+    const index = this.indexOf(item);
     if (index >= 0) {
         this.splice(index, 1);
     }
@@ -39,7 +37,7 @@ Array.prototype.out = function out (item) {
  * @return {Number} New array length
  */
 Array.prototype.insert = function insert (array) {
-    return this.push.apply(this, array);
+    return this.push(...array);
 };
 
 /**
@@ -62,10 +60,8 @@ Map.prototype.push = function push (key, value) {
  * @return {Array}
  */
 Map.prototype.getValues = function getValues () {
-    var values = [];
-    this.forEach(function (value) {
-        values.push(value);
-    });
+    const values = [];
+    this.forEach(value => values.push(value));
     return values;
 };
 
@@ -74,22 +70,17 @@ Map.prototype.getValues = function getValues () {
  * @return {Array}
  */
 Map.prototype.getKeys = function getKeys () {
-    var keys = [];
-    this.forEach(function (value, key) {
-        keys.push(key);
-    });
+    const keys = [];
+    this.forEach((value, key) => keys.push(key));
     return keys;
 };
 
 /**
  * Browse all item in an object
  * @param {Function} action - A function called on each item
- * @param {Object} [thisArg] - A context for the callback
  */
-Object.prototype.browse = function browse (action, thisArg) {
-    Object.keys(this).forEach(function (key) {
-        action.call(thisArg, this[key], key, this);
-    }, this);
+Object.prototype.browse = function browse (action) {
+    Object.keys(this).forEach(key => action(this[key], key, this));
 };
 
 /**
@@ -104,27 +95,22 @@ Object.prototype.values = function values () {
  * Turn a deep object into a simple array
  * @return {Array}
  */
-Object.prototype.flatten = function () {
-    var res = [];
-    this.deepBrowse(function (value) {
-        res.push(value);
-    });
+Object.prototype.flatten = function flatten () {
+    const res = [];
+    this.deepBrowse(value => res.push(value));
     return res;
 };
 
 /**
  * Browse all item in a nested tree
  * @param {Function} action - A function called on each item
- * @param {Object} [thisArg] - A context for the callback
  */
-Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
+Object.prototype.deepBrowse = function deepBrowse (action) {
     if (["Object", "Array"].includes(this.constructor.name)) {
-        this.browse(function (value) {
-            value.deepBrowse(action, thisArg);
-        });
+        this.browse(value => value.deepBrowse(action));
     }
     else {
-        action.call(thisArg, this);
+        action(this.valueOf());
     }
 };
 
@@ -133,10 +119,8 @@ Object.prototype.deepBrowse = function deepBrowse (action, thisArg) {
  * @return {Object}
  */
 Object.prototype.swap = function swap () {
-    var res = {};
-    this.browse(function (value, key) {
-        res[value] = key;
-    });
+    const res = {};
+    this.browse((value, key) => res[value] = key);
     return res;
 };
 
@@ -145,20 +129,20 @@ Object.prototype.swap = function swap () {
  * @return {*}
  */
 Object.prototype.clone = function clone () {
-    var clone;
+    let result;
     if ([Boolean, Number, String, Function].includes(this.constructor)) {
-        clone = this;
+        result = this;
     }
     else if (this instanceof Array) {
-        clone = this.slice();
+        result = this.slice();
     }
     else if (this instanceof Object) {
-        clone = Object.assign({}, this);
+        result = Object.assign({}, this);
     }
     else {
         throw new TypeError("Improbable source type");
     }
-    return clone;
+    return result;
 };
 
 /**
@@ -180,15 +164,15 @@ HTMLElement.prototype.hide = function hide () {
  */
 Object.defineProperty(HTMLElement.prototype, "html", {
     cache: "",
-    get: function () {
+    get () {
         return this.innerHTML;
     },
-    set: function (html) {
+    set (html) {
         if (html !== this.cache) {
             this.innerHTML = html;
             this.cache = html;
         }
-    }
+    },
 });
 
 /**
@@ -217,13 +201,12 @@ Function.prototype.extends = function _extends (parent, name, values) {
         this.prototype.modelName = name;
     }
     if (values) {
-        var self = this;
-        values.browse(function (value, key) {
+        values.browse((value, key) => {
             // Save parent inherited function with leading "_"
-            if (self.prototype[key]) {
-                self.prototype["_" + key] = self.prototype[key];
+            if (this.prototype[key]) {
+                this.prototype[`_${key}`] = this.prototype[key];
             }
-            self.prototype[key] = value;
+            this.prototype[key] = value;
         });
     }
 };
@@ -233,24 +216,20 @@ Function.prototype.extends = function _extends (parent, name, values) {
  * @param {Object} values - Set of key/values for this class
  */
 Function.prototype.static = function _static (values) { // TODO: factorise with Function.prototype.extends
-    var self = this;
-    values.browse(function (value, key) {
-        if (self[key]) {
-            self["_" + key] = self[key];
+    values.browse((value, key) => {
+        if (this[key]) {
+            this[`_${key}`] = this[key];
         }
-        self[key] = value;
+        this[key] = value;
     });
 };
 
 /**
  * Put this function call at the end of the call-stack
  * @param {*} [ctx] - Context for the call
+ * @param {...*} [params] - More params passed to the function call
  * @return {undefined} /!\ Not the result of the function's call
  */
-Function.prototype.defer = function defer (ctx) {
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    requestAnimationFrame(function deferFunctionCall () {
-        self.apply(ctx, args);
-    });
+Function.prototype.defer = function defer (ctx, ...params) {
+    requestAnimationFrame(() => this.apply(ctx, params));
 };

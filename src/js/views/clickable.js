@@ -1,4 +1,3 @@
-"use strict";
 /* @exported Clickable */
 
 /**
@@ -21,8 +20,8 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
 
         html.textContent = this.text;
         html.tabIndex = 0;
@@ -35,14 +34,13 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * @param {Number} consumed - Already consumed time in the animation
      * @param {Function} action - Function to call when reach timeout
      */
-    startCoolDown: function (duration, consumed, action) {
-        var self = this;
-        this.html.style.animationDuration = duration + "ms";
-        this.html.style.animationDelay = (-consumed) + "ms";
+    startCoolDown (duration, consumed, action) {
+        this.html.style.animationDuration = `${duration}ms`;
+        this.html.style.animationDelay = `${-consumed}ms`;
         this.html.classList.add("cooldown");
 
-        this.timeout = TimerManager.timeout(function clickableTimeout () {
-            self.endCoolDown();
+        this.timeout = TimerManager.timeout(() => {
+            this.endCoolDown();
             action();
         }, (duration - consumed));
     },
@@ -50,7 +48,7 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Define the action for the button
      * @param {Function} action - Any function to execute on click
      */
-    setAction: function (action) {
+    setAction (action) {
         if (Utils.isFunction(action)) {
             this.html.addEventListener("click", action, true);
         }
@@ -59,13 +57,13 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Tell if this clickable's cooldown is running
      * @return {Boolean}
      */
-    isRunning: function () {
+    isRunning () {
         return Boolean(this.timeout);
     },
     /**
      * End the cool-down animation
      */
-    endCoolDown: function () {
+    endCoolDown () {
         if (this.isRunning()) {
             TimerManager.clear(this.timeout);
             this.timeout = null;
@@ -79,17 +77,17 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Toggle its disabled state
      * @param {Boolean} enable - Set to true to enable it and false to disable
      */
-    toggle: function (enable) {
+    toggle (enable) {
         this.html.classList.toggle("disabled", !enable);
-        var tabIndexAccessible = 0;
-        var tabIndexDisabled = -1;
+        const tabIndexAccessible = 0;
+        const tabIndexDisabled = -1;
         this.html.tabIndex = enable ? tabIndexAccessible : tabIndexDisabled;
     },
     /**
      * Change the clickable text
      * @param {String} text - Any string
      */
-    setText: function (text) {
+    setText (text) {
         this.text = text;
         this.html.textContent = text;
     },
@@ -97,21 +95,21 @@ Clickable.extends(View, "Clickable", /** @lends Clickable.prototype */ {
      * Return elapsed time of the cooldown
      * @return {Number}
      */
-    getElapsed: function () {
+    getElapsed () {
         return TimerManager.getElapsed(this.timeout);
     },
     /**
      * Return remaining time in the cooldown
      * @return {Number}
      */
-    getRemaining: function () {
+    getRemaining () {
         return TimerManager.getRemaining(this.timeout);
     },
     /**
      * Define this clickable as a drop-down of other clickable
      * @param {Boolean} itIs - True to set it, false to reverse
      */
-    setAsDropdown: function (itIs) {
+    setAsDropdown (itIs) {
         this.html.classList.toggle("dropdown", itIs);
-    }
+    },
 });

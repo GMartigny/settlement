@@ -1,4 +1,3 @@
-"use strict";
 /* exported peopleFactory People */
 
 /**
@@ -21,7 +20,7 @@ function People (name, gender) {
 
     this.stats = {
         idle: 0,
-        age: 0
+        age: 0,
     };
     this.perk = null;
 
@@ -32,29 +31,29 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Initialise object
      * @private
      */
-    init: function () {
+    init () {
         this.setPronouns();
         // Tooltip on health bar
         new Tooltip(this.lifeBar.html, {
             name: "Health",
-            desc: "The first thing anyone want is a good health."
+            desc: "The first thing anyone want is a good health.",
         });
         // Tooltip on energy bar
         new Tooltip(this.energyBar.html, {
             name: "Energy",
-            desc: "Drained faster when busy or hungry."
+            desc: "Drained faster when busy or hungry.",
         });
     },
     /**
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
 
         this.nameNode = Utils.wrap("name", Utils.capitalize(this.name), html);
 
-        var lifeBarWarningThreshold = 25;
+        const lifeBarWarningThreshold = 25;
         this.lifeBar = new Bar("life", "#f52158", lifeBarWarningThreshold);
         html.appendChild(this.lifeBar.html);
 
@@ -73,22 +72,20 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {Number} elapse - Elapse tick since last call
      * @param {Object} flags - Game flags
      */
-    refresh: function (resources, elapse, flags) {
-        this.actions.forEach(function (action) {
-            action.refresh(resources, flags);
-        });
+    refresh (resources, elapse, flags) {
+        this.actions.forEach(action => action.refresh(resources, flags));
         if (flags.settled) {
             this.stats.age += elapse;
             this.stats.idle += elapse;
-            var lackingDrainRatio = 30;
-            var energyLose = this.energyDrain + flags.starving * lackingDrainRatio;
+            const lackingDrainRatio = 30;
+            const energyLose = this.energyDrain + (flags.starving * lackingDrainRatio);
             this.updateEnergy(-elapse * energyLose); // getting tired
-            var lifeLose = 0;
+            let lifeLose = 0;
             if (flags.thirsty) { // drying
                 lifeLose += flags.thirsty * lackingDrainRatio;
             }
             // If an acid-rain is running and busy outside
-            var busyWith = DataManager.get(this.busy);
+            const busyWith = DataManager.get(this.busy);
             if (flags.incidents.includes(DataManager.ids.incidents.medium.acidRain)
                 && busyWith && busyWith.isOut) {
                 lifeLose += DataManager.get(DataManager.ids.incidents.medium.acidRain).lifeLose;
@@ -99,7 +96,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Define people pronouns
      */
-    setPronouns: function () {
+    setPronouns () {
         switch (this.gender) {
             case "female":
                 this.common = "woman";
@@ -128,7 +125,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {ID} [actionId=false] - Current action's id or null to set it free
      * @param {Number} [energyDrain] - How much energy to drain per refresh
      */
-    setBusy: function (actionId, energyDrain) {
+    setBusy (actionId, energyDrain) {
         this.busy = actionId || false;
         if (actionId) {
             if (actionId !== DataManager.ids.actions.sleep) {
@@ -145,7 +142,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
     /**
      * Free from busy state
      */
-    finishAction: function () {
+    finishAction () {
         this.rollForPerk(this.busy);
         this.setBusy();
     },
@@ -154,8 +151,9 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {Number} amount - Amount to apply
      * @return {Number} Current energy
      */
-    updateEnergy: function (amount) {
-        var value = this.energy += amount;
+    updateEnergy (amount) {
+        this.energy += amount;
+        let value = this.energy;
 
         if (value > People.MAX_BAR_VALUE) {
             value = People.MAX_BAR_VALUE;
@@ -167,13 +165,13 @@ People.extends(View, "People", /** @lends People.prototype */ {
 
         this.setEnergy(value);
 
-        return this.energy;
+        return value;
     },
     /**
      * Set energy to a new value
      * @param {Number} value - Any number between 0 and 100
      */
-    setEnergy: function (value) {
+    setEnergy (value) {
         this.energy = value;
         this.energyBar.set(value);
     },
@@ -181,7 +179,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Test if tired
      * @return {Boolean}
      */
-    isTired: function () {
+    isTired () {
         return this.energy.equals(0) || this.energy < 0;
     },
     /**
@@ -189,8 +187,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {Number} amount - Amount to apply
      * @return {Number} Current life
      */
-    updateLife: function (amount) {
-        var value = this.life + amount;
+    updateLife (amount) {
+        let value = this.life + amount;
 
         if (value > People.MAX_BAR_VALUE) {
             value = People.MAX_BAR_VALUE;
@@ -204,7 +202,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Set life to a new value (and die if needed be)
      * @param {Number} value - Any number between 0 and 100
      */
-    setLife: function (value) {
+    setLife (value) {
         this.life = value;
         this.lifeBar.set(value);
     },
@@ -212,59 +210,57 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Add some actions
      * @param {ID|Array<ID>} actionsId - One or more actions to add
      */
-    addAction: function (actionsId) {
+    addAction (actionsId) {
         if (!Utils.isArray(actionsId)) {
             actionsId = [actionsId];
         }
 
-        actionsId.forEach(function (id) {
+        actionsId.forEach((id) => {
             if (!this.actions.has(id)) {
-                var action = new Action(id, this);
+                const action = new Action(id, this);
                 this.actions.push(action);
                 this.actionList.appendChild(action.html);
             }
-        }, this);
+        });
     },
     /**
      * Lock some actions
      * @param {ID|Array<ID>} actionsId - One or more actions ID to lock
      */
-    lockAction: function (actionsId) {
+    lockAction (actionsId) {
         if (!Utils.isArray(actionsId)) {
             actionsId = [actionsId];
         }
 
-        actionsId.forEach(function (id) {
-            var action = this.actions.get(id);
+        actionsId.forEach((id) => {
+            const action = this.actions.get(id);
             if (action) {
                 action.lock();
                 this.actions.delete(id);
             }
-        }, this);
+        });
     },
     /**
      * Try to obtains a perk
      * @param {ID} actionId - Action's data
      * @return {Boolean} true if got perk
      */
-    rollForPerk: function (actionId) {
-        var gotPerk = false;
+    rollForPerk (actionId) {
+        let gotPerk = false;
         if (!this.perk) {
-            var self = this;
-            var perksIdList = DataManager.ids.perks;
             // browse all perks
-            perksIdList.deepBrowse(function (perkId) {
+            DataManager.ids.perks.deepBrowse((perkId) => {
                 // perk not already used
                 if (!Perk.isUsed(perkId)) {
-                    var perkData = DataManager.get(perkId);
+                    const perkData = DataManager.get(perkId);
                     // perk is compatible
-                    var actionsIds = perkData.actions;
+                    const actionsIds = perkData.actions;
                     if (!actionsIds || actionsIds.includes(actionId)) {
-                        if (!Utils.isFunction(perkData.condition) || perkData.condition(self)) {
-                            var done = 0;
+                        if (!Utils.isFunction(perkData.condition) || perkData.condition(this)) {
+                            let done = 0;
                             if (actionsIds) {
-                                done = actionsIds.reduce(function (sum, id) {
-                                    var action = self.actions.get(id);
+                                done = actionsIds.reduce((sum, id) => {
+                                    const action = this.actions.get(id);
                                     return sum + (action ? action.repeated : 0);
                                 }, 0) / (perkData.iteration || 0);
                             }
@@ -275,8 +271,8 @@ People.extends(View, "People", /** @lends People.prototype */ {
                             // perk dice roll
                             if (done && MathsUtils.random() < done) {
                                 // perk is unlocked
-                                self.gainPerk(perkId);
-                                MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, self);
+                                this.gainPerk(perkId);
+                                MessageBus.notify(MessageBus.MSG_TYPES.GAIN_PERK, this);
                                 gotPerk = true;
                             }
                         }
@@ -290,7 +286,7 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Add a perk
      * @param {ID} perkId - The perk data
      */
-    gainPerk: function (perkId) {
+    gainPerk (perkId) {
         this.perk = new Perk(perkId, this);
         this.nameNode.appendChild(this.perk.html);
     },
@@ -299,23 +295,23 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * @param {ID} perkId - A perk id
      * @return {Boolean}
      */
-    hasPerk: function (perkId) {
+    hasPerk (perkId) {
         return this.perk && this.perk.getId() === perkId;
     },
     /**
      * Define if this one's dead
      * @return {Boolean}
      */
-    isDead: function () {
+    isDead () {
         return this.life < 0;
     },
     /**
      * Kill it for good
      */
-    die: function () {
+    die () {
         MessageBus.notify(MessageBus.MSG_TYPES.LOOSE_SOMEONE, this);
 
-        this.actions.forEach(function (action) {
+        this.actions.forEach((action) => {
             action.cancel();
             action.tooltip.remove();
         });
@@ -326,23 +322,23 @@ People.extends(View, "People", /** @lends People.prototype */ {
      * Get this data in plain object
      * @return {Object}
      */
-    toJSON: function () {
-        var json = {
+    toJSON () {
+        const json = {
             nam: this.name,
             gnd: this.gender,
             lif: this.life,
             ene: this.energy,
             sts: this.stats,
-            act: this.actions.getValues()
+            act: this.actions.getValues(),
         };
         if (this.perk) {
             json.prk = this.perk.getId();
         }
         return json;
-    }
+    },
 });
 
-People.static( /** @lends People */ {
+People.static(/** @lends People */ {
     LST_ID: "peopleList",
     MAX_BAR_VALUE: 100,
     /**
@@ -350,49 +346,49 @@ People.static( /** @lends People */ {
      * @param {Number} [amount=1] - Number of people to create
      * @return {Promise}
      */
-    peopleFactory: function (amount) {
-        amount = amount || 1;
+    peopleFactory (amount = 1) {
         // We don't want to spam the webservice when in dev
         if (IS_DEV) {
-            var res = [];
-            var botNameLength = 3;
-            for (var i = 0; i < amount; ++i) {
-                var code = "Bot-" + Utils.randomStr(botNameLength).toUpperCase();
+            const res = [];
+            const botNameLength = 3;
+            for (let i = 0; i < amount; ++i) {
+                const code = `Bot-${Utils.randomStr(botNameLength).toUpperCase()}`;
                 res.push(new People(code));
             }
             return Promise.resolve(res);
         }
-        else {
-            return this.randomName(amount).then(function (response) {
-                var people = [];
-                response.results.forEach(function (data) {
-                    var name = Utils.capitalize(data.name.first)/* + " " + Utils.capitalize(data.name.last)*/;
-                    var person = new People(name, data.gender);
-                    people.push(person);
-                });
-                return people;
+
+        return this.randomName(amount).then((response) => {
+            const people = [];
+            response.results.forEach((data) => {
+                const name = Utils.capitalize(data.name.first)/* + " " + Utils.capitalize(data.name.last) */;
+                const person = new People(name, data.gender);
+                people.push(person);
             });
-        }
+            return people;
+        });
     },
     /**
      * Return a promise for a random name
      * @param {Number} [amount=1] - Number of name to get
      * @return {Promise}
      */
-    randomName: function (amount) {
-        return new Promise(function (resolve, reject) {
-            var baseUrl = "https://randomuser.me/api?inc=gender,name";
-            var countries = ["AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US"];
-            var url = baseUrl + "&nat=" + countries.join(",") + "&noinfo&results=" + (amount || 1);
+    randomName (amount = 1) {
+        return new Promise((resolve, reject) => {
+            const baseUrl = "https://randomuser.me/api?inc=gender,name";
+            const countries = [
+                "AU", "BR", "CA", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "NL", "NZ", "TR", "US",
+            ];
+            const url = `${baseUrl}&nat=${countries.join(",")}&noinfo&results=${amount}`;
 
-            fetch(url).then(function (response) {
+            fetch(url).then((response) => {
                 if (response.ok) {
                     response.json().then(resolve);
                 }
                 else {
-                    reject(new URIError("[" + response.status + "] " + url + " " + response.statusText));
+                    reject(new URIError(`[${response.status}] ${url} ${response.statusText}`));
                 }
             });
         });
-    }
+    },
 });

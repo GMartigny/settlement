@@ -1,4 +1,3 @@
-"use strict";
 /* exported Resource */
 
 /**
@@ -20,7 +19,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @param {Number} count - The resource amount
      * @private
      */
-    init: function (count) {
+    init (count) {
         if (count) {
             this.update(count);
         }
@@ -30,12 +29,12 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
 
         this.counter = Utils.wrap("counter", "1", html);
 
-        Utils.wrap("icon icon-" + this.data.icon, null, html);
+        Utils.wrap(`icon icon-${this.data.icon}`, null, html);
 
         html.style.order = this.data.order;
 
@@ -45,7 +44,7 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * Loop function called every game tick
      * @param {Map} [resources] - Game's resources
      */
-    refresh: function (resources) {
+    refresh (resources) {
         this.counter.textContent = this.get();
         if (Utils.isArray(this.data.consume) && resources) {
             this.tooltip.refresh(resources, this.data);
@@ -55,18 +54,18 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * Change resource amount
      * @param {Number} amount - Diff to new value
      */
-    update: function (amount) {
-        var prevAmount = this.count;
-        this.set(this.count + MathsUtils.toNumber(amount, 0));
+    update (amount) {
+        const prevAmount = this.count;
+        this.set(this.count + MathsUtils.toNumber(amount));
 
         if (MathsUtils.floor(prevAmount) !== MathsUtils.floor(this.count) && amount < 0) {
             this.animate("less");
         }
     },
-    animate: function (change) {
+    animate (change) {
         if (!this.html.classList.contains(change)) {
             this.html.classList.add(change);
-            var animationDuration = 700;
+            const animationDuration = 700;
             setTimeout(this.html.classList.remove.bind(this.html.classList, change), animationDuration);
         }
     },
@@ -74,14 +73,14 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * Return this resource amount
      * @return {Number}
      */
-    get: function () {
+    get () {
         return MathsUtils.floor(this.count);
     },
     /**
      * Define this resource amount
      * @param {Number} value - A new amount
      */
-    set: function (value) {
+    set (value) {
         this.count = value;
         if (this.count < 0) {
             throw new RangeError("Resources count can't be negative");
@@ -93,23 +92,23 @@ Resource.extends(Model, "Resource", /** @lends Resource.prototype */ {
      * @param {Number} amount - Amount needed
      * @return {boolean}
      */
-    has: function (amount) {
+    has (amount) {
         return this.count > amount || this.count.equals(amount);
     },
     /**
      * Get this data in plain object
      * @return {Object}
      */
-    toJSON: function () {
+    toJSON () {
         return [this.count, this.getId()];
     },
     /**
      * Format to string
      * @return {String}
      */
-    toString: function () {
+    toString () {
         return Resource.toString(this.data, this.count);
-    }
+    },
 });
 
 Resource.static(/** @lends Resource */{
@@ -120,13 +119,13 @@ Resource.static(/** @lends Resource */{
      * @param {Number} [count] - The amount, ignored if not defined
      * @return {String}
      */
-    toString: function (data, count) {
-        var str = "";
+    toString (data, count) {
+        let str = "";
         if (!Utils.isUndefined(count)) {
-            str += count + " ";
+            str += `${count} `;
         }
         if (data.icon) {
-            str += Resource.iconAsString(data.icon) + " ";
+            str += `${Resource.iconAsString(data.icon)} `;
         }
         str += Utils.pluralize(data.name, count).bold();
         return str;
@@ -136,7 +135,7 @@ Resource.static(/** @lends Resource */{
      * @param {String} iconName - An icon name
      * @return {String}
      */
-    iconAsString: function (iconName) {
-        return Utils.wrap("icon icon-small-" + iconName).outerHTML;
-    }
+    iconAsString (iconName) {
+        return Utils.wrap(`icon icon-small-${iconName}`).outerHTML;
+    },
 });

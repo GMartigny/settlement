@@ -1,4 +1,3 @@
-"use strict";
 /* exported Action */
 
 /**
@@ -39,8 +38,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
 
         this.clickable = new Clickable("name disabled animated", Utils.capitalize(this.data.name));
         html.appendChild(this.clickable.html);
@@ -72,16 +71,16 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Display the options list
      */
-    showOptions: function () {
+    showOptions () {
         this.optionsWrapper.show();
-        var position = this.html.getBoundingClientRect();
-        this.optionsWrapper.style.top = (position.top + position.height) + "px";
-        this.optionsWrapper.style.left = position.left + "px";
+        const position = this.html.getBoundingClientRect();
+        this.optionsWrapper.style.top = `${position.top + position.height}px`;
+        this.optionsWrapper.style.left = `${position.left}px`;
     },
     /**
      * Hide the options list
      */
-    hideOptions: function () {
+    hideOptions () {
         this.optionsWrapper.hide();
         this.optionsWrapper.style.left = "";
     },
@@ -89,7 +88,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Initialise object
      * @private
      */
-    init: function () {
+    init () {
         Action.timeAndEnergyFallback(this.data);
 
         this.tooltip = new Tooltip(this.clickable.html, this.data);
@@ -99,24 +98,23 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * If needed, create and maintain options for this action
      */
-    manageOptions: function () {
+    manageOptions () {
         if (Utils.isFunction(this.data.options)) {
             if (!this.options) {
                 this.options = new Map();
             }
-            var newOptions = this.data.options(this);
+            const newOptions = this.data.options(this);
             // Looks for options not available anymore
-            this.options.forEach(function (option) {
+            this.options.forEach((option) => {
                 if (!newOptions.includes(option.getId())) {
                     option.lock();
                 }
             });
             // Add new options
-            var option, id;
-            for (var i = 0, l = newOptions.length; i < l; ++i) {
-                id = newOptions[i];
+            for (let i = 0, l = newOptions.length; i < l; ++i) {
+                const id = newOptions[i];
                 if (!this.options.has(id)) {
-                    option = new Action(id, this.owner, this);
+                    const option = new Action(id, this.owner, this);
                     this.options.push(option);
                     this.optionsWrapper.appendChild(option.html);
                 }
@@ -128,7 +126,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Map} resources - Game resources
      * @param {Object} flags - Game flags
      */
-    refresh: function (resources, flags) {
+    refresh (resources, flags) {
         this.locked = (this.owner.isTired() && this.data.energy > 0) || // is tired and demand energy
             (this.data.isOut && flags.incidents.includes(DataManager.ids.incidents.easy.sandstorm)) || // is outside and a sand-storm is running
             (this.parentAction && this.parentAction.locked); // its parent action is locked
@@ -137,18 +135,16 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // check consumption
         if (Utils.isArray(this.data.consume) && !this.locked) {
-            this.data.consume.forEach(function (r) {
-                var id = r[1];
-                if (!resources.has(id) || !resources.get(id).has(r[0])) {
+            this.data.consume.forEach((couple) => {
+                const id = couple[1];
+                if (!resources.has(id) || !resources.get(id).has(couple[0])) {
                     this.locked = true;
                 }
             }, this);
         }
         this.manageOptions();
         if (this.options) {
-            this.options.forEach(function (option) {
-                option.refresh(resources, flags);
-            });
+            this.options.forEach(option => option.refresh(resources, flags));
         }
 
         this.clickable.toggle(!this.locked);
@@ -157,9 +153,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Player click on action
      * @param {ID} [optionId] - The chosen option's id
      */
-    click: function (optionId) {
+    click (optionId) {
         if (!this.owner.busy && !this.locked) {
-
             if (this.parentAction) {
                 this.parentAction.click(this.getId());
             }
@@ -168,7 +163,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
                 // Merge data from this and selected option
                 this.chosenOptionId = optionId;
-                var data = this.mergeWithOption(optionId);
+                const data = this.mergeWithOption(optionId);
 
                 // Use resources
                 if (Utils.isArray(data.consume)) {
@@ -182,7 +177,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
                 ++this.repeated;
 
-                var duration = this.defineDuration(data);
+                const duration = this.defineDuration(data);
 
                 this.energyDrain = data.energy / duration;
 
@@ -195,8 +190,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {ActionData} data - This action's data
      * @return {Number} In "in game" hours
      */
-    defineDuration: function (data) {
-        var duration = (data.time || 0);
+    defineDuration (data) {
+        let duration = (data.time || 0);
 
         if (data.timeDelta) {
             duration += MathsUtils.random(-data.timeDelta, data.timeDelta);
@@ -211,9 +206,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {Number} duration - Time until the action resolution (ms)
      * @param {Number} [consumed=0] - Time already consumed
      */
-    start: function (duration, consumed) {
-        consumed = consumed || 0;
-        var totalActionDuration = duration + consumed;
+    start (duration, consumed = 0) {
+        const totalActionDuration = duration + consumed;
         this.owner.setBusy(this.getId(), this.energyDrain);
         this.clickable.startCoolDown(totalActionDuration, consumed, this.end.bind(this));
 
@@ -224,13 +218,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {ID} [optionId] - Any ID for the chosen option
      * @return {ActionData}
      */
-    mergeWithOption: function (optionId) {
-        var merge = {};
-        var data = this.data;
-        var option = optionId ? DataManager.get(optionId) : {};
+    mergeWithOption (optionId) {
+        const merge = {};
+        const option = optionId ? DataManager.get(optionId) : {};
 
-        var build = {};
-        var buildId = option.build || data.build;
+        let build = {};
+        let buildId = option.build || this.data.build;
 
         if (buildId) {
             if (buildId === DataManager.ids.option) {
@@ -244,23 +237,23 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         merge.build = buildId;
         merge.optionId = optionId;
 
-        var fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy", "giveSpan"]; // Others
-        var concat = ["consume", "give", "giveList", "unlock", "lock", "unlockForAll", "lockForAll"]; // Array
-        var mix = []; // Object
+        const fallback = ["name", "desc", "log", "time", "timeDelta", "timeBonus", "energy", "giveSpan"]; // Native
+        const concat = ["consume", "give", "giveList", "unlock", "lock", "unlockForAll", "lockForAll"]; // Array
+        const mix = []; // Object
 
-        fallback.forEach(function (prop) {
-            merge[prop] = build[prop] || option[prop] || data[prop];
+        fallback.forEach((prop) => {
+            merge[prop] = build[prop] || option[prop] || this.data[prop];
         });
 
-        concat.forEach(function (prop) {
-            if (data[prop] || option[prop] || build[prop]) {
-                merge[prop] = (data[prop] || []).concat(option[prop] || []).concat(build[prop] || []);
+        concat.forEach((prop) => {
+            if (this.data[prop] || option[prop] || build[prop]) {
+                merge[prop] = (this.data[prop] || []).concat(option[prop] || []).concat(build[prop] || []);
             }
         });
 
-        mix.forEach(function (prop) {
-            if (build[prop] || data[prop] || option[prop]) {
-                merge[prop] = Object.assign({}, (data[prop] || {}), (option[prop] || {}), (build[prop] || {}));
+        mix.forEach((prop) => {
+            if (build[prop] || this.data[prop] || option[prop]) {
+                merge[prop] = Object.assign({}, (this.data[prop] || {}), (option[prop] || {}), (build[prop] || {}));
             }
         });
 
@@ -271,14 +264,14 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Resolve the end of an action
      */
-    end: function () {
+    end () {
         this.html.classList.remove(Action.RUNNING_CLASS);
 
-        var effect = {
+        const effect = {
             action: this.data,
-            people: this.owner
+            people: this.owner,
         };
-        var data = this.mergeWithOption(this.chosenOptionId);
+        const data = this.mergeWithOption(this.chosenOptionId);
         this.chosenOptionId = null;
 
         this.owner.finishAction();
@@ -288,13 +281,13 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             this.data.effect(this, data, effect);
         }
 
-        var result = this.resolveAction(effect, data);
+        const result = this.resolveAction(effect, data);
 
         // Give
         if (result.give.length) {
             MessageBus.notify(MessageBus.MSG_TYPES.GIVE, {
                 give: result.give,
-                initiator: this
+                initiator: this,
             });
         }
 
@@ -327,31 +320,30 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * @param {ActionData} data - Data of action + option
      * @return {{give: Array, unlock: {forAll: Array, forOne: Array}, lock: {forAll: Array, forOne: Array}}}
      */
-    resolveAction: function (effect, data) {
-        var result = {
+    resolveAction (effect, data) {
+        const result = {
             give: [],
             unlock: {
                 forAll: [],
-                forOne: []
+                forOne: [],
             },
             lock: {
                 forAll: [],
-                forOne: []
+                forOne: [],
             },
-            log: ""
+            log: "",
         };
 
         // Give
         // The first gather action is fixed to ensure 1 possible crafting and a good start
-        var isFirstGather = this.getId() === DataManager.ids.actions.gather &&
+        const isFirstGather = this.getId() === DataManager.ids.actions.gather &&
             this.repeated === 1 &&
             this.owner.hasPerk(DataManager.ids.perks.first);
         if (isFirstGather) {
-            var gatherables = DataManager.ids.resources.gatherables;
             result.give = [
-                [2, gatherables.common.rock],
-                [1, gatherables.uncommon.bolts],
-                [1, gatherables.rare.medication]
+                [2, DataManager.ids.resources.gatherables.common.rock],
+                [1, DataManager.ids.resources.gatherables.uncommon.bolts],
+                [1, DataManager.ids.resources.gatherables.rare.medication],
             ];
         }
         else if (Utils.isArray(data.give)) {
@@ -361,7 +353,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             result.give = Utils.randomizeMultiple(data.giveList, data.giveSpan);
         }
         // Replace option token with chosen option
-        result.give.forEach(function (couple, index, array) {
+        result.give.forEach((couple, index, array) => {
             if (couple[1] === DataManager.ids.option) {
                 array[index] = [couple[0], data.optionId];
             }
@@ -369,18 +361,18 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
 
         // Unlock
         if (Utils.isArray(this.data.unlockAfter)) {
-            this.data.unlockAfter.forEach(function (couple) {
+            this.data.unlockAfter.forEach((couple) => {
                 if (this.repeated > couple[0]) {
                     result.unlock.forOne.push(couple[1]);
                     result.lock.forOne.push(this.getId());
                 }
-            }, this);
+            });
         }
         if (Utils.isArray(data.unlock)) {
-            var unlock = data.unlock.filter(function (id) {
-                var action = DataManager.get(id);
+            const unlock = data.unlock.filter((id) => {
+                const action = DataManager.get(id);
                 return !action.condition || action.condition(this);
-            }, this);
+            });
             // Unique actions have to unlock for everyone
             if (this.data.unique) {
                 result.unlock.forAll.insert(unlock);
@@ -390,19 +382,19 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             }
         }
         if (Utils.isArray(data.unlockForAll)) {
-            result.unlock.forAll.insert(data.unlockForAll.filter(function (id) {
-                var action = DataManager.get(id);
+            result.unlock.forAll.insert(data.unlockForAll.filter((id) => {
+                const action = DataManager.get(id);
                 return !action.condition || action.condition(this);
-            }, this));
+            }));
         }
 
         // Lock
         if (Utils.isArray(this.data.lockAfter)) {
-            this.data.lockAfter.forEach(function (couple) {
+            this.data.lockAfter.forEach((couple) => {
                 if (this.repeated > couple[0]) {
                     result.lock.forOne.push(couple[1]);
                 }
-            }, this);
+            });
         }
         if (Utils.isArray(data.lock)) {
             // Unique actions have to lock for everyone
@@ -430,7 +422,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
         effect.give = Utils.formatArray(result.give);
 
         // Log
-        var rawLog = Utils.isFunction(data.log) ? data.log(effect, this) : data.log || "";
+        const rawLog = Utils.isFunction(data.log) ? data.log(effect, this) : data.log || "";
         result.log = LogManager.personify(rawLog, effect);
 
         return result;
@@ -438,14 +430,12 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Lock this action
      */
-    lock: function () {
+    lock () {
         this.cancel();
         this.tooltip.remove();
 
         if (this.options) {
-            this.options.forEach(function (option) {
-                option.lock();
-            });
+            this.options.forEach(option => option.lock());
         }
         else if (this.parentAction) {
             this.parentAction.options.delete(this.getId());
@@ -456,7 +446,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
     /**
      * Cancel this action
      */
-    cancel: function () {
+    cancel () {
         if (this.clickable.isRunning()) {
             this.owner.setBusy();
             this.html.classList.remove(Action.RUNNING_CLASS);
@@ -467,8 +457,8 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
      * Get this data in plain object
      * @return {Object}
      */
-    toJSON: function () {
-        var json = this._toJSON();
+    toJSON () {
+        const json = this._toJSON();
         json.rpt = this.repeated;
         if (this.clickable.isRunning()) {
             json.elp = this.clickable.getElapsed();
@@ -477,7 +467,7 @@ Action.extends(Model, "Action", /** @lends Action.prototype */ {
             json.opi = this.chosenOptionId;
         }
         return json;
-    }
+    },
 });
 
 Action.static(/** @lends Action */{
@@ -485,11 +475,11 @@ Action.static(/** @lends Action */{
      * Set time and energy according to Action fallback rule (time is 0 if omitted, energy is time * 5 if omitted)
      * @param {ActionData} data - Some data to fill (will be modified)
      */
-    timeAndEnergyFallback: function (data) {
+    timeAndEnergyFallback (data) {
         if (Utils.isUndefined(data.energy) && !Utils.isUndefined(data.time)) {
-            var defaultEnergyDrain = 5;
+            const defaultEnergyDrain = 5;
             data.energy = data.time * defaultEnergyDrain;
         }
         data.time = data.time || 0;
-    }
+    },
 });

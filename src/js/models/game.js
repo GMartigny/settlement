@@ -1,4 +1,3 @@
-"use strict";
 /* exported GameController */
 
 /**
@@ -10,9 +9,9 @@
  * @extends View
  */
 function GameController (holder, assets) {
-    var now = Utils.getNow();
-    Utils.log("Loaded in " + now + "ms");
-    console.log("Starting " + VERSION);
+    const now = Utils.getNow();
+    Utils.log(`Loaded in ${now}ms`);
+    console.log(`Starting ${VERSION}`);
 
     this.assets = assets;
 
@@ -29,13 +28,13 @@ function GameController (holder, assets) {
         win: false, // The game has been won
         gameOver: false, // the game is lost
         settled: 0, // For how long settled
-        incidents: [] // Incidents that can't be rerun (unique or in progress)
+        incidents: [], // Incidents that can't be rerun (unique or in progress)
     };
     this.lastTick = now;
 
     GameController.holder = holder;
     this.super(null, assets);
-    Utils.log("Started in " + (Utils.getNow() - now) + "ms");
+    Utils.log(`Started in ${Utils.getNow() - now}ms`);
 }
 
 GameController.static(/** @lends GameController */{
@@ -55,7 +54,7 @@ GameController.static(/** @lends GameController */{
      * HTML element wrapping the game
      * @type {HTMLElement}
      */
-    holder: null
+    holder: null,
 });
 
 GameController.extends(View, "GameController", /** @lends GameController.prototype */ {
@@ -63,13 +62,13 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
         html.hide();
 
         this.resourcesList = Utils.wrap(Resource.LST_ID, null, html);
 
-        var topPart = Utils.wrap("topPart", null, html);
+        const topPart = Utils.wrap("topPart", null, html);
 
         this.peopleList = Utils.wrap(People.LST_ID, null, topPart);
 
@@ -79,41 +78,37 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         this.incidentsList = Utils.wrap(Incident.LST_ID, null, html);
 
-        var game = this;
-
-        var bottomOptionsNode = Utils.wrap("bottomOptions", null, html);
-        var wipeSaveClickable = new Clickable("wipe", "Clear save", function openWipeSavePopup () {
+        const bottomOptionsNode = Utils.wrap("bottomOptions", null, html);
+        const wipeSaveClickable = new Clickable("wipe", "Clear save", () => {
             new Popup({
                 name: "Clear save",
                 desc: "Completely wipe the saved game. Careful, this is irreversible.",
                 yes: {
                     name: "Restart anew",
-                    action: game.wipeSave.bind(game, true)
+                    action: this.wipeSave.bind(this, true),
                 },
-                no: "Cancel"
+                no: "Cancel",
             }, "wipeIt");
         });
         bottomOptionsNode.appendChild(wipeSaveClickable.html);
-        var creditsClickable = new Clickable("credits", "Credits", function openCreditsPopup () {
-            var creditsData = [
+        const creditsClickable = new Clickable("credits", "Credits", () => {
+            const creditsData = [
                 {
                     task: "Code",
                     name: "Guillaume Martigny",
-                    url: "https://www.guillaume-martigny.fr/#en"
+                    url: "https://www.guillaume-martigny.fr/#en",
                 }, {
                     task: "Graphics",
                     name: "Olivier Michas",
-                    url: "https://twitter.com/OliverMichas"
-                }
+                    url: "https://twitter.com/OliverMichas",
+                },
             ];
-            var credits = "<ul>";
-            creditsData.forEach(function (hero) {
-                credits += "<li>" + hero.task + ": " + hero.name.link(hero.url) + "</li>";
-            });
-            credits += "</ul>";
+            const credits = `<ul>
+                ${creditsData.map(hero => `<li>${hero.task}: ${hero.name.link(hero.url)}</li>`).join("")}
+            </ul>`;
             new Popup({
-                name: "Settlement " + VERSION,
-                desc: credits
+                name: `Settlement ${VERSION}`,
+                desc: credits,
             });
         });
         bottomOptionsNode.appendChild(creditsClickable.html);
@@ -124,7 +119,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Start a new adventure
      * @param {Object} media - Pre-loaded assets
      */
-    init: function (media) {
+    init (media) {
         DataManager.bindAll(this);
 
         GameController.holder.html = "";
@@ -133,7 +128,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         // Start managers
         GraphicManager.start(this.visualPane, media.assets, {
             assets: media.assetsData,
-            positions: media.buildingsData
+            positions: media.buildingsData,
         });
         LogManager.start(this.logsList);
 
@@ -154,17 +149,17 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
         // early access warning
         if (!IS_DEV && IS_BETA && localStorage.getItem("known")) {
             new Popup({
-                name: "Early access [" + VERSION + "]",
+                name: `Early access [${VERSION}]`,
                 desc: "You'll see a very early stage of the game. It may be broken, it may not be balanced ...<br/>" +
                 "If you want to report a bug or anything to improve the game, go to " +
                 "<a href='https://github.com/GMartigny/settlement'>the project's page</a>.<br/><br/>" +
                 "Thanks for playing !",
                 yes: {
                     name: "Got it !",
-                    action: function () {
+                    action () {
                         localStorage.setItem("known", "1");
-                    }
-                }
+                    },
+                },
             });
         }
         // Start the refresh loop
@@ -174,170 +169,157 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Set off event listeners
      */
-    registerObservers: function () {
-        var game = this;
-        var msgType = MessageBus.MSG_TYPES;
+    registerObservers () {
+        const msgType = MessageBus.MSG_TYPES;
 
-        MessageBus.observe(msgType.CLICK, function observesActionClick (actionData) {
-            game.saveGame();
-            sendEvent("Action", "start", actionData.name);
-        })
-        .observe(msgType.ACTION_END, function observesActionEnd () {
-            game.saveGame();
-        })
-        // We may find resources
-        .observe(msgType.GIVE, function observesResourcesGive (given) {
-            var initiator = null;
-            if (given.initiator) {
-                initiator = given.initiator;
-                given = given.give;
-            }
-            if (Utils.isArray(given)) {
-                var particles = [];
-                var particlesFragment = document.createDocumentFragment();
-                given.forEach(function earnAndAddParticle (info) {
-                    game.earn.apply(game, info);
+        MessageBus
+            .observe(msgType.ACTION_END, () => this.saveGame())
+            .observe(msgType.CLICK, (actionData) => {
+                this.saveGame();
+                sendEvent("Action", "start", actionData.name);
+            })
+            // We may find resources
+            .observe(msgType.GIVE, (given) => {
+                let initiator = null;
+                if (given.initiator) {
+                    initiator = given.initiator;
+                    given = given.give;
+                }
+                if (Utils.isArray(given)) {
+                    const particles = [];
+                    const particlesFragment = document.createDocumentFragment();
+                    given.forEach((info) => {
+                        this.earn(...info);
 
-                    if (initiator) {
-                        var id = info[1];
-                        var data = DataManager.get(id);
-                        if (data.icon) {
-                            var destination = game.resources.get(id);
-                            for (var i = 0; i < info[0]; ++i) {
-                                var particle = new Particle(data.icon, initiator, destination);
-                                particlesFragment.appendChild(particle.html);
-                                particles.push(particle);
+                        if (initiator) {
+                            const id = info[1];
+                            const data = DataManager.get(id);
+                            if (data.icon) {
+                                const destination = this.resources.get(id);
+                                for (let i = 0; i < info[0]; ++i) {
+                                    const particle = new Particle(data.icon, initiator, destination);
+                                    particlesFragment.appendChild(particle.html);
+                                    particles.push(particle);
+                                }
                             }
                         }
+                    });
+
+                    if (particles.length) {
+                        GameController.holder.appendChild(particlesFragment);
+                        Particle.batch.defer(null, particles);
                     }
-                });
-
-                if (particles.length) {
-                    GameController.holder.appendChild(particlesFragment);
-                    Particle.batch.defer(null, particles);
                 }
-            }
-        })
-        // We may use resources
-        .observe(msgType.USE, function observesResourcesUse (use) {
-            if (Utils.isArray(use)) {
-                Utils.compactResources(use).forEach(function (resource) {
-                    game.consume.apply(game, resource);
-                });
-            }
-        })
-        // Keep track of building in progress
-        .observe(msgType.START_BUILD, function observesBuildingStart (buildingId) {
-            game.buildingsInProgress.push(buildingId);
-        })
-        // We may build
-        .observe(msgType.BUILD, this.build.bind(this))
-        // New people arrival
-        .observe(msgType.ARRIVAL, function observesPeopleArrival () {
-            sendEvent("People", "arrive", game.getSettledTime());
-        })
-        // And we may die :'(
-        .observe(msgType.LOOSE_SOMEONE, function observesPeopleLose (person) {
-            sendEvent("People", "die", person.stats.age);
+            })
+            // We may use resources
+            .observe(msgType.USE, (use) => {
+                if (Utils.isArray(use)) {
+                    Utils.compactResources(use).forEach(couple => this.consume(...couple));
+                }
+            })
+            // Keep track of building in progress
+            .observe(msgType.START_BUILD, buildingId => this.buildingsInProgress.push(buildingId))
+            // We may build
+            .observe(msgType.BUILD, buildingId => this.build(buildingId))
+            // New people arrival
+            .observe(msgType.ARRIVAL, () => sendEvent("People", "arrive", this.getSettledTime()))
+            // And we may die :'(
+            .observe(msgType.LOOSE_SOMEONE, (person) => {
+                sendEvent("People", "die", person.stats.age);
 
-            // The last hope fade away
-            var isGameOver = game.people.size <= 0;
-            var message = isGameOver ? "The last @common standing passed away. The last hope fades out in silence." :
-                "@name just died, @possessive body is dragged outside and buried.";
-            LogManager.log(LogManager.personify(message, person), LogManager.LOG_TYPES.WARN);
+                // The last hope fade away
+                const isGameOver = this.people.size <= 0;
+                const message = isGameOver ?
+                    "The last @common standing passed away. The last hope fades out in silence." :
+                    "@name just died, @possessive body is dragged outside and buried.";
+                LogManager.log(LogManager.personify(message, person), LogManager.LOG_TYPES.WARN);
 
-            if (isGameOver) {
-                MessageBus.notify(msgType.LOOSE);
-            }
-        })
-        .observe(msgType.LOOSE, function observesGameOver () {
-            game.flags.gameOver = true;
-            sendEvent("Game", "loose", game.getSettledTime());
-        })
+                if (isGameOver) {
+                    MessageBus.notify(msgType.LOOSE);
+                }
+            })
+            .observe(msgType.LOOSE, () => {
+                this.flags.gameOver = true;
+                sendEvent("Game", "loose", this.getSettledTime());
+            })
 
-        // Keep track of running incidents
-        .observe(msgType.INCIDENT_START, function observesIncidentStart (incident) {
-            game.incidentsList.appendChild(incident.html);
-            game.incidents.push(incident);
-            game.saveGame();
-        })
-        .observe(msgType.INCIDENT_END, function observesIncidentEnd (incident) {
-            // incident remove its html itself
-            game.incidents.delete(incident.getId());
-            if (!incident.data.unique) {
-                game.flags.incidents.out(incident.getId());
-            }
-            game.saveGame();
-        })
+            // Keep track of running incidents
+            .observe(msgType.INCIDENT_START, (incident) => {
+                this.incidentsList.appendChild(incident.html);
+                this.incidents.push(incident);
+                this.saveGame();
+            })
+            .observe(msgType.INCIDENT_END, (incident) => {
+                // incident remove its html itself
+                this.incidents.delete(incident.getId());
+                if (!incident.data.unique) {
+                    this.flags.incidents.out(incident.getId());
+                }
+                this.saveGame();
+            })
 
-        // Lock or unlock actions for all
-        .observe(msgType.LOCK, this.removeFromInitialActions.bind(this))
-        .observe(msgType.UNLOCK, this.addToInitialActions.bind(this))
+            // Lock or unlock actions for all
+            .observe(msgType.LOCK, this.removeFromInitialActions.bind(this))
+            .observe(msgType.UNLOCK, this.addToInitialActions.bind(this))
 
-        // End of the game
-        .observe(msgType.WIN, function observesGameWin () {
-            game.flags.win = true;
-            sendEvent("Game", "win", game.getSettledTime());
-        })
+            // End of the game
+            .observe(msgType.WIN, () => {
+                this.flags.win = true;
+                sendEvent("Game", "win", this.getSettledTime());
+            })
 
-        .observe(msgType.KEYS.SPACE, function observesSpaceStroke (direction) {
-            if (direction === "up") {
-                game.togglePause();
-            }
-        });
+            .observe(msgType.KEYS.SPACE, (direction) => {
+                if (direction === "up") {
+                    this.togglePause();
+                }
+            });
     },
     /**
      * Add actions to initial actions list
      * @param {ID|Array<ID>} actions - One or more actionId
      */
-    addToInitialActions: function (actions) {
+    addToInitialActions (actions) {
         if (!Utils.isArray(actions)) {
             actions = [actions];
         }
 
-        actions.forEach(function addToInitialActions (actionId) {
+        actions.forEach((actionId) => {
             if (!this.initialActions.includes(actionId)) {
                 this.initialActions.push(actionId);
             }
-        }, this);
-        this.people.forEach(function callAddActions (people) {
-            people.addAction(actions);
         });
+        this.people.forEach(people => people.addAction(actions));
     },
     /**
      * Remove actions from initial actions list
      * @param {ID|Array<ID>} actions - One or more action ID
      */
-    removeFromInitialActions: function (actions) {
+    removeFromInitialActions (actions) {
         if (!Utils.isArray(actions)) {
             actions = [actions];
         }
 
-        actions.forEach(function removeFromInitialActions (actionId) {
-            this.initialActions.out(actionId);
-        }, this);
-        this.people.forEach(function callLockAction (people) {
-            people.lockAction(actions);
-        });
+        actions.forEach(actionId => this.initialActions.out(actionId));
+        this.people.forEach(people => people.lockAction(actions));
     },
     /**
      * Return the time since settlement
      * @return {Number}
      */
-    getSettledTime: function () {
+    getSettledTime () {
         return MathsUtils.floor(this.flags.settled ? this.flags.settled / GameController.TICK_LENGTH : 0);
     },
     /**
      * Return a well formatted play duration
      * @return {String}
      */
-    getSurvivalDuration: function () {
+    getSurvivalDuration () {
         return Utils.formatTime(this.getSettledTime());
     },
     /**
      * Toggle pause state
      */
-    togglePause: function () {
+    togglePause () {
         this.flags.paused = !this.flags.paused;
         this.html.classList.toggle("paused", this.flags.paused);
         this.html.classList.toggle("backdrop", this.flags.paused);
@@ -352,15 +334,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Loop function called every game tick
      */
-    refresh: function () {
-        var elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.TICK_LENGTH);
+    refresh () {
+        const elapse = MathsUtils.floor((Utils.getNow() - this.lastTick) / GameController.TICK_LENGTH);
         this.lastTick += elapse * GameController.TICK_LENGTH;
 
         requestAnimationFrame(this.refresh.bind(this));
 
         if (this.flags.win) {
             if (!Popup.OPENED && this.people.size) {
-                var game = this;
+                const game = this;
                 new Popup({
                     name: "The road ahead",
                     desc: "From the rumors, much of the east coast have not been destroy by bombs. " +
@@ -369,15 +351,15 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                         "Let's find them !",
                     yes: {
                         name: "Let the journey begin ...",
-                        action: function () {
-                            game.people.forEach(function (person, id, list) {
+                        action () {
+                            game.people.forEach((person, id, list) => {
                                 person.hide();
                                 list.delete(id);
                             });
                             MessageBus.notify(MessageBus.MSG_TYPES.UNBUILD, DataManager.ids.buildings.big.module);
                             game.saveGame();
-                        }
-                    }
+                        },
+                    },
                 });
             }
         }
@@ -388,8 +370,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                     desc: "",
                     yes: {
                         name: "Try again",
-                        action: this.wipeSave.bind(this, true)
-                    }
+                        action: () => this.wipeSave(true),
+                    },
                 });
             }
         }
@@ -401,7 +383,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 this.tickConsumption(elapse);
 
                 // Someone arrive
-                var peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
+                const peopleDropRate = DataManager.get(DataManager.ids.people).dropRate;
                 if (this.canSomeoneArrive() && MathsUtils.random() < peopleDropRate) {
                     this.prepareNewcomer();
                 }
@@ -413,20 +395,18 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             }
 
             // Refresh resources
-            this.resources.forEach(function refreshResources (resource, id, list) {
-                resource.refresh(list);
-            });
+            this.resources.forEach(resource => resource.refresh(this.resources));
 
             // Refresh people
-            this.people.forEach(function refreshPeople (person, id, list) {
+            this.people.forEach((person, id) => {
                 if (person.isDead()) {
-                    list.delete(id);
+                    this.people.delete(id);
                     person.die();
                 }
                 else {
                     person.refresh(this.resources, elapse, this.flags);
                 }
-            }, this);
+            });
 
             if (elapse) {
                 this.saveGame();
@@ -437,27 +417,28 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Compute and apply people's need
      * @param {Number} elapse - Number of tick
      */
-    tickConsumption: function (elapse) {
-        var peopleConsumption = DataManager.get(DataManager.ids.people).needs;
-        peopleConsumption.forEach(function peopleConsumptionUse (consumption) {
-            var resourceId = consumption[1];
+    tickConsumption (elapse) {
+        const peopleConsumption = DataManager.get(DataManager.ids.people).needs;
+        peopleConsumption.forEach((consumption) => {
+            const resourceId = consumption[1];
             this.flags[consumption[2]] = 0;
-            var drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
+            const drought = this.incidents.get(DataManager.ids.incidents.hard.drought);
             if (resourceId === DataManager.ids.resources.gatherables.common.water && drought) {
                 consumption[0] *= drought.data.multiplier;
             }
-            var amount = this.people.size + (this.flags.incidents.includes(DataManager.ids.incidents.medium.strayDog));
-            var warn = this.consume(consumption[0] * amount * elapse, resourceId, function setLackResource (diff) {
+            const hasDoggy = +(this.flags.incidents.includes(DataManager.ids.incidents.medium.strayDog));
+            const amount = this.people.size + hasDoggy;
+            const warn = this.consume(consumption[0] * amount * elapse, resourceId, (diff) => {
                 this.flags[consumption[2]] = diff;
             });
-            var data = DataManager.get(resourceId);
+            const data = DataManager.get(resourceId);
             if (!data.initialDropRate) {
                 data.initialDropRate = data.dropRate;
             }
             // Decrease dropRate if not lacking
-            var dropRateDecrease = 0.99;
-            data.dropRate = warn ? data.initialDropRate : data.dropRate * MathsUtils.pow(dropRateDecrease, elapse);
-        }, this);
+            const dropRateDecrease = 0.99;
+            data.dropRate = warn ? data.initialDropRate : data.dropRate * (dropRateDecrease ** elapse);
+        });
     },
     /**
      * Check if game has enough of a resource
@@ -465,7 +446,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {Number} amount - Amount needed
      * @return {Boolean}
      */
-    hasEnough: function (id, amount) {
+    hasEnough (id, amount) {
         return this.resources.has(id) && this.resources.get(id).has(amount);
     },
     /**
@@ -481,13 +462,13 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {lackOfResources} lack - A callback function in case of lack
      * @return {Boolean} Has not enough of it
      */
-    consume: function (amount, resourceId, lack) {
-        var lacked = false;
+    consume (amount, resourceId, lack) {
+        let lacked = false;
         if (amount) {
             if (!this.resources.has(resourceId)) {
                 this.earn(0, resourceId);
             }
-            var instance = this.resources.get(resourceId);
+            const instance = this.resources.get(resourceId);
             if (instance.has(amount)) {
                 instance.update(-amount);
                 instance.warnLack = false;
@@ -495,7 +476,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             else {
                 lacked = true;
                 if (Utils.isFunction(lack)) {
-                    var diff = amount - (instance ? instance.count : 0);
+                    const diff = amount - (instance ? instance.count : 0);
                     lack.call(this, diff, resourceId);
                 }
 
@@ -515,12 +496,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {Number} amount - Amount to earn
      * @param {ID} resourceId - Resource id
      */
-    earn: function (amount, resourceId) {
+    earn (amount, resourceId) {
         if (this.resources.has(resourceId)) {
             this.resources.get(resourceId).update(amount);
         }
         else {
-            var resource = new Resource(resourceId, amount);
+            const resource = new Resource(resourceId, amount);
             this.resources.push(resource);
             this.resourcesList.appendChild(resource.html);
         }
@@ -529,43 +510,42 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Build a person object and add it to the camp
      * @param {Number} [amount=1] - Number of person that rejoin
      */
-    prepareNewcomer: function (amount) {
-        var game = this;
-        People.peopleFactory(amount || 1).then(function prepareNewPersons (persons) {
-            persons.forEach(function preparePerson (person) {
-                person.addAction(game.initialActions);
+    prepareNewcomer (amount) {
+        People.peopleFactory(amount || 1).then((persons) => {
+            persons.forEach((person) => {
+                person.addAction(this.initialActions);
 
                 // First one start empty
-                if (!game.people.size) {
+                if (!this.people.size) {
                     person.life = 0;
                     person.energy = 0;
                     person.updateLife(0);
                     person.updateEnergy(0);
                 }
             });
-            game.arrive(persons);
+            this.arrive(persons);
         });
     },
     /**
      * A new person arrive
      * @param {Array<People>|People} people - A people or an array of people instance
      */
-    arrive: function (people) {
+    arrive (people) {
         if (!Utils.isArray(people)) {
             people = [people];
         }
 
-        people.forEach(function addToPeopleList (person) {
+        people.forEach((person) => {
             if (this.people.size) {
                 MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
 
                 // The first newcomer
                 if (this.people.size === 1) {
-                    var description = LogManager.personify("attracted by the crash a @common approach. " +
+                    const description = LogManager.personify("attracted by the crash a @common approach. " +
                         "@nominative accept to team up.", person);
                     LogManager.log(description, MessageBus.MSG_TYPES.LOGS.EVENT);
-                    TimerManager.timeout(function otherWalkersBlab () {
-                        var message = "There's other wanderers ready to join if there's room for them.";
+                    TimerManager.timeout(() => {
+                        const message = "There's other wanderers ready to join if there's room for them.";
                         LogManager.log(message, MessageBus.MSG_TYPES.LOGS.QUOTE);
                     }, GameController.TICK_LENGTH * 3);
                 }
@@ -574,29 +554,27 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             this.addPeople(person);
 
             person.show.defer(person);
-        }, this);
+        });
     },
     /**
      * Add a person to the camp
      * @param {People} person - New person to add
      */
-    addPeople: function (person) {
+    addPeople (person) {
         this.people.push(person);
         this.peopleList.appendChild(person.html);
 
-        var peopleSize = this.people.size;
-        this.people.forEach(function (each) {
-            each.html.style.zIndex = String(peopleSize--);
-        });
+        let peopleSize = this.people.size;
+        this.people.forEach(each => each.html.style.zIndex = String(peopleSize--));
     },
     /**
      * Build something
      * @param {ID} id - Building id
      */
-    build: function (id) {
+    build (id) {
         this.buildingsInProgress.out(id);
         if (!this.buildings.has(id)) {
-            var building = new Building(id);
+            const building = new Building(id);
             this.buildings.push(building);
             if (building.data.upgrade) {
                 this.buildings.delete(building.data.upgrade);
@@ -608,16 +586,16 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Return all unlocked craftables
      * @return {Array<ID>}
      */
-    unlockedCraftables: function () {
-        var craftables = [];
+    unlockedCraftables () {
+        const craftables = [];
 
-        DataManager.ids.resources.craftables.deepBrowse(function checkUnlocked (id) {
-            var craft = DataManager.get(id);
+        DataManager.ids.resources.craftables.deepBrowse((id) => {
+            const craft = DataManager.get(id);
             if ((!craft.ifHas || this.buildings.has(craft.ifHas)) &&
                 (!craft.condition || (Utils.isFunction(craft.condition) && craft.condition()))) {
                 craftables.push(id);
             }
-        }, this);
+        });
 
         return craftables;
     },
@@ -625,16 +603,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Return all possible craftables according to current resources
      * @return {Array<ID>}
      */
-    possibleCraftables: function () {
-        var game = this;
-
-        return this.unlockedCraftables().filter(function checkConsumption (id) {
-            var craft = DataManager.get(id);
-            var keep = true;
+    possibleCraftables () {
+        return this.unlockedCraftables().filter((id) => {
+            const craft = DataManager.get(id);
+            let keep = true;
             if (Utils.isFunction(craft.consume)) {
-                craft.consume(craft).forEach(function checkHasResources (res) {
-                    keep = keep && game.hasEnough(res[1], res[0]);
-                });
+                keep = craft.consume(craft).some(res => this.hasEnough(res[1], res[0]));
             }
             return keep;
         });
@@ -643,11 +617,11 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Return all accessible buildings
      * @return {Array<ID>}
      */
-    possibleBuildings: function () {
-        var buildings = [];
+    possibleBuildings () {
+        const buildings = [];
 
-        DataManager.ids.buildings.deepBrowse(function checkIfUnlocked (id) {
-            var building = DataManager.get(id);
+        DataManager.ids.buildings.deepBrowse((id) => {
+            const building = DataManager.get(id);
             if (!building.shadow &&
                 !this.isBuildingInProgress(id) &&
                 !this.isBuildingDone(id) &&
@@ -655,7 +629,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 (!building.ifHas || this.isBuildingDone(building.ifHas))) {
                 buildings.push(id);
             }
-        }, this);
+        });
 
         return buildings;
     },
@@ -664,7 +638,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {ID} buildingId - Any building ID
      * @return {Boolean}
      */
-    isBuildingInProgress: function (buildingId) {
+    isBuildingInProgress (buildingId) {
         return this.buildingsInProgress.includes(buildingId);
     },
     /**
@@ -672,12 +646,12 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * @param {ID} buildingId - Any building ID
      * @return {Boolean}
      */
-    isBuildingDone: function (buildingId) {
-        var isDone = false;
-        this.buildings.forEach(function checkIfDone (building) {
+    isBuildingDone (buildingId) {
+        let isDone = false;
+        this.buildings.forEach((building) => {
             if (!isDone) {
-                var doneId = building.getId();
-                var doneUpgrade = building.data.upgrade;
+                let doneId = building.getId();
+                let doneUpgrade = building.data.upgrade;
                 isDone = isDone || doneId === buildingId;
                 // Follow upgrade cascade
                 while (doneUpgrade && !isDone) {
@@ -686,38 +660,38 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                     isDone = isDone || doneId === buildingId;
                 }
             }
-        }, this);
+        });
         return isDone;
     },
     /**
      * Decide if someone can join the colony
      * @return {Boolean}
      */
-    canSomeoneArrive: function () {
+    canSomeoneArrive () {
         return this.hasEnough(DataManager.ids.resources.room, this.people.size + 1);
     },
     /**
      * Return an id of incident that can happened or null otherwise
      * @return {ID|null}
      */
-    getRandomIncident: function () {
-        var list = [],
-            elapsedWeek = this.getSettledTime() / DataManager.time.week;
+    getRandomIncident () {
+        let list = [];
+        const elapsedWeek = this.getSettledTime() / DataManager.time.week;
         ({
             1: DataManager.ids.incidents.easy,
             2: DataManager.ids.incidents.medium,
-            5: DataManager.ids.incidents.hard
-        }).browse(function (value, key) {
+            5: DataManager.ids.incidents.hard,
+        }).browse((value, key) => {
             if (elapsedWeek > key) {
                 list.insert(value);
             }
         });
         // filter incidents already running or with unmatched conditions
-        list = list.filter(function filterIncident (incidentId) {
-            var incidentData = DataManager.get(incidentId);
+        list = list.filter((incidentId) => {
+            const incidentData = DataManager.get(incidentId);
             return !this.incidents.has(incidentId) &&
                 (!incidentData.condition || (Utils.isFunction(incidentData.condition) && incidentData.condition()));
-        }, this);
+        });
 
         return list.length ? Utils.randomize(list) : null;
     },
@@ -725,9 +699,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Start an incident
      * @param {ID} incidentId - The incident's id
      */
-    startIncident: function (incidentId) {
+    startIncident (incidentId) {
         if (incidentId && !this.flags.incidents.includes(incidentId)) {
-            var incident = new Incident(incidentId);
+            const incident = new Incident(incidentId);
             this.flags.incidents.push(incident.getId());
             incident.start();
             this.saveGame();
@@ -737,7 +711,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Save the whole game state
      */
-    saveGame: function () {
+    saveGame () {
         if (!this.flags.gameOver) {
             SaveManager.persist(this);
         }
@@ -746,9 +720,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Turn the game state into a json, shouldn't be called directly
      * @return {Object} Game's state
      */
-    toJSON: function () {
+    toJSON () {
         // TODO: can be greatly optimize to save space on storage
-        var json = {
+        const json = {
             flg: this.flags,
             res: this.resources.getValues(),
             plp: this.people.getValues(),
@@ -758,7 +732,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
             lct: this.knownLocations,
             bip: this.buildingsInProgress,
             upk: Perk.usedId,
-            vrn: VERSION
+            vrn: VERSION,
         };
         delete json.flg.paused;
         delete json.flg.popup;
@@ -767,44 +741,41 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     /**
      * Load the game from storage
      */
-    loadGame: function () {
+    loadGame () {
         sendEvent("Game", "reload");
-        var data = SaveManager.load();
-        var game = this;
+        const data = SaveManager.load();
 
-        var loadedVersion = data.vrn && data.vrn.substr(0, data.vrn.lastIndexOf("."));
-        var currentVersion = VERSION.substr(0, VERSION.lastIndexOf("."));
+        const loadedVersion = data.vrn && data.vrn.substr(0, data.vrn.lastIndexOf("."));
+        const currentVersion = VERSION.substr(0, VERSION.lastIndexOf("."));
         if (loadedVersion !== currentVersion) {
             // TODO: display a differential changelog
             new Popup({
                 name: "New version",
                 desc: "Since the last time you played, a new version of the game has been released.<br/>" +
                     "You may want to restart to experience all the cool new features. ;)<br/>" +
-                    "<a href='https://github.com/GMartigny/settlement#changelog'>Changelog</a>"
+                    "<a href='https://github.com/GMartigny/settlement#changelog'>Changelog</a>",
             });
         }
 
         MessageBus.notify(MessageBus.MSG_TYPES.GIVE, data.res);
-        data.bld.forEach(function rebuildBuildings (bld) {
-            MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id);
-        });
-        data.inc.forEach(function restartIncident (inc) {
-            var incident = new Incident(inc.id);
+        data.bld.forEach(bld => MessageBus.notify(MessageBus.MSG_TYPES.BUILD, bld.id));
+        data.inc.forEach((inc) => {
+            const incident = new Incident(inc.id);
             if (inc.rmn) {
                 incident.run(inc.rmn);
             }
         });
-        data.plp.forEach(function instantiatePeople (personData) {
-            var person = new People(personData.nam, personData.gnd);
+        data.plp.forEach((personData) => {
+            const person = new People(personData.nam, personData.gnd);
             person.setLife(personData.lif);
             person.setEnergy(personData.ene);
             person.stats = personData.sts;
             if (personData.prk) {
                 person.gainPerk(personData.prk);
             }
-            personData.act.forEach(function instantiateAction (actionData) {
+            personData.act.forEach((actionData) => {
                 person.addAction(actionData.id);
-                var action = person.actions.get(actionData.id);
+                const action = person.actions.get(actionData.id);
                 action.repeated = actionData.rpt;
                 if (actionData.rmn) {
                     action.choosenOptionId = actionData.opi;
@@ -813,7 +784,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             });
 
-            game.addPeople(person);
+            this.addPeople(person);
             person.show();
         });
         Perk.usedId = data.upk;
@@ -826,38 +797,36 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
      * Clear the save
      * @param {Boolean} [withReload=false] - Trigger a page reload too
      */
-    wipeSave: function (withReload) {
+    wipeSave (withReload) {
         sendEvent("Game", "wipe");
         SaveManager.clear();
         if (withReload) {
             location.reload();
         }
-    }
+    },
 });
 if (IS_DEV) {
     /**
      * Earn one of each resources and buildings
      */
     GameController.prototype.resourcesOverflow = function resourcesOverflow () {
-        var amount = 50;
-        DataManager.ids.resources.deepBrowse(function earn50 (id) {
-            this.earn(amount, id);
-        }.bind(this));
+        const amount = 50;
+        DataManager.ids.resources.deepBrowse(id => this.earn(amount, id));
     };
     /**
      * Build a random building
      */
     GameController.prototype.nextBuilding = function nextBuilding () {
-        var pick = this.possibleBuildings().random();
+        const pick = this.possibleBuildings().random();
         MessageBus.notify(MessageBus.MSG_TYPES.BUILD, pick);
     };
     /**
      * Put everyone in a almost dead state
      */
     GameController.prototype.wannaLoose = function wannaLoose () {
-        var lifeLeft = 5;
-        var energyLEft = 0;
-        this.people.forEach(function lowLifeNoEnergy (person) {
+        const lifeLeft = 5;
+        const energyLEft = 0;
+        this.people.forEach((person) => {
             person.setLife(lifeLeft);
             person.setEnergy(energyLEft);
         });

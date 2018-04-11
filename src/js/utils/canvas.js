@@ -1,23 +1,22 @@
-"use strict";
 /* exported CanvasUtils */
 
-var CanvasUtils = {
+const CanvasUtils = {
     /**
      * Prepare a canvas with its context
      * @param {Number} width - The canvas width
      * @param {Number} height - The canvas height
      * @return {{cnv: HTMLElement, ctx: CanvasRenderingContext2D}}
      */
-    prepareCanvas: function prepareCanvas (width, height) {
-        var canvas = document.createElement("canvas");
+    prepareCanvas (width, height) {
+        const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
 
         return {
             cnv: canvas,
-            ctx: canvas.getContext("2d")
+            ctx: canvas.getContext("2d"),
         };
-    }
+    },
 };
 
 /**

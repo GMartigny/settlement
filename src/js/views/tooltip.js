@@ -1,4 +1,3 @@
-"use strict";
 /* exported Tooltip */
 
 /**
@@ -28,12 +27,12 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @param {TooltipData} data - Data for the tooltip
      * @private
      */
-    init: function (data) {
+    init (data) {
         this.refresh(new Map(), data);
 
         // Measure the box
         GameController.holder.appendChild(this.html);
-        var htmlMeasures = this.html.getBoundingClientRect();
+        const htmlMeasures = this.html.getBoundingClientRect();
         this.width = htmlMeasures.width;
         this.height = htmlMeasures.height;
         this.hide();
@@ -47,19 +46,19 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @param {Number} y - The y coordinate
      * @private
      */
-    _setPosition: function (x, y) {
-        var wrapperSize = Tooltip.getWrapperSize();
-        var mouseOffset = 10;
-        var left = MathsUtils.constrain(x + mouseOffset, 0, wrapperSize.width - this.width);
-        var top = MathsUtils.constrain(y + mouseOffset, 0, wrapperSize.height - this.height);
-        this.html.style.left = left + "px";
-        this.html.style.top = top + "px";
+    _setPosition (x, y) {
+        const wrapperSize = Tooltip.getWrapperSize();
+        const mouseOffset = 10;
+        const left = MathsUtils.constrain(x + mouseOffset, 0, wrapperSize.width - this.width);
+        const top = MathsUtils.constrain(y + mouseOffset, 0, wrapperSize.height - this.height);
+        this.html.style.left = `${left}px`;
+        this.html.style.top = `${top}px`;
     },
     /**
      * Handle mouse over events
      * @private
      */
-    _mouseOver: function () {
+    _mouseOver () {
         GameController.holder.appendChild(this.html);
         this.show.defer(this);
     },
@@ -67,7 +66,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * Handle mouse out events
      * @private
      */
-    _mouseOut: function () {
+    _mouseOut () {
         this.hide();
         this.html.remove.defer(this.html);
     },
@@ -76,14 +75,14 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @param {MouseEvent} event - The associated event data
      * @private
      */
-    _mouseMove: function (event) {
+    _mouseMove (event) {
         this._setPosition(event.clientX, event.clientY);
     },
     /**
      * Add all events listener
      * @private
      */
-    _addEvents: function () {
+    _addEvents () {
         this.container.classList.add("tooltiped");
 
         this.container.addEventListener("mouseenter", this._mouseOver.bind(this));
@@ -94,7 +93,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * Remove all events listener
      * @private
      */
-    _removeEvents: function () {
+    _removeEvents () {
         this.container.classList.remove("tooltiped");
 
         this.container.removeEventListener("mouseenter", this._mouseOver);
@@ -105,9 +104,9 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * Update tooltip content
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
-        var wrapper = Utils.wrap("wrapper", null, html);
+    toHTML () {
+        const html = this._toHTML();
+        const wrapper = Utils.wrap("wrapper", null, html);
 
         this.nodes.name = Utils.wrap("title", null, wrapper);
 
@@ -127,7 +126,7 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
      * @param {Map} resources - The game's resources
      * @param {TooltipData} data - Data to update the tooltip (unchanged can be ignored)
      */
-    refresh: function (resources, data) {
+    refresh (resources, data) {
         if (this.isShow) {
             this.nodes.name.textContent = Utils.capitalize(data.name);
             if (data.desc) {
@@ -146,23 +145,23 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
 
             if (Utils.isArray(data.consume)) {
                 data.consume.forEach(function (resource) {
-                    var id = resource[1];
-                    var resourceNodes = this.resourcesMapper[id];
+                    const id = resource[1];
+                    let resourceNodes = this.resourcesMapper[id];
                     if (!resourceNodes) {
-                        var data = DataManager.get(id);
-                        var wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
-                        wrapperNode.style.order = data.order;
-                        var counterNode = Utils.wrap("counter", null, wrapperNode);
-                        Utils.wrap(null, Resource.toString(data, resource[0]), wrapperNode);
+                        const resourceData = DataManager.get(id);
+                        const wrapperNode = Utils.wrap("resource not-enough", null, this.nodes.resourcesContainer);
+                        wrapperNode.style.order = resourceData.order;
+                        const counterNode = Utils.wrap("counter", null, wrapperNode);
+                        Utils.wrap(null, Resource.toString(resourceData, resource[0]), wrapperNode);
                         resourceNodes = {
                             node: wrapperNode,
-                            counter: counterNode
+                            counter: counterNode,
                         };
                         this.resourcesMapper[id] = resourceNodes;
                     }
-                    var count = (resources.has(id) || 0) && resources.get(id).get();
-                    var notEnough = count < resource[0];
-                    resourceNodes.counter.textContent = notEnough ? count + "/" : "";
+                    const count = (resources.has(id) || 0) && resources.get(id).get();
+                    const notEnough = count < resource[0];
+                    resourceNodes.counter.textContent = notEnough ? `${count}/` : "";
                     resourceNodes.node.classList.toggle("not-enough", notEnough);
                 }, this);
             }
@@ -170,30 +169,31 @@ Tooltip.extends(View, "Tooltip", /** @lends Tooltip.prototype */ {
                 this.nodes.resourcesContainer.remove();
             }
         }
-    }
+    },
 });
 
-Tooltip.static( /** @lends Tooltip */ {
+Tooltip.static(/** @lends Tooltip */ {
     wrapperSizeCache: null,
     /**
      * Return tooltips wrapper dimension
      * @return {{width: Number, height: Number}}
      */
-    getWrapperSize: function () {
+    getWrapperSize () {
         if (!this.wrapperSizeCache) {
-            var holderMeasures = GameController.holder.getBoundingClientRect();
-            this.wrapperSizeCache = {
+            const holderMeasures = GameController.holder.getBoundingClientRect();
+            Tooltip.wrapperSizeCache = {
                 width: holderMeasures.width,
-                height: holderMeasures.height
+                height: holderMeasures.height,
             };
         }
-        return this.wrapperSizeCache;
-    }
+        return Tooltip.wrapperSizeCache;
+    },
+    resetCache () {
+        Tooltip.wrapperSizeCache = null;
+    },
 });
 
 /**
  * Reset wrapperSizeCache if the screen size is changed
  */
-window.addEventListener("resize", function viewportResizeOrRotation () {
-    Tooltip.wrapperSizeCache = null;
-});
+window.addEventListener("resize", Tooltip.resetCache);

@@ -1,4 +1,3 @@
-"use strict";
 /* exported Building */
 
 /**
@@ -16,7 +15,7 @@ Building.extends(Model, "Building", /** @lends Building.prototype */ {
      * Initialize object
      * @private
      */
-    init: function () {
+    init () {
         if (this.data.lock) {
             MessageBus.notify(MessageBus.MSG_TYPES.LOCK, this.data.lock);
         }
@@ -29,5 +28,5 @@ Building.extends(Model, "Building", /** @lends Building.prototype */ {
         if (this.data.build) {
             MessageBus.notify(MessageBus.MSG_TYPES.BUILD, this.data.build);
         }
-    }
+    },
 });

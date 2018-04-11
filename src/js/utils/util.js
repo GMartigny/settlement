@@ -1,6 +1,6 @@
 /* exported Utils */
 
-var Utils = {
+const Utils = {
     noop: new Function(),
 
     /**
@@ -10,8 +10,8 @@ var Utils = {
      * @param {HTMLElement} [holder] - A parent to insert the newly created element into
      * @return {HTMLElement}
      */
-    wrap: function (CSSClasses, innerHTML, holder) {
-        var html = document.createElement("div");
+    wrap (CSSClasses, innerHTML, holder) {
+        const html = document.createElement("div");
         if (CSSClasses) {
             html.className = CSSClasses;
         }
@@ -31,16 +31,15 @@ var Utils = {
      * @param {String} [final="and"] - The last joiner of the list
      * @return {String}
      */
-    formatJoin: function (array, final) {
+    formatJoin (array, final = "and") {
         if (array.length > 1) {
-            return (array.slice(0, array.length - 1)).join(", ") + " " + (final || "and") + " " + array.last();
+            return `${array.slice(0, -1).join(", ")} ${final} ${array.last()}`;
         }
         else if (array.length) {
             return String(array[0]);
         }
-        else {
-            return "";
-        }
+
+        return "";
     },
 
     /**
@@ -48,12 +47,10 @@ var Utils = {
      * @param {Array<[Number, ID]>} array - An array of resources consumption
      * @return {String}
      */
-    formatArray: function (array) {
-        View.enableHTML = false;
-        var str = Utils.formatJoin(array.map(function (item) {
-            return Resource.toString(DataManager.get(item[1]), item[0]);
-        }));
-        View.enableHTML = true;
+    formatArray (array) {
+        // View.enableHTML = false;
+        const str = Utils.formatJoin(array.map(item => Resource.toString(DataManager.get(item[1]), item[0])));
+        // View.enableHTML = true;
         return str;
     },
 
@@ -62,20 +59,21 @@ var Utils = {
      * @param {Number} time - Number of hour
      * @return {String}
      */
-    formatTime: function (time) {
+    formatTime (time) {
         if (!time) {
             return "0 hour";
         }
 
-        var units = ["year", "month", "day", "hour", "minute"],
-            res = [],
-            timeMatch = DataManager.time;
+        const units = ["year", "month", "day", "hour", "minute"];
+        const res = [];
+        const timeMatch = DataManager.time;
+        let remain = time;
 
-        units.forEach(function (unit) {
-            if (time >= timeMatch[unit]) {
-                var y = MathsUtils.floor(time / timeMatch[unit]);
-                time = time % timeMatch[unit];
-                res.push(y + " " + Utils.pluralize(unit, y));
+        units.forEach((unit) => {
+            if (remain >= timeMatch[unit]) {
+                const y = MathsUtils.floor(remain / timeMatch[unit]);
+                remain %= timeMatch[unit];
+                res.push(`${y} ${Utils.pluralize(unit, y)}`);
             }
         });
 
@@ -88,7 +86,7 @@ var Utils = {
      * @param {Number} number - How many
      * @return {String}
      */
-    pluralize: function (string, number) {
+    pluralize (string, number) {
         return string + (number > 1 && string[string.length - 1] !== "s" ? "s" : "");
     },
 
@@ -97,16 +95,14 @@ var Utils = {
      * @param {String} string - Origin string
      * @return {String}
      */
-    capitalize: function (string) {
+    capitalize (string) {
         if (string) {
-            string = string.replace(/([.!?])\s([a-z])/g, function (match, punctuation, letter) {
-                return punctuation + " " + letter.toUpperCase();
-            });
-            return string[0].toUpperCase() + string.slice(1);
+            const result = string
+                .replace(/([.!?])\s([a-z])/g, (match, punctuation, letter) => `${punctuation} ${letter.toUpperCase()}`);
+            return result[0].toUpperCase() + result.slice(1);
         }
-        else {
-            return "";
-        }
+
+        return "";
     },
 
     /**
@@ -120,27 +116,25 @@ var Utils = {
      * Utils.randomize(data) // 1 result
      * @return {Array|ID} An array of Object or one Object if no amount requested
      */
-    randomize: function (list, amount) {
+    randomize (list, amount) {
         if (!list || !list.values().length) {
             throw new TypeError("Can't pick from empty list");
         }
-        var all = {},
-            dropRateScale = [],
-            dropRateSum = 0;
-        list.deepBrowse(function (id) {
-            var item = DataManager.get(id);
+        const all = {};
+        const dropRateScale = [];
+        let dropRateSum = 0;
+        list.deepBrowse((id) => {
+            const item = DataManager.get(id);
             if (item && item.dropRate) {
                 dropRateSum += item.dropRate;
                 dropRateScale.push(dropRateSum);
                 all[dropRateSum] = id;
             }
         });
-        var pick = MathsUtils.floor(MathsUtils.random(dropRateSum));
-        dropRateScale.sort(function (a, b) {
-            return a - b;
-        });
+        let pick = MathsUtils.floor(MathsUtils.random(dropRateSum));
+        dropRateScale.sort();
 
-        for (var i = 0, l = dropRateScale.length; i < l; ++i) {
+        for (let i = 0, l = dropRateScale.length; i < l; ++i) {
             if (dropRateScale[i] > pick) {
                 pick = dropRateScale[i];
                 break;
@@ -158,9 +152,8 @@ var Utils = {
             }
             return [MathsUtils.round(MathsUtils.random.apply(null, amount)), all[pick]];
         }
-        else {
-            return all[pick];
-        }
+
+        return all[pick];
     },
 
     /**
@@ -170,11 +163,11 @@ var Utils = {
      * @see randomize
      * @return {Array}
      */
-    randomizeMultiple: function (list, amount) {
+    randomizeMultiple (list, amount) {
         if (!amount) {
             throw new TypeError("Need an amount");
         }
-        var res = [];
+        const res = [];
 
         // Fixme: should be factorized with "randomize"
         if (!Utils.isArray(amount)) {
@@ -185,8 +178,8 @@ var Utils = {
                 amount = [amount];
             }
         }
-        var total = MathsUtils.round(MathsUtils.random.apply(null, amount));
-        var sum = 0;
+        const total = MathsUtils.round(MathsUtils.random.apply(null, amount));
+        let sum = 0;
 
         while (sum++ < total) {
             res.push([1, Utils.randomize(list)]);
@@ -197,11 +190,11 @@ var Utils = {
 
     /**
      * Display log while in dev
-     * @param {...String} [message] - Any message
+     * @param {...*} [params] - Any message
      */
-    log: function () {
+    log (...params) {
         if (IS_DEV) {
-            console.log.apply(console, arguments);
+            console.log(...params);
         }
     },
 
@@ -210,19 +203,17 @@ var Utils = {
      * @param {Number} [length=6] - The string's length
      * @return {String}
      */
-    randomStr: function (length) {
-        var defaultStringLength = 6;
-        length = length || defaultStringLength;
-        return (new Array(length)).fill("-").join("").replace(/-/g, function () {
-            return MathsUtils.floor(MathsUtils.random(MathsUtils.RADIX.ALPHA)).toString(MathsUtils.RADIX.ALPHA);
-        });
+    randomStr (length = 6) {
+        const alpha = MathsUtils.RADIX.ALPHA;
+        return (new Array(length)).fill("-").join("")
+            .replace(/-/g, () => MathsUtils.floor(MathsUtils.random(alpha)).toString(alpha));
     },
 
     /**
      * Give a random unique ID without collision
      * @return {String}
      */
-    pickUniqueID: function () {
+    pickUniqueID () {
         return new String("");
     },
 
@@ -231,7 +222,7 @@ var Utils = {
      * @param {*} func - Anything to test
      * @return {Boolean}
      */
-    isFunction: function (func) {
+    isFunction (func) {
         return func instanceof Function;
     },
 
@@ -240,7 +231,7 @@ var Utils = {
      * @param {*} array - Anything to test
      * @return {Boolean}
      */
-    isArray: function (array) {
+    isArray (array) {
         return Array.isArray(array);
     },
 
@@ -249,7 +240,7 @@ var Utils = {
      * @param {*} string - Anything to test
      * @return {Boolean}
      */
-    isString: function (string) {
+    isString (string) {
         return typeof string === "string";
     },
 
@@ -258,7 +249,7 @@ var Utils = {
      * @param {*} number - Anything to test
      * @return {Boolean}
      */
-    isNumber: function (number) {
+    isNumber (number) {
         return typeof number === "number";
     },
 
@@ -267,7 +258,7 @@ var Utils = {
      * @param {*} value - Anything to test
      * @return {Boolean}
      */
-    isUndefined: function (value) {
+    isUndefined (value) {
         return value === undefined;
     },
 
@@ -276,7 +267,7 @@ var Utils = {
      * @param {String} str - Any string
      * @return {String}
      */
-    sanitize: function (str) {
+    sanitize (str) {
         return str.replace(/^\W+|\W+$/g, "").replace(/\W+/g, "_").toLowerCase();
     },
 
@@ -285,10 +276,9 @@ var Utils = {
      * @param {String} str - Any string
      * @return {String}
      */
-    camelize: function (str) {
-        return str.replace(/^\W+/, "").toLowerCase().replace(/\W+(\w?)/g, function (match, capture) {
-            return capture && capture[0].toUpperCase() + capture.slice(1);
-        });
+    camelize (str) {
+        return str.replace(/^\W+/, "").toLowerCase()
+            .replace(/\W+(\w?)/g, (match, capture) => capture && capture[0].toUpperCase() + capture.slice(1));
     },
 
     /**
@@ -296,13 +286,14 @@ var Utils = {
      * @param {String} word - Any word
      * @return {String}
      */
-    an: function an (word) {
+    an (word) {
         if (!word.length) {
             return "";
         }
 
-        var vowels = "aeiou".split("");
-        return (vowels.includes(word[0]) ? "an" : "a") + " " + word;
+        const vowels = "aeiou".split("");
+        const prefix = vowels.includes(word[0]) ? "an" : "a";
+        return `${prefix} ${word}`;
     },
 
     /**
@@ -312,11 +303,9 @@ var Utils = {
      * [ [1, "wtr"], [2, "wtr"] ] => [ [3, "wtr"] ]
      * @return {Array}
      */
-    compactResources: function (resources) {
-        return resources.reduce(function (reduced, item) {
-            var known = reduced.find(function (entry) {
-                return entry[1] === item[1];
-            });
+    compactResources (resources) {
+        return resources.reduce((reduced, item) => {
+            const known = reduced.find(entry => entry[1] === item[1]);
             if (known) {
                 known[0] += item[0];
             }
@@ -324,16 +313,14 @@ var Utils = {
                 reduced.push(item);
             }
             return reduced;
-        }, []).sort(function (a, b) {
-            return b[0] - a[0];
-        });
+        }, []).sort((a, b) => b[0] - a[0]);
     },
 
     /**
      * Get a precise timestamp (it's not now)
      * @return {Number}
      */
-    getNow: function getNow () {
+    getNow () {
         return MathsUtils.floor(performance.now());
     },
 
@@ -343,57 +330,52 @@ var Utils = {
      * @param {Function} action - A function called with each loading
      * @return {Promise}
      */
-    loadAsync: function loadAsync (urls, action) {
-        var loaded = {};
-        var loadCount = 0;
-        var keys = Object.keys(urls);
-        var toLoad = keys.length;
-        return Promise.all(keys.map(function (key) {
-            var url = urls[key];
-            var promise = fetch(url).then(function (response) {
+    loadAsync (urls, action) {
+        const loaded = {};
+        let loadCount = 0;
+        const keys = Object.keys(urls);
+        const toLoad = keys.length;
+        return Promise.all(keys.map((key) => {
+            const url = urls[key];
+            let promise = fetch(url).then((response) => {
                 if (response.ok) {
                     return response;
                 }
-                else {
-                    throw new URIError("[" + response.status + "] " + url + " " + response.statusText);
-                }
+
+                throw new URIError(`[${response.status}] ${url} ${response.statusText}`);
             });
-            var format = url.substr(url.lastIndexOf(".") + 1);
+            const format = url.substr(url.lastIndexOf(".") + 1);
             switch (format) {
                 case "png":
-                    promise = promise.then(function (response) {
-                        var img = new Image();
-                        return response.blob().then(function (blob) {
+                    promise = promise.then((response) => {
+                        const img = new Image();
+                        return response.blob().then((blob) => {
                             img.src = URL.createObjectURL(blob);
                             return img;
                         });
                     });
                     break;
                 case "json":
-                    promise = promise.then(function (response) {
-                        return response.json();
-                    });
+                    promise = promise.then(response => response.json());
                     break;
                 case "woff":
                 case "woff2":
                 case "ttf":
-                    promise = promise.then(function () {
-                        var style = document.createElement("style");
-                        style.html = "@font-face {\n" +
-                            "    font-family: " + key + ";\n" +
-                            "    src: url(" + url + ") format('" + format + "');\n" +
-                            "}";
+                    promise = promise.then(() => {
+                        const style = document.createElement("style");
+                        style.html = `@font-face {
+                            font-family: ${key};
+                            src: url(${url}) format("${format}");
+                        }`;
                         return style;
                     });
                     break;
             }
-            return promise.then(function (file) {
+            return promise.then((file) => {
                 // Each step
                 loaded[key] = file;
-                action(++loadCount / toLoad * 100, key);
+                action((++loadCount / toLoad) * 100, key);
             });
-        })).then(function () {
-            return loaded;
-        });
-    }
+        })).then(() => loaded);
+    },
 };

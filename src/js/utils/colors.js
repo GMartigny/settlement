@@ -7,12 +7,12 @@
  */
 function Color (rgb) {
     rgb = rgb.replace("#", "");
-    var RGBSplit = 3;
-    var precision = MathsUtils.floor(rgb.length / RGBSplit);
+    const RGBSplit = 3;
+    const precision = MathsUtils.floor(rgb.length / RGBSplit);
 
-    var radix = MathsUtils.RADIX.HEXA;
-    var growingRatio = (radix + 1) / ((1 / (radix - 1)) * (MathsUtils.pow(radix, precision) - 1)); // "C" => "CC", "CCC" => "CC"
-    var i = 0;
+    const radix = MathsUtils.RADIX.HEXA;
+    const growingRatio = (radix + 1) / ((1 / (radix - 1)) * ((radix ** precision) - 1)); // "C" => "CC", "CCC" => "CC"
+    let i = 0;
     this.r = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i++) * precision, precision)) * growingRatio);
     this.g = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i++) * precision, precision)) * growingRatio);
     this.b = MathsUtils.round(MathsUtils.toDeci(rgb.substr((i) * precision, precision)) * growingRatio);
@@ -24,7 +24,7 @@ Color.prototype = {
      * @param {Number} opacity - An opacity number between 0 and 1
      * @return {Color} Itself
      */
-    fade: function (opacity) {
+    fade (opacity) {
         this.a = MathsUtils.constrain(opacity, 0, 1);
         return this;
     },
@@ -32,51 +32,52 @@ Color.prototype = {
      * Turn this color into its grey value
      * @return {Color} Itself
      */
-    grey: function () {
-        this.r = this.g = this.b = MathsUtils.average(this.r, this.g, this.b);
+    grey () {
+        const average = MathsUtils.average(this.r, this.g, this.b);
+        this.r = average;
+        this.g = average;
+        this.b = average;
         return this;
     },
     /**
      * Return hexadecimal format
      * @return {String}
      */
-    toHexa: function () {
-        var hex = MathsUtils.toHexa;
-        var pad = String.prototype.padStart;
-        var args = [2, "0"];
-        return "#" + pad.apply(hex(this.r), args) + pad.apply(hex(this.g), args) + pad.apply(hex(this.b), args);
+    toHexa () {
+        const hex = MathsUtils.toHexa;
+        return `#${hex(this.r).padStart(2, "0")}${hex(this.g).padStart(2, "0")}${hex(this.b).padStart(2, "0")}`;
     },
     /**
      * Return rgb format
      * @return {String}
      */
-    toRGB: function () {
-        return "rgb(" + [this.r, this.g, this.b].join(", ") + ")";
+    toRGB () {
+        return `rgb(${[this.r, this.g, this.b].join(", ")})`;
     },
     /**
      * Return rgba format
      * @return {String}
      */
-    toRGBA: function () {
-        return "rgba(" + [this.r, this.g, this.b, this.a].join(", ") + ")";
+    toRGBA () {
+        return `rgba(${[this.r, this.g, this.b, this.a].join(", ")})`;
     },
     /**
      * Stringify this color
      * @return {String}
      */
-    toString: function () {
+    toString () {
         return this.a < 1 ? this.toRGBA() : this.toHexa();
-    }
+    },
 };
 
-var ColorsUtils = {
+const ColorsUtils = {
     /**
      * Fade a color to an opacity
      * @param {String} rgb - RGB Hexa representation of a color
      * @param {Number} opacity - An opacity number between 0 and 1
      * @return {String}
      */
-    fade: function fade (rgb, opacity) {
+    fade (rgb, opacity) {
         return (new Color(rgb)).fade(opacity).toString();
     },
     /**
@@ -84,7 +85,7 @@ var ColorsUtils = {
      * @param {String} rgb - RGB Hexa representation of a color
      * @return {String}
      */
-    grey: function (rgb) {
+    grey (rgb) {
         return (new Color(rgb)).grey().toString();
-    }
+    },
 };

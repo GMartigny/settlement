@@ -1,26 +1,24 @@
-"use strict";
 /* exported DataManager */
 
 /**
  * Data holder
  */
-var DataManager = (function iife () { // eslint-disable-line max-statements
-
+const DataManager = (function iife () { // eslint-disable-line max-statements
     /* eslint-disable no-magic-numbers */
 
-    var hoursPerDay = 24;
-    var time = {
+    const hoursPerDay = 24;
+    const time = {
         minute: 1 / 60,
         hour: 1,
         day: 24,
         week: 7 * hoursPerDay,
         month: 30 * hoursPerDay,
-        year: 365 * hoursPerDay
+        year: 365 * hoursPerDay,
     };
 
-    var directions = [
+    const directions = [
         "north", "south", "east", "west",
-        "north-east", "north-west", "south-east", "south-west"
+        "north-east", "north-west", "south-east", "south-west",
     ];
 
     /**
@@ -100,41 +98,41 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
      * @prop {Number} [iteration=0] - Number of time it take to have a 100% chance to get the perk
      */
 
-    var ids = {
+    const ids = {
         resources: {
             gatherables: {
                 common: {},
                 uncommon: {},
-                rare: {}
+                rare: {},
             },
             craftables: {
                 basic: {},
                 complex: {},
-                advanced: {}
+                advanced: {},
             },
-            special: {}
+            special: {},
         },
         buildings: {
             small: {},
             medium: {},
             big: {},
-            special: {}
+            special: {},
         },
         actions: {},
         locations: {
             near: {},
             far: {},
-            epic: {}
+            epic: {},
         },
         incidents: {
             easy: {},
             medium: {},
-            hard: {}
+            hard: {},
         },
-        perks: {}
+        perks: {},
     };
 
-    var db = {};
+    const db = {};
 
     /**
      * Add a new object to the database
@@ -142,13 +140,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
      * @return {ID}
      */
     function insert (data) {
-        var id = btoa(data.id);
+        const id = btoa(data.id);
         if (IS_DEV) {
             if (!data.id) {
-                console.warn("Item with no id ", item);
+                console.warn("Item with no id ", data);
             }
             if (db[id]) {
-                console.warn("Two items have the same id ", item);
+                console.warn("Two items have the same id ", data, db[id]);
             }
         }
         data.id = id;
@@ -174,7 +172,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
      * @return {String}
      */
     function quote (str) {
-        return "<i class='quote'>" + str + "</i>";
+        return `<i class="quote">${str}</i>`;
     }
 
     /* eslint-disable valid-jsdoc */
@@ -186,10 +184,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "room",
         desc: "A place for someone in the camp.",
         icon: "person",
-        order: 0
+        order: 0,
     });
 
-    /** GATHERABLES COMMON **/
+    /* GATHERABLES COMMON */
 
     ids.resources.gatherables.common.water = insert({
         id: "wtr",
@@ -197,7 +195,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Water is definitely important to survive in this harsh environment.",
         icon: "water-bottle",
         dropRate: 100,
-        order: 10
+        order: 10,
     });
     ids.resources.gatherables.common.food = insert({
         id: "fod",
@@ -205,7 +203,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Everyone need food to keep his strength.",
         icon: "foodcan",
         dropRate: 90,
-        order: 20
+        order: 20,
     });
     ids.resources.gatherables.common.rock = insert({
         id: "rck",
@@ -213,7 +211,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: quote("There's rocks everywhere ! Why would you bring this back ?"),
         icon: "rock",
         dropRate: 100,
-        order: 30
+        order: 30,
     });
     ids.resources.gatherables.common.scrap = insert({
         id: "scp",
@@ -221,7 +219,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "An old rusty piece of metal.",
         icon: "metal-scraps",
         dropRate: 60,
-        order: 40
+        order: 40,
     });
 
     ids.people = insert({
@@ -230,12 +228,12 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "The workforce and the bane of the camp.",
         needs: [
             [1 / time.day, ids.resources.gatherables.common.water, "thirsty"],
-            [1 / time.day, ids.resources.gatherables.common.food, "starving"]
+            [1 / time.day, ids.resources.gatherables.common.food, "starving"],
         ],
-        dropRate: 0.001
+        dropRate: 0.001,
     });
 
-    /** GATHERABLES UNCOMMON **/
+    /* GATHERABLES UNCOMMON */
 
     ids.resources.gatherables.uncommon.bolts = insert({
         id: "blt",
@@ -243,7 +241,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Little metal nuts and bolts to fasten anything in place.",
         icon: "nuts-and-bolts",
         dropRate: 65,
-        order: 50
+        order: 50,
     });
     ids.resources.gatherables.uncommon.sand = insert({
         id: "snd",
@@ -251,7 +249,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Just pure fine sand.",
         icon: "sand-pile",
         dropRate: 50,
-        order: 55
+        order: 55,
     });
     ids.resources.gatherables.uncommon.oil = insert({
         id: "oil",
@@ -259,10 +257,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "About a liter of gas-oil.",
         icon: "jerrycan",
         dropRate: 20,
-        order: 60
+        order: 60,
     });
 
-    /** GATHERABLES RARE **/
+    /* GATHERABLES RARE */
 
     ids.resources.gatherables.rare.medication = insert({
         id: "mct",
@@ -270,7 +268,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "An unlabeled medication, hope it's still good.",
         icon: "medications",
         dropRate: 7,
-        order: 70
+        order: 70,
     });
     ids.resources.gatherables.rare.electronic = insert({
         id: "elc",
@@ -278,10 +276,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Some basic micro-electronics components.",
         icon: "electronic-parts",
         dropRate: 10,
-        order: 75
+        order: 75,
     });
 
-    /** GATHERABLES SPECIAL **/
+    /* GATHERABLES SPECIAL */
 
     ids.resources.special.ruins = insert({
         id: "run",
@@ -289,7 +287,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Directions to a point of interest found earlier.",
         icon: "map",
         order: 80,
-        dropRate: 0.6
+        dropRate: 0.6,
     });
     ids.resources.special.quartz = insert({
         id: "qtz",
@@ -297,7 +295,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "A rough uncut gem of quartz. Quite valuable.",
         icon: "gem",
         dropRate: 10,
-        order: 77
+        order: 77,
     });
 
     ids.resources.craftables.basic.component = insert({
@@ -307,24 +305,24 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         icon: "pipes-large",
         consume: [
             [2, ids.resources.gatherables.common.scrap],
-            [2, ids.resources.gatherables.uncommon.bolts]
+            [2, ids.resources.gatherables.uncommon.bolts],
         ],
         dropRate: 120,
-        order: 110
+        order: 110,
     });
 
 
-    /** BUILDINGS SPECIAL **/
+    /* BUILDINGS SPECIAL */
 
     ids.buildings.special.wreckage = insert({
         id: "wrk",
         name: "wreckage",
         desc: "Remainings of a car.",
         asset: "wreckage",
-        order: 0
+        order: 0,
     });
 
-    /***** ACTIONS *****/
+    /* ACTIONS */
 
     ids.actions.launch = insert({
         id: "lnc",
@@ -334,17 +332,17 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         isOut: 1,
         unique: true,
         consume: [
-            [10, ids.resources.gatherables.uncommon.oil]
+            [10, ids.resources.gatherables.uncommon.oil],
         ],
-        effect: function () {
+        effect () {
             MessageBus.notify(MessageBus.MSG_TYPES.WIN);
         },
-        log: function () {
-            var duration = this.getSurvivalDuration();
-            return "After " + duration + ", it's finally possible to leave this damned crash-site.<br/>" +
-                "Everyone shove itself into the car and dream of the better life waiting at the end of the road.";
+        log () {
+            const duration = this.getSurvivalDuration();
+            return `After ${duration}, it's finally possible to leave this damned crash-site.<br/>
+                Everyone shove itself into the car and dream of the better life waiting at the end of the road.`;
         },
-        order: 15
+        order: 15,
     });
     ids.actions.exchange = insert({
         id: "exc",
@@ -353,15 +351,15 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 7,
         energy: 20,
         consume: [
-            [2, ids.resources.craftables.complex.jewelry]
+            [2, ids.resources.craftables.complex.jewelry],
         ],
         giveSpan: [2, 3],
         giveList: [
             ids.resources.craftables.basic,
-            ids.resources.craftables.complex
+            ids.resources.craftables.complex,
         ],
         log: "@people.name manage to trade a couple of jewelries for @give.",
-        order: 10
+        order: 10,
     });
     ids.actions.nurse = insert({
         id: "nrs",
@@ -370,20 +368,20 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 2,
         energy: 1,
         consume: [
-            [2, ids.resources.gatherables.rare.medication]
+            [2, ids.resources.gatherables.rare.medication],
         ],
-        effect: function (actio, option, effect) {
-            var lowest = null;
-            this.people.forEach(function (p) {
-                if (!lowest || p.life < lowest.life) {
-                    lowest = p;
+        effect (actio, option, effect) {
+            let lowest = null;
+            this.people.forEach((person) => {
+                if (!lowest || person.life < lowest.life) {
+                    lowest = person;
                 }
             });
             lowest.updateLife(99);
             effect.cured = lowest;
         },
         log: "Thanks to @people.name, @cured.name feel better.",
-        order: 7
+        order: 7,
     });
     ids.actions.heal = insert({
         id: "hel",
@@ -392,12 +390,12 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 2,
         energy: 1,
         consume: [
-            [2, ids.resources.gatherables.rare.medication]
+            [2, ids.resources.gatherables.rare.medication],
         ],
-        effect: function (action, option, effect) {
-            var lifeChange = 99;
-            var hasPharma = this.buildings.has(ids.buildings.small.pharmacy);
-            var isHealer = action.owner.hasPerk(ids.perks.healer);
+        effect (action, option, effect) {
+            let lifeChange = 99;
+            const hasPharma = this.buildings.has(ids.buildings.small.pharmacy);
+            const isHealer = action.owner.hasPerk(ids.perks.healer);
             if (!hasPharma && !isHealer && MathsUtils.random() < 2 / 5) {
                 lifeChange = -10;
                 // remember for log
@@ -405,12 +403,12 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             }
             action.owner.updateLife(lifeChange);
         },
-        log: function (effect) {
+        log (effect) {
             return effect.wasBad ?
                 "After feeling not so well, @people.name realise taking these pills took a hit on his health." :
                 "This time, it actually improve @people.name's health.";
         },
-        order: 6
+        order: 6,
     });
     ids.actions.sleep = insert({
         id: "slp",
@@ -418,14 +416,14 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Get some rest to restore energy.",
         time: 7,
         energy: 0,
-        effect: function (action) {
+        effect (action) {
             action.owner.setEnergy(this.incidents.has(ids.incidents.medium.fever) ? 40 : 100);
         },
         unlock: [
-            ids.actions.heal
+            ids.actions.heal,
         ],
         log: "@people.name feels well rested now.",
-        order: 5
+        order: 5,
     });
     ids.actions.harvestPlot = insert({
         id: "hrp",
@@ -433,14 +431,14 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
         time: 4,
         consume: [
-            [1, ids.resources.gatherables.common.water]
+            [1, ids.resources.gatherables.common.water],
         ],
         giveSpan: [1.5, 2],
         giveList: [
-            ids.resources.gatherables.common.food
+            ids.resources.gatherables.common.food,
         ],
         log: "Our crops produce @give.",
-        order: 70
+        order: 70,
     });
     ids.actions.harvestField = insert({
         id: "hrf",
@@ -448,66 +446,66 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
         time: 6,
         consume: [
-            [2, ids.resources.gatherables.common.water]
+            [2, ids.resources.gatherables.common.water],
         ],
         giveSpan: [4, 5],
         giveList: [
-            ids.resources.gatherables.common.food
+            ids.resources.gatherables.common.food,
         ],
         log: "Our crops produce @give.",
-        order: 70
+        order: 70,
     });
     ids.actions.drawFromRiver = insert({
         id: "dfr",
         name: "draw water",
-        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " from the river.",
+        desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} from the river.`,
         time: 8,
         energy: 50,
         isOut: 1,
-        condition: function (action) {
+        condition (action) {
             return !action.owner.actions.has(ids.actions.drawFromWell);
         },
         giveSpan: [2, 6],
         giveList: [
-            ids.resources.gatherables.common.water
+            ids.resources.gatherables.common.water,
         ],
         log: "Coming back from the river, @people.name brings @give with @people.accusative.",
-        order: 60
+        order: 60,
     });
     ids.actions.drawFromWell = insert({
         id: "dfw",
         name: "draw water",
-        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " from our well.",
+        desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} from our well.`,
         time: 2,
         energy: 15,
         giveSpan: [1, 3],
         giveList: [
-            ids.resources.gatherables.common.water
+            ids.resources.gatherables.common.water,
         ],
         log: "Using our well, @people.name draw @give.",
-        order: 60
+        order: 60,
     });
     ids.actions.drawFromPump = insert({
         id: "dfp",
         name: "draw water",
-        desc: "Get some " + formatResource(ids.resources.gatherables.common.water) + " at the pump.",
+        desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} at the pump.`,
         time: 2,
         giveSpan: [3, 3],
         giveList: [
-            ids.resources.gatherables.common.water
+            ids.resources.gatherables.common.water,
         ],
         log: "Using our pump, @people.name draw @give.",
-        order: 60
+        order: 60,
     });
     ids.actions.build = insert({
         id: "bui",
         name: "build",
         desc: "Put together some materials to come up with what looks like a building.",
         build: ids.option,
-        options: function () {
+        options () {
             return this.possibleBuildings();
         },
-        order: 50
+        order: 50,
     });
     ids.actions.craft = insert({
         id: "crf",
@@ -515,42 +513,42 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Use some resources to tinker something useful.",
         time: 4,
         energy: 10,
-        options: function () {
+        options () {
             return this.unlockedCraftables();
         },
         give: [
-            [1, ids.option]
+            [1, ids.option],
         ],
         unlock: [
-            ids.actions.build
+            ids.actions.build,
         ],
         log: "@people.name succeeds to craft @give.",
-        order: 30
+        order: 30,
     });
     ids.actions.explore = insert({
         id: "xpl",
         name: "explore",
-        desc: "Remember that " + formatResource(ids.resources.special.ruins) +
-            " found the other day ? Let's see what can be gather there.",
+        desc: `Remember that ${formatResource(ids.resources.special.ruins)} found the other day ?
+            Let's see what can be gather there.`,
         time: time.day,
         energy: 100,
         isOut: 1,
         consume: [
             [2, ids.resources.gatherables.common.water],
             [1, ids.resources.gatherables.common.food],
-            [1, ids.resources.special.ruins]
+            [1, ids.resources.special.ruins],
         ],
-        options: function () {
+        options () {
             return this.knownLocations;
         },
         giveSpan: [8, 10],
         giveList: [
-            ids.resources.special.quartz
+            ids.resources.special.quartz,
         ],
         log: "All locations should have own log",
-        order: 20
+        order: 20,
     });
-    var ruinsDropRate = db[ids.resources.special.ruins].dropRate;
+    const ruinsDropRate = db[ids.resources.special.ruins].dropRate;
     ids.actions.scour = insert({
         id: "scr",
         name: "scour",
@@ -558,16 +556,16 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 4,
         isOut: 1,
         consume: [
-            [1, ids.resources.gatherables.common.water]
+            [1, ids.resources.gatherables.common.water],
         ],
-        giveSpan: [ruinsDropRate * 1.5 / 2, (ruinsDropRate * 1.5 + 1) / 2], // twice more ruin drop rate
+        giveSpan: [(ruinsDropRate * 1.5) / 2, ((ruinsDropRate * 1.5) + 1) / 2], // twice more ruin drop rate
         giveList: [
-            ids.resources.special.ruins
+            ids.resources.special.ruins,
         ],
-        log: function (effect) {
-            var log;
+        log (effect) {
+            let log;
             if (effect.give) {
-                var location = Utils.randomize(ids.locations);
+                const location = Utils.randomize(ids.locations);
                 if (!this.knownLocations.includes(location)) {
                     this.knownLocations.push(location);
                 }
@@ -580,37 +578,36 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             effect.direction = directions.random();
             return log;
         },
-        order: 10
+        order: 10,
     });
     ids.actions.roam = insert({
         id: "ram",
         name: "roam",
-        desc: "Explore the surroundings hoping to find a " +
-            formatResource(ids.resources.special.ruins) + ".",
+        desc: `Explore the surroundings hoping to find a ${formatResource(ids.resources.special.ruins)}.`,
         time: 5,
         isOut: 1,
         consume: [
-            [1, ids.resources.gatherables.common.water]
+            [1, ids.resources.gatherables.common.water],
         ],
-        condition: function (action) {
+        condition (action) {
             return !action.owner.actions.has(ids.actions.scour);
         },
         unlock: [
-            ids.actions.explore
+            ids.actions.explore,
         ],
         unlockAfter: [
-            [9, ids.actions.scour]
+            [9, ids.actions.scour],
         ],
         giveSpan: [ruinsDropRate / 2, (ruinsDropRate + 1) / 2],
         giveList: [
-            ids.resources.special.ruins
+            ids.resources.special.ruins,
         ],
-        log: function (effect) {
-            var log;
+        log (effect) {
+            let log;
             if (effect.give) {
-                var location = Utils.randomize({
+                const location = Utils.randomize({
                     near: ids.locations.near,
-                    far: ids.locations.far
+                    far: ids.locations.far,
                 });
                 if (!this.knownLocations.includes(location)) {
                     this.knownLocations.push(location);
@@ -624,7 +621,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             effect.direction = Utils.capitalize(directions.random());
             return log;
         },
-        order: 10
+        order: 10,
     });
     ids.actions.gather = insert({
         id: "gtr",
@@ -634,39 +631,39 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         isOut: 1,
         unlock: [
             ids.actions.roam,
-            ids.actions.craft
+            ids.actions.craft,
         ],
         giveSpan: [3, 6],
         giveList: ids.resources.gatherables.flatten(),
         log: "@people.name comes back with @give.",
-        order: 1
+        order: 1,
     });
     ids.buildings.special.firePit = insert({
         id: "fp1",
         name: "fire pit",
         asset: "fire",
-        shadow: true
+        shadow: true,
     });
     ids.buildings.special.firePit2 = insert({
         id: "fp2",
         name: "fire pit",
         upgrade: ids.buildings.special.firePit,
         asset: "fire2",
-        shadow: true
+        shadow: true,
     });
     ids.buildings.special.forum = insert({
         id: "fr0",
         name: "forum",
         desc: "The center and start of our settlement.",
         unlockForAll: [
-            ids.actions.sleep
+            ids.actions.sleep,
         ],
         upgrade: ids.buildings.special.wreckage,
         give: [
-            [1, ids.resources.room]
+            [1, ids.resources.room],
         ],
         build: ids.buildings.special.firePit,
-        asset: "forum"
+        asset: "forum",
     });
     ids.actions.settle = insert({
         id: "stl",
@@ -674,17 +671,17 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Ok, let's settle right there !",
         time: 2,
         energy: 0,
-        effect: function () {
+        effect () {
             this.flags.settled = 1;
         },
         unlock: [
-            ids.actions.gather
+            ids.actions.gather,
         ],
         build: ids.buildings.special.forum,
         log: "Since the global war, the environment is rotten with radiations. " +
             "It won't be easy to survive in the middle of these wastelands, but there's no other choice now.",
         order: 0,
-        unique: true
+        unique: true,
     });
     ids.actions.look = insert({
         id: "lok",
@@ -692,40 +689,40 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: quote("What am I doing here ?"),
         time: 1,
         energy: 0,
-        effect: function () {
-            TimerManager.timeout(function () {
+        effect () {
+            TimerManager.timeout(() => {
                 LogManager.log("I'll need a shelter.", MessageBus.MSG_TYPES.LOGS.QUOTE);
             }, GameController.TICK_LENGTH / 2);
         },
         give: [
             [8, ids.resources.gatherables.common.water],
             [6, ids.resources.gatherables.common.food],
-            [2, ids.resources.craftables.basic.component]
+            [2, ids.resources.craftables.basic.component],
         ],
         unlock: [
-            ids.actions.settle
+            ids.actions.settle,
         ],
         log: "After some reflexion, @people.name remembers the crash. " +
             "@people.nominative grabs @give from @people.possessive car trunk.",
         order: 0,
-        unique: true
+        unique: true,
     });
     ids.actions.wakeUp = insert({
         id: "wku",
         name: "wake up",
         unlock: [
-            ids.actions.look
+            ids.actions.look,
         ],
-        effect: function (action) {
+        effect (action) {
             action.owner.updateEnergy(100);
             action.owner.updateLife(100);
         },
         log: "@people.name gets up painfully.",
         order: 0,
-        unique: true
+        unique: true,
     });
 
-    /** CRAFTABLES BASIC **/
+    /* CRAFTABLES BASIC */
 
     ids.resources.craftables.basic.stone = insert({
         id: "stn",
@@ -733,10 +730,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "A round and well polish stone.",
         icon: "stone",
         consume: [
-            [3, ids.resources.gatherables.common.rock]
+            [3, ids.resources.gatherables.common.rock],
         ],
         dropRate: 100,
-        order: 90
+        order: 90,
     });
     ids.resources.craftables.basic.tool = insert({
         id: "tol",
@@ -745,13 +742,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         icon: "tools",
         consume: [
             [1, ids.resources.craftables.basic.component],
-            [2, ids.resources.gatherables.common.rock]
+            [2, ids.resources.gatherables.common.rock],
         ],
         dropRate: 90,
-        order: 111
+        order: 111,
     });
 
-    /** BUILDINGS SMALL **/
+    /* BUILDINGS SMALL */
 
     ids.buildings.small.furnace = insert({
         id: "frn",
@@ -760,13 +757,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 7,
         consume: [
             [8, ids.resources.gatherables.common.rock],
-            [2, ids.resources.gatherables.uncommon.oil]
+            [2, ids.resources.gatherables.uncommon.oil],
         ],
         asset: "",
         order: 15,
-        log: "A simple furnace that can smelt small things like " +
-            formatResource(ids.resources.gatherables.uncommon.sand) + " or " +
-            formatResource(ids.resources.gatherables.rare.electronic) + "."
+        log: `A simple furnace that can smelt small things
+            like ${formatResource(ids.resources.gatherables.uncommon.sand)} or 
+            ${formatResource(ids.resources.gatherables.rare.electronic)}.`,
     });
     ids.resources.craftables.basic.glass = insert({
         id: "gls",
@@ -775,60 +772,59 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         icon: "glass-pane",
         ifHas: ids.buildings.small.furnace,
         consume: [
-            [4, ids.resources.gatherables.uncommon.sand]
+            [4, ids.resources.gatherables.uncommon.sand],
         ],
         dropRate: 60,
-        order: 100
+        order: 100,
     });
     ids.buildings.small.forum1 = insert({
         id: "fr1",
         name: "forum+1",
-        desc: "Add " + formatResource(ids.resources.room, 1) + " to the forum.",
+        desc: `Add ${formatResource(ids.resources.room, 1)} to the forum.`,
         time: 2,
         upgrade: ids.buildings.special.forum,
         consume: [
             [6, ids.resources.gatherables.uncommon.bolts],
-            [4, ids.resources.gatherables.common.scrap]
+            [4, ids.resources.gatherables.common.scrap],
         ],
         give: [
-            [1, ids.resources.room]
+            [1, ids.resources.room],
         ],
         asset: "forum1",
         order: 10,
-        log: "More space to sleep means more people joining and helping."
+        log: "More space to sleep means more people joining and helping.",
     });
     ids.buildings.small.plot = insert({
         id: "plt",
         name: "farm plot",
-        desc: "A little arranged plot of soil to grow some " +
-            formatResource(ids.resources.gatherables.common.food) + ".",
+        desc: `A little arranged plot of soil to grow some ${formatResource(ids.resources.gatherables.common.food)}.`,
         time: 9,
         consume: [
             [5, ids.resources.gatherables.common.food],
-            [10, ids.resources.gatherables.uncommon.sand]
+            [10, ids.resources.gatherables.uncommon.sand],
         ],
         unlockForAll: [
-            ids.actions.harvestPlot
+            ids.actions.harvestPlot,
         ],
         asset: "plot",
         order: 12,
-        log: "Crops required care but that's going to help keeping a constant stock of " +
-            formatResource(ids.resources.gatherables.common.food) + "."
+        log: `Crops required care but that's going to help keeping a constant stock of
+            ${formatResource(ids.resources.gatherables.common.food)}.`,
     });
     ids.buildings.small.pharmacy = insert({
         id: "phr",
         name: "pharmacy",
-        desc: quote("Maybe we should avoid letting " +
-            formatResource(ids.resources.gatherables.rare.medication) + "s rot in plain sunlight !"),
+        desc: quote(`Maybe we should avoid letting ${formatResource(ids.resources.gatherables.rare.medication)}s
+            rot in plain sunlight !`),
         time: 6,
         consume: [
             [5, ids.resources.gatherables.rare.medication],
-            [4, ids.resources.craftables.basic.component]
+            [4, ids.resources.craftables.basic.component],
         ],
         asset: "pharmacy",
         order: 16,
-        log: "Sorting the " + formatResource(ids.resources.gatherables.rare.medication) +
-            "s should prevent further mistakes and bad reaction."
+        log: `Sorting the ${formatResource(ids.resources.gatherables.rare.medication)}s
+            should prevent further mistakes and bad reaction.`,
     });
     ids.buildings.small.well = insert({
         id: "wel",
@@ -837,65 +833,64 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         time: 16,
         consume: [
             [10, ids.resources.gatherables.common.rock],
-            [4, ids.resources.craftables.basic.tool]
+            [4, ids.resources.craftables.basic.tool],
         ],
         give: [
-            [5, ids.resources.gatherables.common.water]
+            [5, ids.resources.gatherables.common.water],
         ],
         unlockForAll: [
-            ids.actions.drawFromWell
+            ids.actions.drawFromWell,
         ],
         lock: [
-            ids.actions.drawFromRiver
+            ids.actions.drawFromRiver,
         ],
         asset: "",
         order: 13,
-        log: "Drawing " + formatResource(ids.resources.gatherables.common.water) +
-            " from the ground should allow to further polish " + formatResource(ids.resources.gatherables.common.rock) +
-            "."
+        log: `Drawing ${formatResource(ids.resources.gatherables.common.water)} from the ground
+            should allow to further polish ${formatResource(ids.resources.gatherables.common.rock)}.`,
     });
 
-    /** BUILDINGS MEDIUM **/
+    /* BUILDINGS MEDIUM */
 
     ids.buildings.medium.forum2 = insert({
         id: "fr2",
         name: "forum+2",
-        desc: "Add " + formatResource(ids.resources.room, 1) + " to the camp.",
+        desc: `Add ${formatResource(ids.resources.room, 1)} to the camp.`,
         time: 5,
         consume: [
             [10, ids.resources.gatherables.uncommon.sand],
             [2, ids.resources.craftables.basic.stone],
-            [3, ids.resources.craftables.basic.glass]
+            [3, ids.resources.craftables.basic.glass],
         ],
         upgrade: ids.buildings.small.forum1,
         give: [
-            [1, ids.resources.room]
+            [1, ids.resources.room],
         ],
         asset: "forum2",
         order: 20,
-        log: "Another room for someone to join. So far, so good."
+        log: "Another room for someone to join. So far, so good.",
     });
     ids.buildings.medium.plot1 = insert({
         id: "fil",
         name: "field",
-        desc: "A larger crop field to produce more " + formatResource(ids.resources.gatherables.common.food) + ".",
+        desc: `A larger crop field to produce more ${formatResource(ids.resources.gatherables.common.food)}.`,
         time: 10,
         lockForAll: [
-            ids.actions.harvestPlot
+            ids.actions.harvestPlot,
         ],
         unlockForAll: [
-            ids.actions.harvestField
+            ids.actions.harvestField,
         ],
         consume: [
             [20, ids.resources.gatherables.common.food],
             [5, ids.resources.craftables.basic.tool],
-            [3, ids.resources.gatherables.rare.medication]
+            [3, ids.resources.gatherables.rare.medication],
         ],
         upgrade: ids.buildings.small.plot,
         asset: "plot+1",
         order: 25,
-        log: "This should be enough to provide " + formatResource(ids.resources.gatherables.common.food) +
-            " for our small encampment."
+        log: `This should be enough
+            to provide ${formatResource(ids.resources.gatherables.common.food)} for our small encampment.`,
     });
     ids.buildings.medium.forge = insert({
         id: "frg",
@@ -905,15 +900,15 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         consume: [
             [10, ids.resources.craftables.basic.stone],
             [6, ids.resources.gatherables.uncommon.oil],
-            [2, ids.resources.craftables.basic.tool]
+            [2, ids.resources.craftables.basic.tool],
         ],
         upgrade: ids.buildings.small.furnace,
         asset: "furnace+1",
         order: 27,
-        log: "A big fire is now roaring in the forge. It should now be possible to forge more complex parts."
+        log: "A big fire is now roaring in the forge. It should now be possible to forge more complex parts.",
     });
 
-    /** CRAFTABLES COMPLEX **/
+    /* CRAFTABLES COMPLEX */
 
     ids.resources.craftables.complex.brick = insert({
         id: "brk",
@@ -923,10 +918,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ifHas: ids.buildings.small.well,
         consume: [
             [1, ids.resources.craftables.basic.stone],
-            [1, ids.resources.craftables.basic.tool]
+            [1, ids.resources.craftables.basic.tool],
         ],
         dropRate: 80,
-        order: 112
+        order: 112,
     });
     ids.resources.craftables.complex.circuit = insert({
         id: "cir",
@@ -936,10 +931,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         consume: [
             [2, ids.resources.gatherables.common.scrap],
             [2, ids.resources.craftables.basic.component],
-            [3, ids.resources.gatherables.rare.electronic]
+            [3, ids.resources.gatherables.rare.electronic],
         ],
         dropRate: 60,
-        order: 114
+        order: 114,
     });
     ids.resources.craftables.complex.metalPipe = insert({
         id: "mtp",
@@ -949,13 +944,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ifHas: ids.buildings.medium.forge,
         consume: [
             [4, ids.resources.gatherables.common.scrap],
-            [1, ids.resources.craftables.basic.tool]
+            [1, ids.resources.craftables.basic.tool],
         ],
         dropRate: 80,
-        order: 115
+        order: 115,
     });
 
-    /** CRAFTABLES ADVANCED **/
+    /* CRAFTABLES ADVANCED */
 
     ids.resources.craftables.advanced.jewelry = insert({
         id: "jwl",
@@ -965,13 +960,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ifHas: ids.buildings.small.furnace,
         consume: [
             [4, ids.resources.gatherables.rare.electronic],
-            [2, ids.resources.special.quartz]
+            [2, ids.resources.special.quartz],
         ],
         dropRate: 40,
-        order: 117
+        order: 117,
     });
 
-    /** BUILDINGS BIG **/
+    /* BUILDINGS BIG */
 
     ids.buildings.big.workshop = insert({
         id: "wrs",
@@ -984,11 +979,11 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             [6, ids.resources.gatherables.common.scrap],
             [5, ids.resources.craftables.basic.glass],
             [10, ids.resources.craftables.basic.tool],
-            [15, ids.resources.craftables.complex.brick]
+            [15, ids.resources.craftables.complex.brick],
         ],
         asset: "",
         order: 35,
-        log: "Good organisation enable to put together new work."
+        log: "Good organisation enable to put together new work.",
     });
     ids.resources.craftables.complex.furniture = insert({
         id: "fnt",
@@ -998,28 +993,28 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ifHas: ids.buildings.big.workshop,
         consume: [
             [2, ids.resources.craftables.basic.glass],
-            [2, ids.resources.craftables.complex.metalPipe]
+            [2, ids.resources.craftables.complex.metalPipe],
         ],
         dropRate: 40,
-        order: 116
+        order: 116,
     });
     ids.buildings.big.forum3 = insert({
         id: "fr3",
         name: "forum+3",
-        desc: "Add " + formatResource(ids.resources.room, 2) + " to the camp.",
+        desc: `Add ${formatResource(ids.resources.room, 2)} to the camp.`,
         time: 6,
         consume: [
             [10, ids.resources.craftables.complex.brick],
             [2, ids.resources.craftables.complex.furniture],
-            [6, ids.resources.craftables.basic.glass]
+            [6, ids.resources.craftables.basic.glass],
         ],
         upgrade: ids.buildings.medium.forum2,
         give: [
-            [2, ids.resources.room]
+            [2, ids.resources.room],
         ],
         asset: "forum+3",
         order: 30,
-        log: "All the forum space is now used for sleeping place."
+        log: "All the forum space is now used for sleeping place.",
     });
     ids.resources.craftables.advanced.engine = insert({
         id: "egn",
@@ -1030,10 +1025,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         consume: [
             [10, ids.resources.gatherables.uncommon.oil],
             [5, ids.resources.craftables.basic.tool],
-            [5, ids.resources.craftables.complex.metalPipe]
+            [5, ids.resources.craftables.complex.metalPipe],
         ],
         dropRate: 30,
-        order: 120
+        order: 120,
     });
     ids.resources.craftables.advanced.computer = insert({
         id: "cmt",
@@ -1044,10 +1039,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         consume: [
             [10, ids.resources.craftables.basic.component],
             [7, ids.resources.craftables.basic.tool],
-            [3, ids.resources.craftables.complex.circuit]
+            [3, ids.resources.craftables.complex.circuit],
         ],
         dropRate: 20,
-        order: 130
+        order: 130,
     });
     ids.buildings.big.radio = insert({
         id: "rdo",
@@ -1057,39 +1052,39 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         ifHas: ids.buildings.big.workshop,
         consume: [
             [4, ids.resources.craftables.complex.circuit],
-            [1, ids.resources.craftables.advanced.computer]
+            [1, ids.resources.craftables.advanced.computer],
         ],
-        effect: function () {
+        effect () {
             DataManager.get(ids.people).dropRate = 1;
         },
         asset: "",
         order: 37,
-        log: "Having a way to make contact should attract more people to the camp, either they want to join or trade."
+        log: "Having a way to make contact should attract more people to the camp, either they want to join or trade.",
     });
     ids.buildings.big.pump = insert({
         id: "pmp",
         name: "water pump",
-        desc: "A buried contraption that collect " + formatResource(ids.resources.gatherables.common.water) +
-            " from the earth moisture.",
+        desc: `A buried contraption that collect ${formatResource(ids.resources.gatherables.common.water)} from
+            the earth moisture.`,
         time: 3 * time.day,
         energy: 120,
         consume: [
             [20, ids.resources.craftables.basic.stone],
             [5, ids.resources.craftables.complex.metalPipe],
-            [1, ids.resources.craftables.advanced.engine]
+            [1, ids.resources.craftables.advanced.engine],
         ],
         upgrade: ids.buildings.small.well,
         unlockForAll: [
-            ids.actions.drawFromPump
+            ids.actions.drawFromPump,
         ],
         lockForAll: [
             ids.actions.drawFromRiver,
-            ids.actions.drawFromWell
+            ids.actions.drawFromWell,
         ],
         asset: "",
         order: 36,
-        log: "A big upgrade to the well ! Now there's a continuous flow of " +
-            formatResource(ids.resources.gatherables.common.water) + " coming up."
+        log: `A big upgrade to the well !
+            Now there's a continuous flow of ${formatResource(ids.resources.gatherables.common.water)} coming up.`,
     });
     ids.buildings.big.trading = insert({
         id: "trd",
@@ -1101,14 +1096,14 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         consume: [
             [2, ids.resources.craftables.basic.glass],
             [10, ids.resources.craftables.complex.brick],
-            [2, ids.resources.craftables.complex.furniture]
+            [2, ids.resources.craftables.complex.furniture],
         ],
         unlockForAll: [
-            ids.actions.exchange
+            ids.actions.exchange,
         ],
         asset: "",
         order: 38,
-        log: "Arranging some space allow to trade with merchant caravan passing by."
+        log: "Arranging some space allow to trade with merchant caravan passing by.",
     });
     ids.buildings.big.module = insert({
         id: "mdl",
@@ -1121,17 +1116,17 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             [15, ids.resources.gatherables.uncommon.oil],
             [5, ids.resources.craftables.complex.furniture],
             [1, ids.resources.craftables.advanced.computer],
-            [2, ids.resources.craftables.advanced.engine]
+            [2, ids.resources.craftables.advanced.engine],
         ],
         unlockForAll: [
-            ids.actions.launch
+            ids.actions.launch,
         ],
         asset: "",
         order: 40,
-        log: "It don't looks so good, but sure thing it should runs well enough."
+        log: "It don't looks so good, but sure thing it should runs well enough.",
     });
 
-    /** NEAR LOCATIONS **/
+    /* NEAR LOCATIONS */
 
     ids.locations.near.mountain = insert({
         id: "mnt",
@@ -1140,23 +1135,23 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables.common.rock,
             ids.resources.gatherables.common.scrap,
-            ids.resources.craftables.basic.component
+            ids.resources.craftables.basic.component,
         ],
         log: "That was hard to climb those mountains, but at least @people.name find @give.",
-        dropRate: 90
+        dropRate: 90,
     });
     ids.locations.near.desert = insert({
         id: "dst",
         name: "desert",
-        desc: "Not much to find in a desert, but that's for sure the best place to get " +
-            formatResource(ids.resources.gatherables.uncommon.sand) + ".",
+        desc: `Not much to find in a desert,
+            but that's for sure the best place to get ${formatResource(ids.resources.gatherables.uncommon.sand)}.`,
         giveList: [
             ids.resources.gatherables.common.scrap,
             ids.resources.gatherables.uncommon.oil,
-            ids.resources.gatherables.uncommon.sand
+            ids.resources.gatherables.uncommon.sand,
         ],
         log: "Dunes everywhere give a felling of hopelessness. Here's @give for the stock.",
-        dropRate: 100
+        dropRate: 100,
     });
     ids.locations.near.supermarket = insert({
         id: "hng",
@@ -1165,29 +1160,29 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables.common.food,
             ids.resources.gatherables.rare.medication,
-            ids.resources.craftables.basic.glass
+            ids.resources.craftables.basic.glass,
         ],
         log: "Quite easy to loot, @people.name returns with @give.",
-        dropRate: 80
+        dropRate: 80,
     });
 
-    /** FAR LOCATIONS **/
+    /* FAR LOCATIONS */
 
     ids.locations.far.river = insert({
         id: "rvr",
         name: "river",
-        desc: "Quite rare to find " + formatResource(ids.resources.gatherables.common.water) +
-            " on those wastelands. This is a valuable location to find.",
+        desc: `Quite rare to find ${formatResource(ids.resources.gatherables.common.water)} on those wastelands.
+            This is a valuable location to find.`,
         unlockForAll: [
-            ids.actions.drawFromRiver
+            ids.actions.drawFromRiver,
         ],
         giveList: [
             ids.resources.gatherables.common.water,
             ids.resources.gatherables.uncommon.bolts,
-            ids.resources.craftables.basic.stone
+            ids.resources.craftables.basic.stone,
         ],
         log: "It's nice by the river, @people.name found @give.",
-        dropRate: 30
+        dropRate: 30,
     });
     ids.locations.far.ruin = insert({
         id: "orn",
@@ -1197,13 +1192,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.component,
-            ids.resources.craftables.basic.tool
+            ids.resources.craftables.basic.tool,
         ],
         log: "Amazing no-one get lost in those caves to get @give.",
-        dropRate: 50
+        dropRate: 50,
     });
 
-    /** EPIC LOCATIONS **/
+    /* EPIC LOCATIONS */
 
     ids.locations.epic.building = insert({
         id: "bld",
@@ -1212,10 +1207,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables.rare.medication,
             ids.resources.craftables.basic.glass,
-            ids.resources.craftables.complex.circuit
+            ids.resources.craftables.complex.circuit,
         ],
         log: "Impossible to guess what that building was, but it sure was interesting. @people.name find @give.",
-        dropRate: 10
+        dropRate: 10,
     });
     ids.locations.epic.spaceship = insert({
         id: "swr",
@@ -1224,13 +1219,13 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables.rare.electronic,
             ids.resources.craftables.basic.tool,
-            ids.resources.craftables.complex.furniture
+            ids.resources.craftables.complex.furniture,
         ],
         log: "Tearing apart this wreckage allow to salvage @give.",
-        dropRate: 5
+        dropRate: 5,
     });
 
-    /** EASY INCIDENTS **/
+    /* EASY INCIDENTS */
 
     ids.incidents.easy.chest = insert({
         id: "chs",
@@ -1239,28 +1234,28 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             "It might contains rare resources, but there's risks to fiddle with it ?",
         yes: "Open it up",
         no: "Leave it",
-        onStart: function (incident, effect) {
+        onStart (incident, effect) {
             if (MathsUtils.random() < 0.7) {
-                var give = Utils.randomize(ids.resources.craftables);
+                const give = Utils.randomize(ids.resources.craftables);
                 this.earn(1, give);
                 effect.give = Utils.formatArray([[1, give]]);
             }
             else {
-                var person = this.people.getValues().random();
-                var amount = MathsUtils.constrain(MathsUtils.random(10, 30), 0, person.life - 1);
+                const person = this.people.getValues().random();
+                const amount = MathsUtils.constrain(MathsUtils.random(10, 30), 0, person.life - 1);
                 person.updateLife(-amount);
                 effect.person = person;
                 effect.lost = amount;
             }
         },
         dropRate: 30,
-        log: function (effect) {
-            var log;
+        log (effect) {
+            let log;
             if (effect.give) {
                 log = LogManager.personify("nothing to fear, @give was found inside the chest.", effect);
             }
             else if (effect.person) {
-                var message = "a loud explosion blast @name away as soon as @nominative try to open the chest. ";
+                let message = "a loud explosion blast @name away as soon as @nominative try to open the chest. ";
                 if (effect.lost < 20) {
                     message += "thankfully, more scared than hurt, @name get out with some scratches.";
                 }
@@ -1270,7 +1265,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
                 log = LogManager.personify(message, effect.person);
             }
             return log;
-        }
+        },
     });
     ids.incidents.easy.fortune = insert({
         id: "frt",
@@ -1281,19 +1276,19 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             "and mumble incomprehensible chatter. Her skin looks really badly burnt by radiation.",
         yes: "Listen to her",
         no: "Fend her away",
-        onStart: function () {
+        onStart () {
             new Popup({
                 name: "Fortune teller",
-                desc: "After being calmly sit down, try to get what she's trying to say.<br/>" +
-                    quote("Long path ahead, full of danger ... may do it ... but at what cost ?") + "<br/>" +
-                    quote("If mercy is shown, success will follow !"),
-                yes: "Humm ... ok"
+                desc: `After being calmly sit down, try to get what she's trying to say.<br/>
+                    ${quote("Long path ahead, full of danger ... may do it ... but at what cost ?")}<br/>
+                    ${quote("If mercy is shown, success will follow !")}`,
+                yes: "Humm ... ok",
             }, "incident");
         },
         unique: true,
         dropRate: 70,
         log: "She then proceed on her lonely journey. " +
-            "Listening to the fate that await can give chills. Does knowing the future is really helpful ?"
+            "Listening to the fate that await can give chills. Does knowing the future is really helpful ?",
     });
     ids.incidents.easy.sandstorm = insert({
         id: "ssm",
@@ -1303,10 +1298,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         timeDelta: 4,
         color: "#f7ed33",
         dropRate: 90,
-        log: "A sandstorm has started and prevent anyone from leaving the camp."
+        log: "A sandstorm has started and prevent anyone from leaving the camp.",
     });
 
-    /** MEDUIM  INCIDENTS **/
+    /* MEDUIM  INCIDENTS */
 
     ids.incidents.medium.acidRain = insert({
         id: "acr",
@@ -1319,29 +1314,29 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         color: "#d351e8",
         dropRate: 50,
         lifeLose: 3,
-        log: "Rain is pouring and it burn the skin pretty badly. A pretty good reason to stay inside for now."
+        log: "Rain is pouring and it burn the skin pretty badly. A pretty good reason to stay inside for now.",
     });
     ids.incidents.medium.beggar = insert({
         id: "bgr",
         name: "strange beggar",
-        desc: "A lone traveler has a deal to propose: " +
-            "Invest " + formatResource(ids.resources.special.quartz, 3) + " now and " +
-            quote("for sure") + ", he'll return with more worth of goods.",
-        condition: function () {
+        desc: `A lone traveler has a deal to propose:
+            Invest ${formatResource(ids.resources.special.quartz, 3)} now and
+            ${quote("for sure")}, he'll return with more worth of goods.`,
+        condition () {
             return this.resources.has(ids.resources.special.quartz) &&
                 this.resources.get(ids.resources.special.quartz).has(4);
         },
         yes: "Acquiesce",
         no: "No way",
         consume: [
-            [2, ids.resources.special.quartz]
+            [2, ids.resources.special.quartz],
         ],
         giveList: [
             ids.resources.gatherables,
-            ids.resources.craftables.basic
+            ids.resources.craftables.basic,
         ],
         giveSpan: [7, 8],
-        onEnd: function (incident, effect) {
+        onEnd (incident, effect) {
             if (MathsUtils.random() < 0.2) {
                 effect.give = null;
                 effect.log = "Looks like the beggar is not coming back this time.";
@@ -1352,7 +1347,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         },
         time: 8 * time.day,
         dropRate: 20,
-        log: "Trusting a random stranger might just cost you some resources, but who knows ..."
+        log: "Trusting a random stranger might just cost you some resources, but who knows ...",
     });
     ids.incidents.medium.fever = insert({
         id: "fvr",
@@ -1363,7 +1358,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         timeDelta: 6 * time.hour,
         color: "#9def39",
         dropRate: 50,
-        log: "Illness spread out in no time and weaken everyone."
+        log: "Illness spread out in no time and weaken everyone.",
     });
     ids.incidents.medium.harmonica = insert({
         id: "hrm",
@@ -1373,38 +1368,35 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         unique: true,
         yes: "Take some time to appreciate",
         dropRate: 40,
-        log: "It's good to remember to relax from time to time."
+        log: "It's good to remember to relax from time to time.",
     });
+    const strayConsume = [
+        [3, ids.resources.gatherables.common.water],
+        [3, ids.resources.gatherables.common.food],
+    ];
     ids.incidents.medium.strayDog = insert({
         id: "std",
         name: "stray dog",
-        desc: "Looks like a wild dog is lurking around the food stash.<br/>" +
-            "He seams really weakened by his hunger and thirst. Giving him " +
-            Utils.formatJoin([
-                formatResource(ids.resources.gatherables.common.water, 3),
-                formatResource(ids.resources.gatherables.common.food, 3)
-            ]) +
-            " should make him stay.<br/>" +
-            "Does there's enough resources to have another mouth to feed ?",
+        desc: `Looks like a wild dog is lurking around the food stash.<br/>
+            He seams really weakened by his hunger and thirst.
+            Giving him ${Utils.formatJoin(strayConsume.map(item => formatResource(item[1], item[0])))} should
+            make him stay.<br/>
+            Does there's enough resources to have another mouth to feed ?`,
         unique: true,
         yes: "Give him some water and food",
         no: "Ignore him",
-        consume: [
-            [3, ids.resources.gatherables.common.water],
-            [3, ids.resources.gatherables.common.food]
-        ],
+        consume: strayConsume,
         log: "With caution, he accept this offering. " +
-            "He then proceed to hide in the forum's shadow and quickly falls asleep."
+            "He then proceed to hide in the forum's shadow and quickly falls asleep.",
     });
 
-    /** HARD INCIDENTS **/
+    /* HARD INCIDENTS */
 
     ids.incidents.hard.drought = insert({
         id: "drg",
         name: "drought",
-        desc: "The climate is so hot, everyone needs more " +
-            formatResource(ids.resources.gatherables.common.water) + ".",
-        condition: function () {
+        desc: `The climate is so hot, everyone needs more ${formatResource(ids.resources.gatherables.common.water)}.`,
+        condition () {
             return this.hasEnough(ids.resources.gatherables.common.water, 5) &&
                 this.isBuildingDone(ids.buildings.small.well);
         },
@@ -1413,8 +1405,8 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         color: "#f73a18",
         dropRate: 10,
         multiplier: 3,
-        log: "A harsh drought has fallen, " + formatResource(ids.resources.gatherables.common.water) +
-            " will be consumed faster as a result."
+        log: `A harsh drought has fallen,
+            ${formatResource(ids.resources.gatherables.common.water)} will be consumed faster as a result.`,
     });
     ids.incidents.hard.lookBack = insert({
         id: "lkb",
@@ -1422,11 +1414,11 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "It's been so long since this settlement start that it feel like a new life now.",
         unique: true,
         yes: "Remember",
-        onStart: function (incident, effect) {
+        onStart (incident, effect) {
             effect.duration = this.getSurvivalDuration();
         },
         dropRate: 30,
-        log: "The camp hold well for @duration in this harsh environment. Amazing !"
+        log: "The camp hold well for @duration in this harsh environment. Amazing !",
     });
     ids.incidents.hard.attack = insert({
         id: "atk",
@@ -1434,12 +1426,10 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "While exploring the surroundings, a bandits camp was found a few hours of walk away.<br/>" +
             "Setting a surprise attack can lead to loot their belongings.<br/>" +
             "They seams to be quite well fortified though.",
-        condition: function () {
-            var allNotBusy = true;
+        condition () {
+            let allNotBusy = true;
             // ensure someone's not busy
-            this.people.forEach(function (person) {
-                allNotBusy = allNotBusy && !person.busy;
-            });
+            this.people.forEach(person => allNotBusy = allNotBusy && !person.busy);
             return allNotBusy;
         },
         unique: true,
@@ -1448,9 +1438,9 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         color: "#7a848c",
         yes: "Let's do this",
         no: "Leave them be",
-        onStart: function () {
-            var energyDrain = 6;
-            this.people.forEach(function (person) {
+        onStart () {
+            const energyDrain = 6;
+            this.people.forEach((person) => {
                 if (!person.busy) {
                     person.setBusy(ids.incidents.hard.attack, energyDrain);
                 }
@@ -1459,18 +1449,18 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         giveList: [
             ids.resources.gatherables,
             ids.resources.craftables.basic,
-            ids.resources.craftables.complex
+            ids.resources.craftables.complex,
         ],
         giveSpan: [8, 11],
-        onEnd: function () {
-            this.people.forEach(function (person) {
-                var healthLose = MathsUtils.random(10, 20);
+        onEnd () {
+            this.people.forEach((person) => {
+                const healthLose = MathsUtils.random(10, 20);
                 person.updateLife(healthLose);
                 person.setBusy();
             });
         },
         dropRate: 200,
-        log: "They put up quite a fight and everyone got hurt in the process. At least @give were stolen."
+        log: "They put up quite a fight and everyone got hurt in the process. At least @give were stolen.",
     });
 
     // Ideas :
@@ -1481,7 +1471,7 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
     // raiders (fight[All loose health] or give-up resources[The more you give-up, the more they come])
     // raiders can come for revenge after "attack on bandits"
 
-    /***** PERKS *****/
+    /* PERKS */
 
     // TODO: Add slight effect to perks
     ids.perks.first = insert({
@@ -1489,17 +1479,17 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         name: "first-one",
         desc: "The very first one to install the settlement.",
         actions: [
-            ids.actions.settle
+            ids.actions.settle,
         ],
-        iteration: 0
+        iteration: 0,
     });
     ids.perks.rookie = insert({
         id: "rki",
         name: "rookie",
         desc: "All group has a rookie, all @people.nominative want is to prove @people.nominative's efficient.",
-        condition: function () {
+        condition () {
             return this.people.length > 2;
-        }
+        },
     });
     ids.perks.explorer = insert({
         id: "xpr",
@@ -1509,9 +1499,9 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         actions: [
             ids.actions.roam,
             ids.actions.scour,
-            ids.actions.explore
+            ids.actions.explore,
         ],
-        iteration: 30
+        iteration: 30,
     });
     ids.perks.tinkerer = insert({
         id: "tnr",
@@ -1519,18 +1509,18 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
         desc: "Everyone is amazed by how quickly @people.nominative can put together any contraption.",
         actions: [
             ids.actions.craft,
-            ids.actions.build
+            ids.actions.build,
         ],
-        iteration: 30
+        iteration: 30,
     });
     ids.perks.healer = insert({
         id: "hlr",
         name: "doctor",
         desc: "Knowing enough about medicine make @people.accusative confident to heal others.",
         actions: [
-            ids.actions.heal
+            ids.actions.heal,
         ],
-        condition: function () {
+        condition () {
             this.buildings.has(ids.buildings.small.pharmacy);
         },
         iteration: 5,
@@ -1547,52 +1537,52 @@ var DataManager = (function iife () { // eslint-disable-line max-statements
             ids.actions.harvestField,
             ids.actions.harvestPlot,
             ids.actions.drawFromRiver,
-            ids.actions.drawFromWell
+            ids.actions.drawFromWell,
         ],
-        iteration: 40
+        iteration: 40,
     });
     ids.perks.lounger = insert({
         id: "lng",
         name: "lounger",
         desc: "Doing nothing all day's not gonna make things done.",
         actions: [
-            ids.actions.sleep
+            ids.actions.sleep,
         ],
-        condition: function (person) {
+        condition (person) {
             return person.stats.idle > (3 * time.day);
-        }
+        },
     });
     ids.perks.merchant = insert({
         id: "mrc",
         name: "merchant",
         desc: "The ancient art of trading is a boon if used well.",
         action: [
-            ids.actions.exchange
+            ids.actions.exchange,
         ],
-        iteration: 10
+        iteration: 10,
     });
     /* eslint-enable valid-jsdoc */
 
     return /** @lends DataManager */ {
-        time: time,
-        ids: ids,
+        time,
+        ids,
         /**
          * Get some data from the database
          * @param {ID} id - An id
          * @return {Data}
          */
-        get: function (id) {
+        get (id) {
             return id ? db[id] : null;
         },
-        bindAll: function (context) { // FIXME: not very good design
-            db.browse(function (data) {
-                data.browse(function (field, key) {
+        bindAll (context) { // FIXME: not very good design
+            db.browse((data) => {
+                data.browse((field, key) => {
                     if (Utils.isFunction(field)) {
                         data[key] = field.bind(context);
                     }
                 });
             });
-        }
+        },
     };
 })();
 

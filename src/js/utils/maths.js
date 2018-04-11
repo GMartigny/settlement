@@ -1,29 +1,28 @@
-"use strict";
 /* exported MathsUtils */
 
-var MathsUtils = {
+const MathsUtils = {
     RADIX: {
         BINARY: 2,
         DECIMAL: 10,
         HEXA: 16,
-        ALPHA: 36
+        ALPHA: 36,
     },
     /**
      * Convert to a number
-     * @param {*} x - Any value to convert
-     * @param {Number} [fallback=0] - A fallback value if the first is NaN
+     * @param {*} value - Any value to convert
      * @return {Number}
      */
-    toNumber: function (x, fallback) {
-        return Number(x) || fallback || 0;
+    toNumber (value) {
+        return Number(value);
     },
     /**
      * Floor a number
      * @param {Number} x - Any number
      * @return {Number}
      */
-    floor: function (x) {
+    floor (x) {
         // Bitshifting force number to integer
+        // eslint-disable-next-line no-bitwise
         return x << 0;
     },
 
@@ -32,8 +31,8 @@ var MathsUtils = {
      * @param {Number} x - Any number
      * @return {Number}
      */
-    round: function (x) {
-        return MathsUtils.floor(x + MathsUtils.sign(x) / 2);
+    round (x) {
+        return MathsUtils.floor(x + (MathsUtils.sign(x) / 2));
     },
 
     /**
@@ -41,7 +40,7 @@ var MathsUtils = {
      * @param {Number} x - Any number
      * @return {Number}
      */
-    ceil: function ceil (x) {
+    ceil (x) {
         return MathsUtils.floor(x + MathsUtils.sign(x));
     },
 
@@ -57,24 +56,16 @@ var MathsUtils = {
      * @param {Number} x - Any number
      * @return {Number}
      */
-    sign: function (x) {
+    sign (x) {
         return x < 0 ? -1 : 1;
     },
-
-    /**
-     * Apply a power to a number
-     * @param {Number} x - Any number
-     * @param {Number} n - Power to apply
-     * @return {Number}
-     */
-    pow: Math.pow,
 
     /**
      * Square a number
      * @param {Number} x - Any number
      * @return {Number}
      */
-    sq: function (x) {
+    sq (x) {
         return x * x;
     },
 
@@ -83,8 +74,8 @@ var MathsUtils = {
      * @param {Number} x - Any number
      * @return {Number}
      */
-    sqrt: function (x) {
-        return MathsUtils.pow(x, 0.5);
+    sqrt (x) {
+        return x ** 0.5;
     },
 
     /**
@@ -102,26 +93,21 @@ var MathsUtils = {
      * @param {Number} b - Any number
      * @return {Number}
      */
-    diff: function (a, b) {
+    diff (a, b) {
         return MathsUtils.abs(a - b);
     },
 
     /**
      * Return the average number for a set
-     * @param {...Number} value - Number to compute
+     * @param {...Number} values - Number to compute
      * @return {Number}
      */
-    average: function () {
-        var length = arguments.length;
-        if (!length) {
-            throw new RangeError("Can't get mean from no value");
+    average (...values) {
+        if (!values.length) {
+            throw new RangeError("Can't get average from no value");
         }
 
-        var sum = 0;
-        for (var i = 0; i < length; ++i) {
-            sum += arguments[i];
-        }
-        return sum / length;
+        return values.reduce((acc, value) => acc + value, 0) / values.length;
     },
 
     /**
@@ -131,16 +117,15 @@ var MathsUtils = {
      * @param {Number} max - The upper bound
      * @return {Number}
      */
-    constrain: function (x, min, max) {
+    constrain (x, min, max) {
         if (x < min) {
             return min;
         }
         else if (x > max) {
             return max;
         }
-        else {
-            return x;
-        }
+
+        return x;
     },
 
     /**
@@ -180,7 +165,7 @@ var MathsUtils = {
      * @param {Number} number - Any number
      * @return {String}
      */
-    toHexa: function (number) {
+    toHexa (number) {
         return MathsUtils.round(number).toString(MathsUtils.RADIX.HEXA).toUpperCase();
     },
 
@@ -189,7 +174,7 @@ var MathsUtils = {
      * @param {String} hexa - Any valid hexa string
      * @return {Number}
      */
-    toDeci: function (hexa) {
+    toDeci (hexa) {
         return parseInt(hexa, MathsUtils.RADIX.HEXA);
-    }
+    },
 };

@@ -1,19 +1,17 @@
-"use strict";
 /* exported SaveManager */
 
 /**
  * Handles mangling and storage of data
  */
-var SaveManager = (function iife () {
+const SaveManager = (function iife () {
+    const storage = localStorage;
 
-    var storage = localStorage;
-
-    var key = storage.getItem("k");
+    let key = storage.getItem("k");
     if (!key) {
         key = Utils.randomStr();
         storage.setItem("k", key);
     }
-    var salt = Utils.randomStr();
+    const salt = Utils.randomStr();
 
     /**
      * "Compress" a string to non-readable format
@@ -38,28 +36,28 @@ var SaveManager = (function iife () {
          * Put data into memory
          * @param {Object} data - Any data to save
          */
-        persist: function (data) {
+        persist (data) {
             storage.setItem(key, compress(JSON.stringify(data)));
         },
         /**
          * Return true if some data are stored
          * @return {boolean}
          */
-        hasData: function () {
+        hasData () {
             return Object.keys(storage).includes(key);
         },
         /**
          * Read data from memory
          * @return {Object}
          */
-        load: function () {
+        load () {
             return JSON.parse(unCompress(storage.getItem(key)));
         },
         /**
          * Clear whole storage
          */
-        clear: function () {
+        clear () {
             storage.removeItem(key);
-        }
+        },
     };
 })();

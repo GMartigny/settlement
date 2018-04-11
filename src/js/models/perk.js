@@ -1,4 +1,3 @@
-"use strict";
 /* exported Perk */
 
 /**
@@ -10,7 +9,7 @@
  */
 function Perk (id, owner) {
     if (Perk.usedId.includes(id)) {
-        throw new RangeError("This perk is already used [" + id + "]");
+        throw new RangeError(`This perk is already used [${id}]`);
     }
     Perk.usedId.push(id);
     this.owner = owner;
@@ -22,9 +21,9 @@ Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
      * Initialize object
      * @private
      */
-    init: function () {
+    init () {
         this.data.desc = LogManager.personify(this.data.desc, {
-            people: this.owner
+            people: this.owner,
         });
 
         new Tooltip(this.html, this.data);
@@ -40,11 +39,11 @@ Perk.extends(Model, "Perk", /** @lends Perk.prototype */ {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
-        html.textContent = "the \"" + Utils.capitalize(this.data.name) + "\"";
+    toHTML () {
+        const html = this._toHTML();
+        html.textContent = `the "${Utils.capitalize(this.data.name)}"`;
         return html;
-    }
+    },
 });
 
 Perk.static(/** @lends Perk */{
@@ -54,7 +53,7 @@ Perk.static(/** @lends Perk */{
      * @param {ID} perkId - Any perk ID
      * @return {Boolean}
      */
-    isUsed: function (perkId) {
-        return this.usedId.includes(perkId);
-    }
+    isUsed (perkId) {
+        return Perk.usedId.includes(perkId);
+    },
 });

@@ -1,15 +1,13 @@
-"use strict";
 /* exported GraphicManager */
 
-var GraphicManager = (function iife () {
+const GraphicManager = (function iife () {
+    let combinedImage;
+    let imageData;
 
-    var _combinedImage;
-    var _imageData;
+    let buildingsPosition;
 
-    var _buildingsPosition;
-
-    var _buildingsLayer;
-    var _buildingsList;
+    let buildingsLayer;
+    let buildingsList;
 
     /**
      * A class for assets
@@ -19,7 +17,7 @@ var GraphicManager = (function iife () {
      */
     function Asset (sourceData, destData) {
         if (!destData) {
-            throw new TypeError("Can't draw asset " + sourceData.source_image + " without destination");
+            throw new TypeError(`Can't draw asset ${sourceData.source_image} without destination`);
         }
         this.animationState = 0;
         this.animationSteps = destData.steps || 1;
@@ -31,7 +29,7 @@ var GraphicManager = (function iife () {
             x: MathsUtils.toNumber(sourceData.x),
             y: MathsUtils.toNumber(sourceData.y),
             width: MathsUtils.floor(sourceData.width / this.animationSteps),
-            height: sourceData.height
+            height: sourceData.height,
         };
         this.destination.width = this.source.width * Asset.SCALE;
         this.destination.height = this.source.height * Asset.SCALE;
@@ -39,7 +37,7 @@ var GraphicManager = (function iife () {
         this.destination.x = MathsUtils.floor(destData.x * Asset.SCALE);
         this.destination.y = MathsUtils.floor(destData.y * Asset.SCALE);
 
-        this.zIndex = (destData.index || 1) * 1e4 + this.destination.y + this.destination.height;
+        this.zIndex = ((destData.index || 1) * 1e4) + this.destination.y + this.destination.height;
     }
     Asset.SCALE = 4; // 4 times bigger !!§!
     Asset.FPS = 60;
@@ -49,15 +47,17 @@ var GraphicManager = (function iife () {
          * @param {HTMLImageElement} image - A combined image
          * @param {CanvasRenderingContext2D} layer - A layer to draw into
          */
-        render: function (image, layer) {
+        render (image, layer) {
             this.animationState = (this.animationState + this.animationSpeed) % this.animationSteps;
-            var animationShift = MathsUtils.floor(this.animationState) * this.source.width;
-            var posX = this.destination.x;
-            var posY = this.destination.y;
-            layer.drawImage(image,
+            const animationShift = MathsUtils.floor(this.animationState) * this.source.width;
+            const posX = this.destination.x;
+            const posY = this.destination.y;
+            layer.drawImage(
+                image,
                 this.source.x + animationShift, this.source.y, this.source.width, this.source.height,
-                posX, posY, this.destination.width, this.destination.height);
-        }
+                posX, posY, this.destination.width, this.destination.height,
+            );
+        },
     };
 
     return /** @lends GraphicManager */ {
@@ -67,44 +67,43 @@ var GraphicManager = (function iife () {
          * @param {HTMLImageElement} image - Combined image for assets
          * @param {{assets, positions}} data - Data of position inside the image and position onto the destination
          */
-        start: function (wrapper, image, data) {
-            _combinedImage = image;
-            _imageData = data.assets;
-            _buildingsPosition = data.positions;
+        start (wrapper, image, data) {
+            combinedImage = image;
+            imageData = data.assets;
+            buildingsPosition = data.positions;
 
-            var width = 800;
-            var height = 300;
-            var layer = CanvasUtils.prepareCanvas(width, height);
-            _buildingsLayer = layer.ctx;
-            _buildingsLayer.imageSmoothingEnabled = 0;
+            const width = 800;
+            const height = 300;
+            const layer = CanvasUtils.prepareCanvas(width, height);
+            buildingsLayer = layer.ctx;
+            buildingsLayer.imageSmoothingEnabled = 0;
             layer.cnv.classList.add("layer", "buildings");
             wrapper.appendChild(layer.cnv);
 
             if (IS_DEV) {
-                var tools = new Clickable("debug", "Edit", function () {
-                    location.href += "tools/buildingsPlanner/";
-                });
+                const tools = new Clickable("debug", "Edit", () => location.href += "tools/buildingsPlanner/");
                 wrapper.appendChild(tools.html);
             }
 
             // watch for new buildings
-            _buildingsList = new Map();
-            MessageBus.observe(MessageBus.MSG_TYPES.BUILD, function (id) {
-                var building = DataManager.get(id);
-                if (building && building.asset && _imageData[building.asset]) {
-                    var asset = new Asset(_imageData[building.asset], _buildingsPosition[building.asset]);
-                    if (building.upgrade) {
-                        _buildingsList.delete(building.upgrade);
+            buildingsList = new Map();
+            MessageBus
+                .observe(MessageBus.MSG_TYPES.BUILD, (id) => {
+                    const building = DataManager.get(id);
+                    if (building && building.asset && imageData[building.asset]) {
+                        const asset = new Asset(imageData[building.asset], buildingsPosition[building.asset]);
+                        if (building.upgrade) {
+                            buildingsList.delete(building.upgrade);
+                        }
+                        buildingsList.push(building.id, asset);
                     }
-                    _buildingsList.push(building.id, asset);
-                }
-            })
-            .observe(MessageBus.MSG_TYPES.UNBUILD, function (id) {
-                var building = DataManager.get(id);
-                if (building && _buildingsList.has(id)) {
-                    _buildingsList.delete(id);
-                }
-            });
+                })
+                .observe(MessageBus.MSG_TYPES.UNBUILD, (id) => {
+                    const building = DataManager.get(id);
+                    if (building && buildingsList.has(id)) {
+                        buildingsList.delete(id);
+                    }
+                });
 
             // start loopdy loop
             this.render();
@@ -112,24 +111,22 @@ var GraphicManager = (function iife () {
         /**
          * Draw everything
          */
-        render: function () {
+        render () {
             requestAnimationFrame(this.render.bind(this));
 
-            if (_buildingsList.size) {
-                _buildingsLayer.clear();
-                var ordered = [];
-                _buildingsList.forEach(function (asset) {
-                    var index = asset.zIndex;
+            if (buildingsList.size) {
+                buildingsLayer.clear();
+                const ordered = [];
+                buildingsList.forEach((asset) => {
+                    let index = asset.zIndex;
                     while (ordered[index]) {
                         index++;
                     }
                     ordered[index] = asset;
                 });
-                ordered.forEach(function (asset) {
-                    asset.render(_combinedImage, _buildingsLayer);
-                });
+                ordered.forEach(asset => asset.render(combinedImage, buildingsLayer));
             }
-        }
+        },
     };
 })();
 

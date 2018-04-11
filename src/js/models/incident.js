@@ -1,4 +1,3 @@
-"use strict";
 /* exported Incident */
 
 /**
@@ -22,26 +21,24 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * Initialize object
      * @private
      */
-    init: function () {
+    init () {
         this.tooltip = new Tooltip(this.html, this.data);
 
-        var yes = this.data.yes;
         this.data.yes = {
-            name: yes,
-            action: this.run.bind(this)
+            name: this.data.yes,
+            action: this.run.bind(this),
         };
-        var no = this.data.no;
-        this.data.no = no ? {
-            name: no,
-            action: this.end.bind(this)
+        this.data.no = this.data.no ? {
+            name: this.data.no,
+            action: this.end.bind(this),
         } : null;
     },
     /**
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
         if (this.data.time) {
             this.nameNode = Utils.wrap("name", Utils.capitalize(this.data.name), html);
 
@@ -56,11 +53,11 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * The player validate the popup
      * @param {Number} [forceTime=false] - Force a time to the incident
      */
-    run: function (forceTime) {
+    run (forceTime) {
         if (!forceTime) {
             // Effect
-            var effect = {
-                incident: this.data
+            const effect = {
+                incident: this.data,
             };
 
             if (Utils.isArray(this.data.consume)) {
@@ -75,11 +72,11 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
                 MessageBus.notify(MessageBus.MSG_TYPES.USE, effect.consume);
             }
 
-            var rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
+            const rawLog = Utils.isFunction(this.data.log) ? this.data.log(effect, this) : this.data.log || "";
             LogManager.log(LogManager.personify(rawLog, effect), LogManager.LOG_TYPES.EVENT);
         }
 
-        var duration = 0;
+        let duration = 0;
         if (this.data.time) {
             MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_START, this);
             this.show();
@@ -94,8 +91,8 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * Determine the duration of the incident
      * @return {Number}
      */
-    defineDuration: function () {
-        var duration = this.data.time;
+    defineDuration () {
+        let duration = this.data.time;
 
         if (this.data.timeDelta) {
             duration += MathsUtils.random(-this.data.timeDelta, this.data.timeDelta);
@@ -106,7 +103,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     /**
      * Start the incident (open popup)
      */
-    start: function () {
+    start () {
         if (Utils.isFunction(this.data.effect)) {
             this.data.effect(this);
         }
@@ -115,7 +112,7 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     /**
      * Cancel a running incident
      */
-    cancel: function () {
+    cancel () {
         if (this.timer) {
             TimerManager.stop(this.timer);
             this.end();
@@ -124,12 +121,12 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
     /**
      * End the incident
      */
-    end: function () {
+    end () {
         this.timer = null;
         MessageBus.notify(MessageBus.MSG_TYPES.INCIDENT_END, this);
 
-        var effect = {
-            incident: this.data
+        const effect = {
+            incident: this.data,
         };
 
         if (Utils.isArray(this.data.give)) {
@@ -146,13 +143,13 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
         if (Utils.isArray(effect.give)) {
             MessageBus.notify(MessageBus.MSG_TYPES.GIVE, {
                 initiator: this.nameNode,
-                give: effect.give
+                give: effect.give,
             });
             effect.give = Utils.formatArray(effect.give);
         }
 
         if (effect.log) {
-            var log = LogManager.personify(effect.log, effect);
+            const log = LogManager.personify(effect.log, effect);
             LogManager.log(log, LogManager.LOG_TYPES.EVENT);
         }
 
@@ -163,12 +160,12 @@ Incident.extends(Model, "Incident", /** @lends Incident.prototype */ {
      * Get this data in plain object
      * @return {Object}
      */
-    toJSON: function () {
-        var json = this._toJSON();
+    toJSON () {
+        const json = this._toJSON();
         if (this.timer) {
             json.rmn = TimerManager.getRemaining(this.timer);
         }
         return json;
-    }
+    },
 });
 Incident.LST_ID = "incidentList";

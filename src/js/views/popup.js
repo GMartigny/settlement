@@ -1,4 +1,3 @@
-"use strict";
 /* exported Popup */
 
 /**
@@ -33,21 +32,23 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
      * Return HTML for display
      * @return {HTMLElement}
      */
-    toHTML: function () {
-        var html = this._toHTML();
+    toHTML () {
+        const html = this._toHTML();
 
         Utils.wrap("title", Utils.capitalize(this.data.name), html);
         Utils.wrap("description", this.data.desc, html);
 
-        var onYes = (this.data.yes && this.data.yes.action) || Utils.noop;
-        var yesText = (this.data.yes && this.data.yes.name) || (Utils.isString(this.data.yes) && this.data.yes) || "Ok";
-        var yesButton = new Clickable("yes", yesText, this.hide.bind(this, onYes));
+        const { yes, no } = this.data;
+
+        const onYes = (yes && yes.action) || Utils.noop;
+        const yesText = (yes && yes.name) || (Utils.isString(yes) && yes) || "Ok";
+        const yesButton = new Clickable("yes", yesText, this.hide.bind(this, onYes));
         html.appendChild(yesButton.html);
 
-        if (this.data.no) {
-            var onNo = this.data.no.action || Utils.noop;
-            var noText = this.data.no.name || (Utils.isString(this.data.no) && this.data.no) || "Cancel";
-            var noButton = new Clickable("no", noText, this.hide.bind(this, onNo));
+        if (no) {
+            const onNo = no.action || Utils.noop;
+            const noText = no.name || (Utils.isString(no) && no) || "Cancel";
+            const noButton = new Clickable("no", noText, this.hide.bind(this, onNo));
             html.appendChild(noButton.html);
         }
 
@@ -59,12 +60,13 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
      * Display the popup
      * @param {Function} [afterShow] - Callback to call after show transition's done
      */
-    show: function (afterShow) {
+    show (afterShow) {
         Popup.OPENED = true;
         Popup.HOLDER.classList.add("backdrop");
         Popup.HOLDER.appendChild(this.html);
 
-        this.html.style.top = MathsUtils.floor((Popup.HOLDER.offsetHeight - this.html.offsetHeight) / 2) + "px";
+        const top = MathsUtils.floor((Popup.HOLDER.offsetHeight - this.html.offsetHeight) / 2);
+        this.html.style.top = `${top}px`;
 
         this._show(afterShow);
     },
@@ -72,7 +74,7 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
      * Hide the popup
      * @param {Function} [afterHide] - Callback to call after hide transition's done
      */
-    hide: function (afterHide) {
+    hide (afterHide) {
         Popup.OPENED = false;
         this.remove();
 
@@ -81,13 +83,13 @@ Popup.extends(View, "Popup", /** @lends Popup.prototype */ {
     /**
      * Remove popup from DOM
      */
-    remove: function () {
+    remove () {
         this._remove();
         Popup.HOLDER.classList.remove("backdrop");
-    }
+    },
 });
 
 Popup.static({
     HOLDER: document.body,
-    OPENED: false
+    OPENED: false,
 });

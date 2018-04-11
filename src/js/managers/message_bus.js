@@ -3,28 +3,26 @@
 /**
  * API to observe and send message across the application
  */
-var MessageBus = (function iife () {
-    "use strict";
+const MessageBus = (function iife () {
+    const keyCodeOffset = 1000;
+    const observers = [];
 
-    var keyCodeOffset = 1000;
-    var _observers = [];
-
-    var api = /** @lends MessageBus */ {
+    const api = /** @lends MessageBus */ {
         /**
          * Observe an event
          * @param {Number|Array} type - One or more event type to observe
          * @param {Function} action - A function called when event is fired
          * @return {MessageBus} Itself
          */
-        observe: function (type, action) {
+        observe (type, action) {
             if (!Utils.isArray(type)) {
                 type = [type];
             }
-            type.forEach(function (oneType) {
-                if (!_observers[oneType]) {
-                    _observers[oneType] = [];
+            type.forEach((oneType) => {
+                if (!observers[oneType]) {
+                    observers[oneType] = [];
                 }
-                _observers[oneType].push(action);
+                observers[oneType].push(action);
             });
             return this;
         },
@@ -35,15 +33,13 @@ var MessageBus = (function iife () {
          * @param {Boolean} [silent=false] - True to not output log
          * @return {MessageBus} Itself
          */
-        notify: function (type, message, silent) {
+        notify (type, message, silent) {
             if (!silent && IS_DEV) {
-                var typeDesc = this.SWAP_MSG_TYPE[type];
+                const typeDesc = this.SWAP_MSG_TYPE[type];
                 Utils.log("Message ", typeDesc || type, message);
             }
-            if (_observers[type]) {
-                _observers[type].forEach(function (action) {
-                    action(message, type);
-                });
+            if (observers[type]) {
+                observers[type].forEach(action => action(message, type));
             }
             return this;
         },
@@ -93,25 +89,23 @@ var MessageBus = (function iife () {
                 ZERO: 48,
                 F5: 116,
                 F8: 119,
-                F12: 123
-            }
-        }
+                F12: 123,
+            },
+        },
     };
 
-    api.MSG_TYPES.KEYS.browse(function (value, key, list) {
-        list[key] = value + keyCodeOffset;
-    });
+    api.MSG_TYPES.KEYS.browse((value, key) => api.MSG_TYPES.KEYS[key] = value + keyCodeOffset);
 
-    var letThroughKeys = [
+    const letThroughKeys = [
         api.MSG_TYPES.KEYS.F5,
         api.MSG_TYPES.KEYS.F12,
         api.MSG_TYPES.KEYS.TAB,
         api.MSG_TYPES.KEYS.ENTER,
-        api.MSG_TYPES.KEYS.SPACE
+        api.MSG_TYPES.KEYS.SPACE,
     ];
 
-    window.addEventListener("keydown", function keyDownListener (event) {
-        var code = keyCodeOffset + event.keyCode;
+    window.addEventListener("keydown", (event) => {
+        const code = keyCodeOffset + event.keyCode;
         if (!letThroughKeys.includes(code)) {
             event.preventDefault();
             event.stopPropagation();
@@ -119,11 +113,11 @@ var MessageBus = (function iife () {
         api.notify(code, "down", true);
     }, true);
 
-    window.addEventListener("keyup", function keyUpListener (event) {
+    window.addEventListener("keyup", (event) => {
         event.preventDefault();
         event.stopPropagation();
 
-        var code = keyCodeOffset + event.keyCode;
+        const code = keyCodeOffset + event.keyCode;
         if (code === api.MSG_TYPES.KEYS.ENTER) {
             event.target.dispatchEvent(new Event("click"));
         }
