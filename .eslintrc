@@ -4,9 +4,36 @@
         "IS_DEV": false,
         "VERSION": false,
         "IS_BETA": false,
+        "View": false,
+            "Bar": false,
+            "Clickable": false,
+            "Gauge": false,
+            "Particle": false,
+            "Popup": false,
+            "Tooltip": false,
+        "Utils": false,
+            "CanvasUtils": false,
+            "ColorsUtils": false,
+            "MathsUtils": false,
+        "Model": false,
+            "Action": false,
+            "Building": false,
+            "GameController": false,
+            "Incident": false,
+            "People": false,
+            "Perk": false,
+            "Resource": false,
+        "DataManager": false,
+        "LogManager": false,
+        "GraphicManager": false,
+        "MessageBus": false,
+        "SaveManager": false,
+        "TimerManager": false,
+        "sendEvent": false
     },
     "rules": {
         "no-extend-native": [0],
-        "no-new": [0]
+        "no-new": [0],
+        "wrap-iife": [2, "inside"]
     }
 }
