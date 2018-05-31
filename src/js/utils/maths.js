@@ -61,15 +61,6 @@ const MathsUtils = {
     },
 
     /**
-     * Square a number
-     * @param {Number} x - Any number
-     * @return {Number}
-     */
-    sq (x) {
-        return x * x;
-    },
-
-    /**
      * Get the square root of a number
      * @param {Number} x - Any number
      * @return {Number}

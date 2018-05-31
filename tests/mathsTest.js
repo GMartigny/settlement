@@ -58,22 +58,6 @@ describe("Test all math helper", function mathsUtilsDescribe () {
 
     });
 
-    it("pow", function mathsUtilsPow () {
-
-        expect(MathsUtils.pow(5, 2)).toBe(25);
-        expect(MathsUtils.pow(0, 19)).toBe(0);
-        expect(MathsUtils.pow(42, 0)).toBe(1);
-
-    });
-
-    it("sq", function mathsUtilsSq () {
-
-        expect(MathsUtils.sq(5)).toBe(25);
-        expect(MathsUtils.sq(0)).toBe(0);
-        expect(MathsUtils.sq(1)).toBe(1);
-
-    });
-
     it("sqrt", function mathsUtilsSqrt () {
 
         expect(MathsUtils.sqrt(25)).toBe(5);
