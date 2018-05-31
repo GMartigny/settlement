@@ -54,6 +54,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
      * @typedef {Object} ActionData
      * @extends UniqueData
      * @extends ConsumerData
+     * @prop {String} shortcut - Which key used to trigger action
      * @prop {Function} [options] - Return an array of options for this action
      * @prop {Function} [condition] - Return true if can be done
      * @prop {Array<[Number, ID]>} [give] - Return an array of given resources (can be replace by giveSpan and giveList combo)
@@ -328,6 +329,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "lnc",
         name: "start engine",
         desc: "Finally start the engine of the new vehicle.",
+        shortcut: "x",
         time: 3,
         isOut: 1,
         unique: true,
@@ -348,6 +350,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "exc",
         name: "exchange",
         desc: "Caravan passing by carry lots of useful stuff, let's see what's possible to trade.",
+        shortcut: "r",
         time: 7,
         energy: 20,
         consume: [
@@ -365,6 +368,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "nrs",
         name: "nurse",
         desc: "Look after the health of the most needed one.",
+        shortcut: "?",
         time: 2,
         energy: 1,
         consume: [
@@ -387,6 +391,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "hel",
         name: "heal",
         desc: "\"I really hope those pills are still good.\"",
+        shortcut: "s",
         time: 2,
         energy: 1,
         consume: [
@@ -414,6 +419,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "slp",
         name: "sleep",
         desc: "Get some rest to restore energy.",
+        shortcut: "q",
         time: 7,
         energy: 0,
         effect (action) {
@@ -429,6 +435,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "hrp",
         name: "harvest crops",
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
+        shortcut: "e",
         time: 4,
         consume: [
             [1, ids.resources.gatherables.common.water],
@@ -444,6 +451,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "hrf",
         name: "harvest crops",
         desc: "It's not the biggest vegetables, but it'll fill our stomachs.",
+        shortcut: "e",
         time: 6,
         consume: [
             [2, ids.resources.gatherables.common.water],
@@ -459,6 +467,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "dfr",
         name: "draw water",
         desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} from the river.`,
+        shortcut: "z",
         time: 8,
         energy: 50,
         isOut: 1,
@@ -476,6 +485,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "dfw",
         name: "draw water",
         desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} from our well.`,
+        shortcut: "z",
         time: 2,
         energy: 15,
         giveSpan: [1, 3],
@@ -489,6 +499,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "dfp",
         name: "draw water",
         desc: `Get some ${formatResource(ids.resources.gatherables.common.water)} at the pump.`,
+        shortcut: "z",
         time: 2,
         giveSpan: [3, 3],
         giveList: [
@@ -530,6 +541,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         name: "explore",
         desc: `Remember that ${formatResource(ids.resources.special.ruins)} found the other day ?
             Let's see what can be gather there.`,
+        shortcut: "f",
         time: time.day,
         energy: 100,
         isOut: 1,
@@ -553,6 +565,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "scr",
         name: "scour",
         desc: "Knowledge of the area allows for better findings.",
+        shortcut: "d",
         time: 4,
         isOut: 1,
         consume: [
@@ -584,6 +597,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "ram",
         name: "roam",
         desc: `Explore the surroundings hoping to find a ${formatResource(ids.resources.special.ruins)}.`,
+        shortcut: "d",
         time: 5,
         isOut: 1,
         consume: [
@@ -627,6 +641,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "gtr",
         name: "gather resources",
         desc: "Go out to bring back resources, that's the best way to survive.",
+        shortcut: "a",
         time: 3,
         isOut: 1,
         unlock: [
@@ -669,6 +684,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "stl",
         name: "settle here",
         desc: "Ok, let's settle right there !",
+        shortcut: "x",
         time: 2,
         energy: 0,
         effect () {
@@ -687,6 +703,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
         id: "lok",
         name: "look around",
         desc: quote("What am I doing here ?"),
+        shortcut: "x",
         time: 1,
         energy: 0,
         effect () {
@@ -710,6 +727,7 @@ const DataManager = (function iife () { // eslint-disable-line max-statements
     ids.actions.wakeUp = insert({
         id: "wku",
         name: "wake up",
+        shortcut: "x",
         unlock: [
             ids.actions.look,
         ],
