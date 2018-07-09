@@ -24,7 +24,7 @@
     "grunt-contrib-less": "^2.0.0",
     "grunt-contrib-uglify-es": "^3.3.0",
     "grunt-contrib-watch": "^1.1.0",
-    "grunt-eslint": "^20.0.0",
+    "grunt-eslint": "^21.0.0",
     "grunt-gh-pages": "^2.0.0",
     "grunt-lesslint": "^4.0.0",
     "grunt-spritesmith": "^6.3.1",
