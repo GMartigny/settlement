@@ -2,6 +2,7 @@
 nbproject
 .grunt
 node_modules
+package-lock.json
 dist
 /src/css/sprites.less
 *.log
