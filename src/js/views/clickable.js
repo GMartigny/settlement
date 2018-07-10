@@ -1,7 +1,7 @@
 /* @exported Clickable */
 
 /**
- * A class for a clickable element
+ * Class for a clickable element
  * @param {String} CSSClass - A custom css class to add
  * @param {String} text - Text inside the element
  * @param {Function} [action] - A function to call when clicked

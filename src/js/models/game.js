@@ -70,7 +70,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
 
         const topPart = Utils.wrap("topPart", null, html);
 
-        this.peopleList = Utils.wrap(People.LST_ID, null, topPart);
+        this.controlModule = new ControlModule();
+        html.appendChild(this.controlModule.html);
 
         this.logsList = Utils.wrap("logs", null, topPart);
 
@@ -276,13 +277,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     },
     /**
      * Add actions to initial actions list
-     * @param {ID|Array<ID>} actions - One or more actionId
+     * @param {...ID} actions - One or more action ID
      */
-    addToInitialActions (actions) {
-        if (!Utils.isArray(actions)) {
-            actions = [actions];
-        }
-
+    addToInitialActions (...actions) {
         actions.forEach((actionId) => {
             if (!this.initialActions.includes(actionId)) {
                 this.initialActions.push(actionId);
@@ -292,13 +289,9 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
     },
     /**
      * Remove actions from initial actions list
-     * @param {ID|Array<ID>} actions - One or more action ID
+     * @param {...ID} actions - One or more action ID
      */
-    removeFromInitialActions (actions) {
-        if (!Utils.isArray(actions)) {
-            actions = [actions];
-        }
-
+    removeFromInitialActions (...actions) {
         actions.forEach(actionId => this.initialActions.out(actionId));
         this.people.forEach(people => people.lockAction(actions));
     },
@@ -523,18 +516,14 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                     person.updateEnergy(0);
                 }
             });
-            this.arrive(persons);
+            this.arrive(...persons);
         });
     },
     /**
      * A new person arrive
-     * @param {Array<People>|People} people - A people or an array of people instance
+     * @param {...People} people - A people or an array of people instance
      */
-    arrive (people) {
-        if (!Utils.isArray(people)) {
-            people = [people];
-        }
-
+    arrive (...people) {
         people.forEach((person) => {
             if (this.people.size) {
                 MessageBus.notify(MessageBus.MSG_TYPES.ARRIVAL, person);
@@ -551,21 +540,8 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             }
 
-            this.addPeople(person);
-
-            person.show.defer(person);
+            this.people.push(person);
         });
-    },
-    /**
-     * Add a person to the camp
-     * @param {People} person - New person to add
-     */
-    addPeople (person) {
-        this.people.push(person);
-        this.peopleList.appendChild(person.html);
-
-        let peopleSize = this.people.size;
-        this.people.forEach(each => each.html.style.zIndex = String(peopleSize--));
     },
     /**
      * Build something
@@ -784,8 +760,7 @@ GameController.extends(View, "GameController", /** @lends GameController.prototy
                 }
             });
 
-            this.addPeople(person);
-            person.show();
+            this.people.push(person);
         });
         Perk.usedId = data.upk;
         this.addToInitialActions(data.iac);

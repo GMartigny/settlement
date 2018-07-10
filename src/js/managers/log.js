@@ -59,10 +59,10 @@ const LogManager = (function iife () {
             if (message.length) {
                 const html = Utils.wrap(`log ${logTypes[type]}`, message);
                 html.hide();
-                wrapper.insertBefore(html, wrapper.firstChild);
+                wrapper.appendChild(html);
                 const logs = Array.prototype.slice.call(wrapper.children);
                 if (logs.length > LogManager.maxLog) {
-                    logs.last().remove();
+                    logs.first().remove();
                 }
                 html.show.defer(html);
             }

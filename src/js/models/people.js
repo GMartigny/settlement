@@ -45,28 +45,6 @@ People.extends(View, "People", /** @lends People.prototype */ {
         });
     },
     /**
-     * Return HTML for display
-     * @return {HTMLElement}
-     */
-    toHTML () {
-        const html = this._toHTML();
-
-        this.nameNode = Utils.wrap("name", Utils.capitalize(this.name), html);
-
-        const lifeBarWarningThreshold = 25;
-        this.lifeBar = new Bar("life", "#f52158", lifeBarWarningThreshold);
-        html.appendChild(this.lifeBar.html);
-
-        this.energyBar = new Bar("energy", "#19f5ba");
-        html.appendChild(this.energyBar.html);
-
-        this.actionList = Utils.wrap("actionList", null, html);
-
-        html.hide();
-
-        return html;
-    },
-    /**
      * Loop function called every game tick
      * @param {Map} resources - Resources list
      * @param {Number} elapse - Elapse tick since last call

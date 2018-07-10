@@ -1,5 +1,5 @@
 {
-    "extends": "@gmartigny/eslint-config",
+    "extends": "@gmartigny",
     "globals": {
         "IS_DEV": false,
         "VERSION": false,
@@ -7,9 +7,11 @@
         "View": false,
             "Bar": false,
             "Clickable": false,
+            "ControlModule": false,
             "Gauge": false,
             "Particle": false,
             "Popup": false,
+            "Tab": false,
             "Tooltip": false,
         "Utils": false,
             "CanvasUtils": false,

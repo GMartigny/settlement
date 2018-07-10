@@ -3,6 +3,14 @@ Number.prototype.equals = function equals (number) {
 };
 
 /**
+ * Return the first item of the array
+ * @return {*}
+ */
+Array.prototype.first = function last () {
+    return this[0];
+};
+
+/**
  * Return the last item of the array
  * @return {*}
  */

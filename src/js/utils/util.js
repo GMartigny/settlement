@@ -150,7 +150,7 @@ const Utils = {
                     amount = [amount];
                 }
             }
-            return [MathsUtils.round(MathsUtils.random.apply(null, amount)), all[pick]];
+            return [MathsUtils.round(MathsUtils.random(...amount)), all[pick]];
         }
 
         return all[pick];
@@ -178,7 +178,7 @@ const Utils = {
                 amount = [amount];
             }
         }
-        const total = MathsUtils.round(MathsUtils.random.apply(null, amount));
+        const total = MathsUtils.round(MathsUtils.random(...amount));
         let sum = 0;
 
         while (sum++ < total) {
